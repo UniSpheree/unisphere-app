@@ -119,22 +119,25 @@ We have not made a final decision on the backend yet — the team is actively ev
 - Best for: Complex analytics, financial/payment flows, strict data integrity and reporting requirements
 - Trade-offs: Requires more backend setup and operational management (or use a managed provider)
 
-### **Decision criteria**
+### Decision criteria
 
 - Choose Firebase if the priority is speed of development, realtime features and minimal ops effort.
 - Choose PostgreSQL if the priority is complex queries, transactional guarantees, or long-term control of data and schemas.
 - Consider a hybrid approach or migration path if requirements evolve (e.g., start with Firebase for prototyping, add or migrate to PostgreSQL later for reporting/transactions).
 
-Direct alignment with requirements (guidance)
+### Implications for technology choices
 
-- NFR3 (Performance): Both platforms can meet performance targets when provisioned properly; Firebase gives realtime advantages out of the box, while PostgreSQL performance depends on schema/indexing and hosting.
-- NFR4 (Security): Both support strong security models; Firebase Auth provides easy integration, while PostgreSQL-based solutions will require implementing authentication/authorization (e.g., OAuth/JWT) and secure hosting.
-- NFR7 (Scalability): Firebase handles horizontal scaling automatically; PostgreSQL scales well with appropriate architecture (read replicas, partitioning) or managed services.
-- FR3 (Notifications): Firebase Cloud Messaging is a ready-made option; notifications can also be implemented with custom services when using PostgreSQL.
+- Usability: Keep the app UI simple and provide a single concise help page; client-side UX choices (clear navigation, search defaults, filters) are the main drivers.
+- Performance: Favor low-latency backends and caching strategies. Firebase offers realtime updates which help meet tight timeliness targets; PostgreSQL can meet performance targets with efficient indexing, caching (Redis), and optimized queries.
+- Reliability: Implement crash reporting and automated tests (unit, widget, integration). Using managed services (Firebase) can reduce ops risk; PostgreSQL deployments should use managed hosting or HA patterns.
+- Compatibility: Use Flutter's responsive design best practices and test on target device matrix. For web/browser support, verify features in latest two major Chrome and Safari versions.
+- Notification Timeliness: Firebase Cloud Messaging provides a straightforward path to meet the 60s/95% requirement; a custom notification service with message queues and monitoring is an alternative when using PostgreSQL.
+
+This section records measurable non-functional targets the team will use for testing and acceptance; technical decisions and implementation plans should map back to these NFRs.
 
 #### **Other Technologies**
 
-- **Google Maps API**: Directly supports UR-A3 (event mapping requirement)
+- **Google Maps API**: Directly supports event mapping requirement
 - **Provider/Riverpod**: Flutter-recommended for state management
 - **GitHub Actions**: Enables CI/CD as evidence for implementation chapter
 
@@ -313,14 +316,6 @@ dart format lib/
 - **Phase 2**: Social features (friends, sharing, notifications)
 - **Phase 3**: Organizer tools (event creation, analytics, payments)
 - **Phase 4**: Optimization, testing, deployment
-
-### 📊 Requirements Traceability
-
-Our development directly addresses all documented requirements:
-
-- **FR1-FR15**: Implemented through Flutter components and Firebase services
-- **NFR1-NFR8**: Addressed via technology choices and testing strategies
-- **UR-A1-UR-B13**: Validated through user testing and iterative development
 
 ### ⚠️ Known Limitations
 
