@@ -43,12 +43,12 @@ _Figure 1: UniSpheree GitHub organization showing all 7 team members as contribu
 ### **Flutter Application Running**
 
 ![Flutter App](report-assets/flutter-app-running.png)
-_Figure 2: UniSphere Flutter application successfully running on Android emulator_
+_Figure 2: UniSphere Flutter application successfully running_
 
 ### **Repository Structure**
 
 ![Repository Structure](report-assets/repository-structure.png)
-_Figure 3: Well-organized repository structure with initial commits_
+_Figure 3: Well-organized repository structure with commits_
 
 **These screenshots provide evidence for Chapter 3: Implementation:**
 
