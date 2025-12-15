@@ -66,9 +66,9 @@
 | **Version Control**  | Git & GitHub                         | Collaborative development and versioning                                   |
 | **CI/CD**            | GitHub Actions                       | Automated testing, building, and deployment                                |
 
-### Technology Decision Rationale
+## Technology Decision Rationale
 
-#### **Frontend: Flutter**
+### **Frontend: Flutter**
 
 We selected **Flutter** for its:
 
@@ -77,23 +77,23 @@ We selected **Flutter** for its:
 - **Expressive UI**: Rich widget library and customizability
 - **Team familiarity**: Existing expertise accelerates development
 
-#### **Backend: undecided (Firebase or PostgreSQL)**
+### **Backend: undecided (Firebase or PostgreSQL)**
 
 We have not made a final decision on the backend yet — the team is actively evaluating two viable options: **Firebase** (serverless, managed) and **PostgreSQL** (relational, self-hosted or managed). Below is a neutral summary to support the decision process.
 
-Firebase (managed / serverless)
+### **Firebase (managed / serverless)**
 
 - Pros: Fast to set up, built-in Auth, Firestore/Realtime for low-latency updates, managed scaling and services (Cloud Functions, FCM)
 - Best for: Rapid prototyping, realtime social/notification features, minimal server maintenance
 - Trade-offs: Vendor lock-in, different cost model, less control over complex relational queries
 
-PostgreSQL (relational / SQL)
+### **PostgreSQL (relational / SQL)**
 
 - Pros: Strong transactional guarantees, flexible relational modeling, powerful querying and reporting (SQL), easy migration between hosts
 - Best for: Complex analytics, financial/payment flows, strict data integrity and reporting requirements
 - Trade-offs: Requires more backend setup and operational management (or use a managed provider)
 
-Decision criteria
+### **Decision criteria**
 
 - Choose Firebase if the priority is speed of development, realtime features and minimal ops effort.
 - Choose PostgreSQL if the priority is complex queries, transactional guarantees, or long-term control of data and schemas.
@@ -152,12 +152,11 @@ unisphere-app/
 ### Setup Steps
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/UniSpheree/unisphere-app.git
    cd unisphere-app
    ```
-
-````
 
 2. **Install dependencies**
 
@@ -358,5 +357,3 @@ All references follow APA 7 format and are included in the final coursework repo
 
 _Last Updated: December 2025_
 _Version: 1.0.0 (Coursework 1 Release)_
-
-````
