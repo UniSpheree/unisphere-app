@@ -12,6 +12,7 @@
 
 ## 📋 Table of Contents
 
+- [📸 Implementation Evidence](#-implementation-evidence)
 - [✨ Key Features](#-key-features)
   - [🎯 For Attendees](#-for-attendees)
   - [🛠️ For Organizers](#️-for-organizers)
@@ -29,6 +30,31 @@
 - [🗺️ Development Roadmap](#️-development-roadmap)
 - [📄 License](#-license)
 - [📞 Contact](#-contact)
+
+---
+
+## 📸 Implementation Evidence
+
+### **GitHub Organization Setup**
+
+![GitHub Organization](report-assets/github-organization.png)
+_Figure 1: UniSpheree GitHub organization showing all 7 team members as contributors_
+
+### **Flutter Application Running**
+
+![Flutter App](report-assets/flutter-app-running.png)
+_Figure 2: UniSphere Flutter application successfully running on Android emulator_
+
+### **Repository Structure**
+
+![Repository Structure](report-assets/repository-structure.png)
+_Figure 3: Well-organized repository structure with initial commits_
+
+**These screenshots provide evidence for Chapter 3: Implementation:**
+
+- ✅ **Version Control Setup**: GitHub organization with all team members
+- ✅ **Tools Investigation**: Flutter development environment established
+- ✅ **Project Initialization**: Repository structure and initial commits
 
 ---
 
@@ -117,7 +143,6 @@ Direct alignment with requirements (guidance)
 ## 📁 Project Structure
 
 ```
-
 unisphere-app/
 ├── android/ # Android-specific configuration
 ├── ios/ # iOS-specific configuration
@@ -136,7 +161,6 @@ unisphere-app/
 ├── pubspec.lock # Locked dependency versions
 ├── pubspec.yaml # Project dependencies and metadata
 └── README.md # This documentation file
-
 ```
 
 ---
