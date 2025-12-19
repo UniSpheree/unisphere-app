@@ -252,8 +252,8 @@ dart format lib/
 | ------------- | ---------- | ----------------------------------- | -------------------------------------------------------------------------------- |
 | **Achilleas** | 2258434    | **Project Coordinator & Tech Lead** | Requirements oversight, use case diagrams, GitHub setup, implementation strategy |
 | **Marinos**   | 2266126    | **Design Co-Lead**                  | Use case diagrams, system requirements collaboration                             |
-| **Lily**      | 2279849    | **Requirements Analyst**            | User requirements documentation (UR-A1 to UR-B13)                                |
-| **Alecxis**   | 2278372    | **Systems Analyst**                 | System requirements specification (FR1-FR15, NFR1-NFR8)                          |
+| **Lily**      | 2279849    | **Requirements Analyst**            | User requirements documentation                                |
+| **Alecxis**   | 2278372    | **Systems Analyst**                 | System requirements specification                        |
 | **Akim**      | 2306587    | **System Modeller**                 | System models & technical diagrams                                               |
 | **Jim**       | 2281534    | **Architecture Designer**           | Architectural design & component diagrams                                        |
 | **Nikol**     | 2265796    | **Documentation Lead**              | Final report compilation & editing                                               |
@@ -304,11 +304,11 @@ dart format lib/
 
 - ✅ **Project Setup**: GitHub organization, repository structure
 - ✅ **Requirements**: User & system requirements documented
-- ✅ **Design**: Use case diagrams completed
-- 🔄 **Architecture**: System modelling in progress
-- 🔄 **Implementation**: Flutter project initialized
-- 📋 **Testing**: Test plans for NFRs under development
-- 📋 **Report**: Final compilation pending
+- ✅ **Design**: Use case diagrams
+- ✅ **Architecture**: System modelling in progress
+- ✅ **Implementation**: Flutter project initialized
+- ✅ **Testing**: Test plans for NFRs under development
+- ✅ **Report**: Final compilation pending
 
 ### 🚀 Coursework 2 (Jan–May 2026)
 
