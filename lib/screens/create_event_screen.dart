@@ -62,7 +62,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             const SizedBox(height: 16),
 
             _label('Venue or Link'),
-            const TextField(),
+            TextField(controller: venueController),
 
             const SizedBox(height: 16),
 
