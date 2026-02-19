@@ -279,7 +279,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             ),
             alignment: Alignment.centerLeft,
             child: Text(
-              value == null ? 'mm/dd/yyyy --:--' : value.toString(),
+              value == null
+                  ? 'dd/mm/yyyy --:--'
+                  : '${value.day.toString().padLeft(2, '0')}/${value.month.toString().padLeft(2, '0')}/${value.year} ${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}',
               style: const TextStyle(color: Colors.black54),
             ),
           ),
