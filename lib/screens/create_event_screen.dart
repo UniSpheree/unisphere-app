@@ -24,7 +24,6 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       firstDate: DateTime.now(),
       lastDate: DateTime(2100),
     );
-
     if (date == null) return;
 
     final time = await showTimePicker(
@@ -32,10 +31,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       context: context,
       initialTime: TimeOfDay.now(),
     );
-
     if (time == null) return;
 
-    final selectedDateTime = DateTime(
+    final selected = DateTime(
       date.year,
       date.month,
       date.day,
@@ -45,11 +43,21 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
     setState(() {
       if (isStart) {
-        startDateTime = selectedDateTime;
+        startDateTime = selected;
       } else {
-        endDateTime = selectedDateTime;
+        endDateTime = selected;
       }
     });
+  }
+
+  void _submitForm() {
+    if (_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Event details validated – ready to be saved'),
+        ),
+      );
+    }
   }
 
   @override
@@ -63,18 +71,10 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Fill in the details below to launch your event.',
-                style: TextStyle(fontSize: 16),
-              ),
-
-              const SizedBox(height: 24),
-
               _label('Event Name'),
               TextFormField(
                 controller: eventNameController,
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Required' : null,
+                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
               ),
 
               const SizedBox(height: 16),
@@ -83,8 +83,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               TextFormField(
                 controller: descriptionController,
                 maxLines: 4,
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Required' : null,
+                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
               ),
 
               const SizedBox(height: 16),
@@ -122,8 +121,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               _label('Venue or Link'),
               TextFormField(
                 controller: venueController,
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Required' : null,
+                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
               ),
 
               const SizedBox(height: 16),
@@ -132,8 +130,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               TextFormField(
                 controller: maxAttendeesController,
                 keyboardType: TextInputType.number,
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Required' : null,
+                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
               ),
 
               const SizedBox(height: 32),
@@ -142,7 +139,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 width: double.infinity,
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: null,
+                  onPressed: _submitForm,
                   child: const Text('Create Event'),
                 ),
               ),
