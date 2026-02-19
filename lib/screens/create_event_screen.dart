@@ -102,6 +102,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   _textField(
                     controller: eventNameController,
                     hint: 'e.g. Annual Tech Symposium 2024',
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Event Name is required';
+                      }
+                      return null;
+                    },
                   ),
 
                   _label('About the Event'),
@@ -110,6 +116,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     hint:
                         'Provide a brief summary of what makes your event special...',
                     maxLines: 4,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Event description is required';
+                      }
+                      return null;
+                    },
                   ),
 
                   const SizedBox(height: 16),
@@ -143,6 +155,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           controller: venueController,
                           label: 'Venue or Link',
                           hint: 'Physical address or URL',
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Venue or Link is required';
+                            }
+                            return null;
+                          },
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -152,6 +170,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           label: 'Max Attendees',
                           hint: 'e.g. 100',
                           keyboardType: TextInputType.number,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Max Attendees is required';
+                            }
+                            return null;
+                          },
                         ),
                       ),
                     ],
@@ -163,7 +187,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     width: double.infinity,
                     height: 52,
                     child: ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          // Proceed with event creation
+                        }
+                      },
                       icon: const Icon(Icons.rocket_launch),
                       label: const Text(
                         'Create Event',
@@ -208,6 +236,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     String? label,
     int maxLines = 1,
     TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -215,6 +244,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         controller: controller,
         maxLines: maxLines,
         keyboardType: keyboardType,
+        validator: validator,
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
