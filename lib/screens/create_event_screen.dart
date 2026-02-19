@@ -30,7 +30,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             const SizedBox(height: 24),
 
             _label('Event Name'),
-            const TextField(),
+            TextField(controller: eventNameController),
 
             const SizedBox(height: 16),
 
