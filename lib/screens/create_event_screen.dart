@@ -67,7 +67,10 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             const SizedBox(height: 16),
 
             _label('Max Attendees'),
-            const TextField(keyboardType: TextInputType.number),
+            TextField(
+              controller: maxAttendeesController,
+              keyboardType: TextInputType.number,
+            ),
 
             const SizedBox(height: 32),
 
