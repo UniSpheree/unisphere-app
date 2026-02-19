@@ -18,6 +18,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   DateTime? startDate;
   DateTime? endDate;
   String? eventCategory;
+  String eventVisibility = 'Public';
 
   final List<String> eventCategories = [
     'Academic',
@@ -26,6 +27,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     'Career',
     'Workshop',
     'Other',
+  ];
+
+  final List<Map<String, dynamic>> visibilityOptions = [
+    {'value': 'Public', 'icon': Icons.public, 'desc': 'Any student'},
+    {'value': 'Private', 'icon': Icons.lock_outline, 'desc': 'Invite only'},
+    {
+      'value': 'Restricted',
+      'icon': Icons.group_outlined,
+      'desc': 'Society / course',
+    },
   ];
 
   Future<void> pickDateTime(bool isStart) async {
@@ -225,6 +236,81 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                 }
                                 return null;
                               },
+                            ),
+                          ),
+
+                          _label('Visibility / Privacy'),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: Row(
+                              children: visibilityOptions.map((option) {
+                                final isSelected =
+                                    eventVisibility == option['value'];
+                                return Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => setState(
+                                      () => eventVisibility = option['value'],
+                                    ),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(
+                                        milliseconds: 200,
+                                      ),
+                                      margin: EdgeInsets.only(
+                                        right: option['value'] != 'Restricted'
+                                            ? 8
+                                            : 0,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 12,
+                                        horizontal: 8,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        // ignore: deprecated_member_use
+                                        color: isSelected
+                                            ? Colors.indigo.withOpacity(0.08)
+                                            : const Color(0xFFF7F9FC),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? Colors.indigo
+                                              : Colors.transparent,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Icon(
+                                            option['icon'] as IconData,
+                                            color: isSelected
+                                                ? Colors.indigo
+                                                : Colors.grey,
+                                            size: 22,
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            option['value'] as String,
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                              color: isSelected
+                                                  ? Colors.indigo
+                                                  : Colors.black87,
+                                            ),
+                                          ),
+                                          Text(
+                                            option['desc'] as String,
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              color: Colors.grey,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
                             ),
                           ),
 
