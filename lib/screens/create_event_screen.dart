@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 
-class CreateEventScreen extends StatelessWidget {
+class CreateEventScreen extends StatefulWidget {
   const CreateEventScreen({super.key});
 
+  @override
+  State<CreateEventScreen> createState() => _CreateEventScreenState();
+}
+
+class _CreateEventScreenState extends State<CreateEventScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,21 +25,12 @@ class CreateEventScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             _label('Event Name'),
-            const TextField(
-              decoration: InputDecoration(
-                hintText: 'e.g. Annual Tech Symposium 2024',
-              ),
-            ),
+            const TextField(),
 
             const SizedBox(height: 16),
 
             _label('About the Event'),
-            const TextField(
-              maxLines: 4,
-              decoration: InputDecoration(
-                hintText: 'Provide a brief summary of your event',
-              ),
-            ),
+            const TextField(maxLines: 4),
 
             const SizedBox(height: 16),
 
@@ -61,17 +57,12 @@ class CreateEventScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             _label('Venue or Link'),
-            const TextField(
-              decoration: InputDecoration(hintText: 'Physical address or URL'),
-            ),
+            const TextField(),
 
             const SizedBox(height: 16),
 
             _label('Max Attendees'),
-            const TextField(
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(hintText: 'e.g. 100'),
-            ),
+            const TextField(keyboardType: TextInputType.number),
 
             const SizedBox(height: 32),
 
