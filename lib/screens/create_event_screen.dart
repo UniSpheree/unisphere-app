@@ -63,7 +63,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: const Color(0xFFF5F7FB),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text(
+          'UniSphere',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        foregroundColor: Colors.black,
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
