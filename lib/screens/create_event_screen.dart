@@ -38,6 +38,28 @@ class CreateEventScreen extends StatelessWidget {
 
             const SizedBox(height: 16),
 
+            _label('Start Date & Time'),
+            OutlinedButton(
+              onPressed: null,
+              child: const Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Select start date & time'),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            _label('End Date & Time'),
+            OutlinedButton(
+              onPressed: null,
+              child: const Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Select end date & time'),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
             _label('Venue or Link'),
             const TextField(
               decoration: InputDecoration(hintText: 'Physical address or URL'),
@@ -49,6 +71,17 @@ class CreateEventScreen extends StatelessWidget {
             const TextField(
               keyboardType: TextInputType.number,
               decoration: InputDecoration(hintText: 'e.g. 100'),
+            ),
+
+            const SizedBox(height: 32),
+
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton(
+                onPressed: null,
+                child: const Text('Create Event'),
+              ),
             ),
           ],
         ),
