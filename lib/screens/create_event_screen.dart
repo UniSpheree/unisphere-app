@@ -169,9 +169,20 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   SizedBox(
                     width: double.infinity,
                     height: 48,
-                    child: ElevatedButton(
+                    child: ElevatedButton.icon(
                       onPressed: _submitForm,
-                      child: const Text('Create Event'),
+                      icon: const Icon(Icons.rocket_launch),
+                      label: const Text(
+                        'Create Event',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.indigo,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
                     ),
                   ),
                 ],
