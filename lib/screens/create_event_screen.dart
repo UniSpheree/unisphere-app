@@ -22,6 +22,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   String? eventCategory;
   String eventVisibility = 'Public';
   bool _bannerHovered = false;
+  String? _dateError;
 
   final List<String> eventCategories = [
     'Academic',
@@ -71,8 +72,21 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     setState(() {
       if (isStart) {
         startDate = selected;
+        // clear error and re-validate if end date already set
+        if (endDate != null && selected.isAfter(endDate!)) {
+          endDate = null;
+          _dateError =
+              'End date was cleared because it was before the new start date.';
+        } else {
+          _dateError = null;
+        }
       } else {
-        endDate = selected;
+        if (startDate != null && selected.isBefore(startDate!)) {
+          _dateError = 'End date & time cannot be before start date & time.';
+        } else {
+          endDate = selected;
+          _dateError = null;
+        }
       }
     });
   }
@@ -427,6 +441,30 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                   ],
                                 ),
 
+                          if (_dateError != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8, bottom: 4),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.error_outline,
+                                    color: Colors.red,
+                                    size: 16,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      _dateError!,
+                                      style: const TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
                           const SizedBox(height: 16),
 
                           isMobile
@@ -497,8 +535,25 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             height: 52,
                             child: ElevatedButton.icon(
                               onPressed: () {
-                                if (_formKey.currentState!.validate()) {
+                                setState(() {
+                                  if (startDate != null &&
+                                      endDate != null &&
+                                      endDate!.isBefore(startDate!)) {
+                                    _dateError =
+                                        'End date & time cannot be before start date & time.';
+                                  }
+                                });
+                                if (_formKey.currentState!.validate() &&
+                                    _dateError == null &&
+                                    startDate != null &&
+                                    endDate != null) {
                                   // Proceed with event creation
+                                } else if (startDate == null ||
+                                    endDate == null) {
+                                  setState(() {
+                                    _dateError =
+                                        'Both start and end date & time are required.';
+                                  });
                                 }
                               },
                               icon: const Icon(Icons.rocket_launch),
