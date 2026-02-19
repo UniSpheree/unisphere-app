@@ -84,6 +84,46 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Row(
+                          children: [
+                            InkWell(
+                              onTap: () => Navigator.pop(context),
+                              borderRadius: BorderRadius.circular(8),
+                              child: const Icon(
+                                Icons.arrow_back,
+                                size: 20,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () => Navigator.pop(context),
+                              child: const Text(
+                                'Dashboard',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                            const Text(
+                              '  /  ',
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const Text(
+                              'Create New Event',
+                              style: TextStyle(
+                                color: Colors.indigo,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
                         Text(
                           'Create New Event',
                           style: TextStyle(
