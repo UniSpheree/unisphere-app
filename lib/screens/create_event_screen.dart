@@ -7,12 +7,49 @@ class CreateEventScreen extends StatefulWidget {
   State<CreateEventScreen> createState() => _CreateEventScreenState();
 }
 
-final TextEditingController eventNameController = TextEditingController();
-final TextEditingController descriptionController = TextEditingController();
-final TextEditingController venueController = TextEditingController();
-final TextEditingController maxAttendeesController = TextEditingController();
-
 class _CreateEventScreenState extends State<CreateEventScreen> {
+  final TextEditingController eventNameController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController venueController = TextEditingController();
+  final TextEditingController maxAttendeesController = TextEditingController();
+
+  DateTime? startDateTime;
+  DateTime? endDateTime;
+
+  Future<void> _pickDateTime(bool isStart) async {
+    final date = await showDatePicker(
+      context: context,
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+    );
+
+    if (date == null) return;
+
+    final time = await showTimePicker(
+      // ignore: use_build_context_synchronously
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+
+    if (time == null) return;
+
+    final selectedDateTime = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
+    );
+
+    setState(() {
+      if (isStart) {
+        startDateTime = selectedDateTime;
+      } else {
+        endDateTime = selectedDateTime;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,10 +78,14 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
             _label('Start Date & Time'),
             OutlinedButton(
-              onPressed: null,
-              child: const Align(
+              onPressed: () => _pickDateTime(true),
+              child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Select start date & time'),
+                child: Text(
+                  startDateTime == null
+                      ? 'Select start date & time'
+                      : startDateTime.toString(),
+                ),
               ),
             ),
 
@@ -52,10 +93,14 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
             _label('End Date & Time'),
             OutlinedButton(
-              onPressed: null,
-              child: const Align(
+              onPressed: () => _pickDateTime(false),
+              child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Select end date & time'),
+                child: Text(
+                  endDateTime == null
+                      ? 'Select end date & time'
+                      : endDateTime.toString(),
+                ),
               ),
             ),
 
