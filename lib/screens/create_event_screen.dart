@@ -108,20 +108,17 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   const SizedBox(height: 32),
 
                   _label('Event Name'),
-                  TextFormField(
+                  _textField(
                     controller: eventNameController,
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Required' : null,
+                    hint: 'e.g. Annual Tech Symposium 2024',
                   ),
 
-                  const SizedBox(height: 16),
-
                   _label('About the Event'),
-                  TextFormField(
+                  _textField(
                     controller: descriptionController,
+                    hint:
+                        'Provide a brief summary of what makes your event special...',
                     maxLines: 4,
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Required' : null,
                   ),
 
                   const SizedBox(height: 16),
@@ -148,21 +145,23 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
                   const SizedBox(height: 16),
 
-                  _label('Venue or Link'),
-                  TextFormField(
-                    controller: venueController,
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Required' : null,
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  _label('Max Attendees'),
-                  TextFormField(
-                    controller: maxAttendeesController,
-                    keyboardType: TextInputType.number,
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Required' : null,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _textField(
+                          controller: venueController,
+                          hint: 'Physical address or URL',
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _textField(
+                          controller: maxAttendeesController,
+                          hint: 'e.g. 100',
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                    ],
                   ),
 
                   const SizedBox(height: 32),
@@ -188,6 +187,32 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(text, style: const TextStyle(fontWeight: FontWeight.w600)),
+    );
+  }
+
+  Widget _textField({
+    required TextEditingController controller,
+    required String hint,
+    int maxLines = 1,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextFormField(
+        controller: controller,
+        maxLines: maxLines,
+        keyboardType: keyboardType,
+        decoration: InputDecoration(
+          hintText: hint,
+          filled: true,
+          fillColor: const Color(0xFFF7F9FC),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+      ),
     );
   }
 
