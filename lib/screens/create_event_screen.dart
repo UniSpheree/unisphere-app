@@ -70,204 +70,224 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           final isMobile = constraints.maxWidth < 600;
           return Center(
             child: SingleChildScrollView(
-              child: Container(
-                width: isMobile ? double.infinity : 720,
-                margin: EdgeInsets.all(isMobile ? 12 : 16),
-                padding: EdgeInsets.all(isMobile ? 20 : 32),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 20,
-                      offset: Offset(0, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: isMobile ? double.infinity : 720,
+                    margin: EdgeInsets.fromLTRB(
+                      isMobile ? 12 : 16,
+                      isMobile ? 20 : 32,
+                      isMobile ? 12 : 16,
+                      0,
                     ),
-                  ],
-                ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Create New Event',
-                        style: TextStyle(
-                          fontSize: isMobile ? 22 : 30,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Fill in the details below to launch your event and start inviting attendees.',
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
-                      ),
-                      const SizedBox(height: 32),
-
-                      _label('Event Name'),
-                      _textField(
-                        controller: eventNameController,
-                        hint: 'e.g. Annual Tech Symposium 2024',
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Event Name is required';
-                          }
-                          return null;
-                        },
-                      ),
-
-                      _label('About the Event'),
-                      _textField(
-                        controller: descriptionController,
-                        hint:
-                            'Provide a brief summary of what makes your event special...',
-                        maxLines: 4,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Event description is required';
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      isMobile
-                          ? Column(
-                              children: [
-                                _datePicker(
-                                  label: 'Start Date & Time',
-                                  value: startDate,
-                                  onTap: () => pickDateTime(true),
-                                ),
-                                const SizedBox(height: 16),
-                                _datePicker(
-                                  label: 'End Date & Time',
-                                  value: endDate,
-                                  onTap: () => pickDateTime(false),
-                                ),
-                              ],
-                            )
-                          : Row(
-                              children: [
-                                Expanded(
-                                  child: _datePicker(
-                                    label: 'Start Date & Time',
-                                    value: startDate,
-                                    onTap: () => pickDateTime(true),
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: _datePicker(
-                                    label: 'End Date & Time',
-                                    value: endDate,
-                                    onTap: () => pickDateTime(false),
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                      const SizedBox(height: 16),
-
-                      isMobile
-                          ? Column(
-                              children: [
-                                _textField(
-                                  controller: venueController,
-                                  label: 'Venue or Link',
-                                  hint: 'Physical address or URL',
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Venue or Link is required';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                _textField(
-                                  controller: maxAttendeesController,
-                                  label: 'Max Attendees',
-                                  hint: 'e.g. 100',
-                                  keyboardType: TextInputType.number,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Max Attendees is required';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ],
-                            )
-                          : Row(
-                              children: [
-                                Expanded(
-                                  child: _textField(
-                                    controller: venueController,
-                                    label: 'Venue or Link',
-                                    hint: 'Physical address or URL',
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Venue or Link is required';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: _textField(
-                                    controller: maxAttendeesController,
-                                    label: 'Max Attendees',
-                                    hint: 'e.g. 100',
-                                    keyboardType: TextInputType.number,
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Max Attendees is required';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                      const SizedBox(height: 32),
-
-                      SizedBox(
-                        width: double.infinity,
-                        height: 52,
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              // Proceed with event creation
-                            }
-                          },
-                          icon: const Icon(Icons.rocket_launch),
-                          label: const Text(
-                            'Create Event',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.indigo,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Create New Event',
+                          style: TextStyle(
+                            fontSize: isMobile ? 22 : 30,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ),
-
-                      const SizedBox(height: 12),
-                      const Center(
-                        child: Text(
-                          'By clicking "Create Event", you agree to our organizer terms of service.',
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
-                          textAlign: TextAlign.center,
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Fill in the details below to launch your event and start inviting attendees.',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
+                  Container(
+                    width: isMobile ? double.infinity : 720,
+                    margin: EdgeInsets.all(isMobile ? 12 : 16),
+                    padding: EdgeInsets.all(isMobile ? 20 : 32),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 20,
+                          offset: Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _label('Event Name'),
+                          _textField(
+                            controller: eventNameController,
+                            hint: 'e.g. Annual Tech Symposium 2024',
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Event Name is required';
+                              }
+                              return null;
+                            },
+                          ),
+
+                          _label('About the Event'),
+                          _textField(
+                            controller: descriptionController,
+                            hint:
+                                'Provide a brief summary of what makes your event special...',
+                            maxLines: 4,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Event description is required';
+                              }
+                              return null;
+                            },
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          isMobile
+                              ? Column(
+                                  children: [
+                                    _datePicker(
+                                      label: 'Start Date & Time',
+                                      value: startDate,
+                                      onTap: () => pickDateTime(true),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    _datePicker(
+                                      label: 'End Date & Time',
+                                      value: endDate,
+                                      onTap: () => pickDateTime(false),
+                                    ),
+                                  ],
+                                )
+                              : Row(
+                                  children: [
+                                    Expanded(
+                                      child: _datePicker(
+                                        label: 'Start Date & Time',
+                                        value: startDate,
+                                        onTap: () => pickDateTime(true),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: _datePicker(
+                                        label: 'End Date & Time',
+                                        value: endDate,
+                                        onTap: () => pickDateTime(false),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                          const SizedBox(height: 16),
+
+                          isMobile
+                              ? Column(
+                                  children: [
+                                    _textField(
+                                      controller: venueController,
+                                      label: 'Venue or Link',
+                                      hint: 'Physical address or URL',
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Venue or Link is required';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                    _textField(
+                                      controller: maxAttendeesController,
+                                      label: 'Max Attendees',
+                                      hint: 'e.g. 100',
+                                      keyboardType: TextInputType.number,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Max Attendees is required';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ],
+                                )
+                              : Row(
+                                  children: [
+                                    Expanded(
+                                      child: _textField(
+                                        controller: venueController,
+                                        label: 'Venue or Link',
+                                        hint: 'Physical address or URL',
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'Venue or Link is required';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: _textField(
+                                        controller: maxAttendeesController,
+                                        label: 'Max Attendees',
+                                        hint: 'e.g. 100',
+                                        keyboardType: TextInputType.number,
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'Max Attendees is required';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                          const SizedBox(height: 32),
+
+                          SizedBox(
+                            width: double.infinity,
+                            height: 52,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                if (_formKey.currentState!.validate()) {
+                                  // Proceed with event creation
+                                }
+                              },
+                              icon: const Icon(Icons.rocket_launch),
+                              label: const Text(
+                                'Create Event',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.indigo,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 12),
+                          const Center(
+                            child: Text(
+                              'By clicking "Create Event", you agree to our organizer terms of service.',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           );
