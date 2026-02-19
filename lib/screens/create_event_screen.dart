@@ -7,6 +7,11 @@ class CreateEventScreen extends StatefulWidget {
   State<CreateEventScreen> createState() => _CreateEventScreenState();
 }
 
+final TextEditingController eventNameController = TextEditingController();
+final TextEditingController descriptionController = TextEditingController();
+final TextEditingController venueController = TextEditingController();
+final TextEditingController maxAttendeesController = TextEditingController();
+
 class _CreateEventScreenState extends State<CreateEventScreen> {
   @override
   Widget build(BuildContext context) {
