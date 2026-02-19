@@ -15,16 +15,17 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   final TextEditingController venueController = TextEditingController();
   final TextEditingController maxAttendeesController = TextEditingController();
 
-  DateTime? startDateTime;
-  DateTime? endDateTime;
+  DateTime? startDate;
+  DateTime? endDate;
 
-  Future<void> _pickDateTime(bool isStart) async {
+  Future<void> pickDateTime(bool isStart) async {
     final date = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime(2100),
     );
+
     if (date == null) return;
 
     final time = await showTimePicker(
@@ -32,6 +33,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       context: context,
       initialTime: TimeOfDay.now(),
     );
+
     if (time == null) return;
 
     final selected = DateTime(
@@ -44,27 +46,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
     setState(() {
       if (isStart) {
-        startDateTime = selected;
+        startDate = selected;
       } else {
-        endDateTime = selected;
+        endDate = selected;
       }
     });
-  }
-
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Event details validated – ready to be saved'),
-        ),
-      );
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FB),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -76,9 +67,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       ),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
           child: Container(
             width: 720,
+            margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -128,16 +119,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                       Expanded(
                         child: _datePicker(
                           label: 'Start Date & Time',
-                          value: startDateTime,
-                          onTap: () => _pickDateTime(true),
+                          value: startDate,
+                          onTap: () => pickDateTime(true),
                         ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: _datePicker(
                           label: 'End Date & Time',
-                          value: endDateTime,
-                          onTap: () => _pickDateTime(false),
+                          value: endDate,
+                          onTap: () => pickDateTime(false),
                         ),
                       ),
                     ],
@@ -150,6 +141,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                       Expanded(
                         child: _textField(
                           controller: venueController,
+                          label: 'Venue or Link',
                           hint: 'Physical address or URL',
                         ),
                       ),
@@ -157,6 +149,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                       Expanded(
                         child: _textField(
                           controller: maxAttendeesController,
+                          label: 'Max Attendees',
                           hint: 'e.g. 100',
                           keyboardType: TextInputType.number,
                         ),
@@ -168,9 +161,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
                   SizedBox(
                     width: double.infinity,
-                    height: 48,
+                    height: 52,
                     child: ElevatedButton.icon(
-                      onPressed: _submitForm,
+                      onPressed: () {},
                       icon: const Icon(Icons.rocket_launch),
                       label: const Text(
                         'Create Event',
@@ -183,6 +176,14 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+                  const Center(
+                    child: Text(
+                      'By clicking "Create Event", you agree to our organizer terms of service.',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ),
                 ],
@@ -204,6 +205,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   Widget _textField({
     required TextEditingController controller,
     required String hint,
+    String? label,
     int maxLines = 1,
     TextInputType keyboardType = TextInputType.text,
   }) {
@@ -214,6 +216,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         maxLines: maxLines,
         keyboardType: keyboardType,
         decoration: InputDecoration(
+          labelText: label,
           hintText: hint,
           filled: true,
           fillColor: const Color(0xFFF7F9FC),
@@ -222,7 +225,6 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             borderSide: BorderSide.none,
           ),
         ),
-        validator: (v) => v == null || v.isEmpty ? 'Required' : null,
       ),
     );
   }
