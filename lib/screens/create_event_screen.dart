@@ -17,6 +17,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   DateTime? startDate;
   DateTime? endDate;
+  String? eventCategory;
+
+  final List<String> eventCategories = [
+    'Academic',
+    'Social',
+    'Sports',
+    'Career',
+    'Workshop',
+    'Other',
+  ];
 
   Future<void> pickDateTime(bool isStart) async {
     final date = await showDatePicker(
@@ -183,6 +193,39 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                               }
                               return null;
                             },
+                          ),
+
+                          _label('Event Type / Category'),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: DropdownButtonFormField<String>(
+                              initialValue: eventCategory,
+                              hint: const Text('Select a category'),
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: const Color(0xFFF7F9FC),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
+                                ),
+                              ),
+                              items: eventCategories
+                                  .map(
+                                    (cat) => DropdownMenuItem(
+                                      value: cat,
+                                      child: Text(cat),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (value) =>
+                                  setState(() => eventCategory = value),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Event category is required';
+                                }
+                                return null;
+                              },
+                            ),
                           ),
 
                           const SizedBox(height: 16),
