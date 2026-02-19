@@ -110,7 +110,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
                     const Text(
                       'Fill in the details below to launch your event and start inviting attendees.',
-                      style: TextStyle(fontSize: 14, color: Colors.black54),
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
 
                     const SizedBox(height: 24),
