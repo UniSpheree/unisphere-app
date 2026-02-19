@@ -101,7 +101,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     const Text(
                       'Create New Event',
                       style: TextStyle(
-                        fontSize: 26,
+                        fontSize: 30,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
