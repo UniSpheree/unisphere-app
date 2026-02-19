@@ -76,10 +76,19 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          child: Card(
-            elevation: 4,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+          child: Container(
+            width: 720,
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 20,
+                  offset: Offset(0, 10),
+                ),
+              ],
             ),
             child: Padding(
               padding: const EdgeInsets.all(24),
