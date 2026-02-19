@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 
 class CreateEventScreen extends StatefulWidget {
@@ -19,6 +21,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   DateTime? endDate;
   String? eventCategory;
   String eventVisibility = 'Public';
+  bool _bannerHovered = false;
 
   final List<String> eventCategories = [
     'Academic',
@@ -180,6 +183,77 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          _label('Event Banner'),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 24),
+                            child: MouseRegion(
+                              onEnter: (_) =>
+                                  setState(() => _bannerHovered = true),
+                              onExit: (_) =>
+                                  setState(() => _bannerHovered = false),
+                              child: GestureDetector(
+                                onTap: () {},
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  width: double.infinity,
+                                  height: 180,
+                                  decoration: BoxDecoration(
+                                    color: _bannerHovered
+                                        ? Colors.indigo.withOpacity(0.06)
+                                        : Colors.indigo.withOpacity(0.02),
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: _bannerHovered
+                                          ? Colors.indigo
+                                          : Colors.indigo.withOpacity(0.35),
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(14),
+                                        decoration: BoxDecoration(
+                                          color: _bannerHovered
+                                              ? Colors.indigo.withOpacity(0.12)
+                                              : Colors.indigo.withOpacity(0.07),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          Icons.add_photo_alternate_outlined,
+                                          size: 36,
+                                          color: _bannerHovered
+                                              ? Colors.indigo
+                                              : Colors.indigo.withOpacity(0.6),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        'Upload Event Banner',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                          color: _bannerHovered
+                                              ? Colors.indigo
+                                              : Colors.indigo.withOpacity(0.7),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Recommended size: 1200 × 630px (PNG, JPG)',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey.shade500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+
                           _label('Event Name'),
                           _textField(
                             controller: eventNameController,
@@ -265,6 +339,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                         horizontal: 8,
                                       ),
                                       decoration: BoxDecoration(
+                                        // ignore: duplicate_ignore
                                         // ignore: deprecated_member_use
                                         color: isSelected
                                             ? Colors.indigo.withOpacity(0.08)
