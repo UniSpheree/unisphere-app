@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import '../widgets/header.dart';
 
 class CreateEventScreen extends StatefulWidget {
   const CreateEventScreen({super.key});
@@ -141,20 +142,14 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       eventVisibility = 'Public';
       _dateError = null;
     });
+
+    Navigator.pushNamed(context, '/dashboard');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'UniSphere',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        foregroundColor: Colors.black,
-      ),
+      appBar: AppHeader(),
       body: LayoutBuilder(
         builder: (context, constraints) {
           final isMobile = constraints.maxWidth < 600;
@@ -177,7 +172,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                         Row(
                           children: [
                             InkWell(
-                              onTap: () => Navigator.pop(context),
+                              onTap: () =>
+                                  Navigator.pushNamed(context, '/dashboard'),
                               borderRadius: BorderRadius.circular(8),
                               child: const Icon(
                                 Icons.arrow_back,
@@ -187,7 +183,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             ),
                             const SizedBox(width: 8),
                             GestureDetector(
-                              onTap: () => Navigator.pop(context),
+                              onTap: () =>
+                                  Navigator.pushNamed(context, '/dashboard'),
                               child: const Text(
                                 'Dashboard',
                                 style: TextStyle(
