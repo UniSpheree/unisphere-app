@@ -63,87 +63,103 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Create New Event'), centerTitle: true),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _label('Event Name'),
-              TextFormField(
-                controller: eventNameController,
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-              ),
+      backgroundColor: Colors.grey.shade100,
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _label('Event Name'),
+                    TextFormField(
+                      controller: eventNameController,
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Required' : null,
+                    ),
 
-              const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-              _label('About the Event'),
-              TextFormField(
-                controller: descriptionController,
-                maxLines: 4,
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-              ),
+                    _label('About the Event'),
+                    TextFormField(
+                      controller: descriptionController,
+                      maxLines: 4,
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Required' : null,
+                    ),
 
-              const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-              _label('Start Date & Time'),
-              OutlinedButton(
-                onPressed: () => _pickDateTime(true),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    startDateTime == null
-                        ? 'Select start date & time'
-                        : startDateTime.toString(),
-                  ),
+                    _label('Start Date & Time'),
+                    OutlinedButton(
+                      onPressed: () => _pickDateTime(true),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          startDateTime == null
+                              ? 'Select start date & time'
+                              : startDateTime.toString(),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    _label('End Date & Time'),
+                    OutlinedButton(
+                      onPressed: () => _pickDateTime(false),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          endDateTime == null
+                              ? 'Select end date & time'
+                              : endDateTime.toString(),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    _label('Venue or Link'),
+                    TextFormField(
+                      controller: venueController,
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Required' : null,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    _label('Max Attendees'),
+                    TextFormField(
+                      controller: maxAttendeesController,
+                      keyboardType: TextInputType.number,
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Required' : null,
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: _submitForm,
+                        child: const Text('Create Event'),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-
-              const SizedBox(height: 16),
-
-              _label('End Date & Time'),
-              OutlinedButton(
-                onPressed: () => _pickDateTime(false),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    endDateTime == null
-                        ? 'Select end date & time'
-                        : endDateTime.toString(),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              _label('Venue or Link'),
-              TextFormField(
-                controller: venueController,
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-              ),
-
-              const SizedBox(height: 16),
-
-              _label('Max Attendees'),
-              TextFormField(
-                controller: maxAttendeesController,
-                keyboardType: TextInputType.number,
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-              ),
-
-              const SizedBox(height: 32),
-
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: _submitForm,
-                  child: const Text('Create Event'),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
