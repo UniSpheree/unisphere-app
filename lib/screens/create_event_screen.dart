@@ -80,6 +80,23 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const Text(
+                      'Create New Event',
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    const Text(
+                      'Fill in the details below to launch your event and start inviting attendees.',
+                      style: TextStyle(fontSize: 14, color: Colors.black54),
+                    ),
+
+                    const SizedBox(height: 24),
+
                     _label('Event Name'),
                     TextFormField(
                       controller: eventNameController,
