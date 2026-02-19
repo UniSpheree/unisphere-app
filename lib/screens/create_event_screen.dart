@@ -23,6 +23,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   String eventVisibility = 'Public';
   bool _bannerHovered = false;
   String? _dateError;
+  bool _isSubmitting = false;
 
   final List<String> eventCategories = [
     'Academic',
@@ -88,6 +89,57 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           _dateError = null;
         }
       }
+    });
+  }
+
+  Future<void> _submitForm() async {
+    setState(() {
+      if (startDate == null || endDate == null) {
+        _dateError = 'Both start and end date & time are required.';
+      } else if (endDate!.isBefore(startDate!)) {
+        _dateError = 'End date & time cannot be before start date & time.';
+      } else {
+        _dateError = null;
+      }
+    });
+
+    if (!_formKey.currentState!.validate() || _dateError != null) return;
+
+    setState(() => _isSubmitting = true);
+    await Future.delayed(const Duration(seconds: 2));
+    setState(() => _isSubmitting = false);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.green.shade600,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        content: const Row(
+          children: [
+            Icon(Icons.check_circle_outline, color: Colors.white),
+            SizedBox(width: 10),
+            Text(
+              'Event created successfully!',
+              style: TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    eventNameController.clear();
+    descriptionController.clear();
+    venueController.clear();
+    maxAttendeesController.clear();
+    _formKey.currentState!.reset();
+    setState(() {
+      startDate = null;
+      endDate = null;
+      eventCategory = null;
+      eventVisibility = 'Public';
+      _dateError = null;
     });
   }
 
@@ -534,36 +586,29 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             width: double.infinity,
                             height: 52,
                             child: ElevatedButton.icon(
-                              onPressed: () {
-                                setState(() {
-                                  if (startDate != null &&
-                                      endDate != null &&
-                                      endDate!.isBefore(startDate!)) {
-                                    _dateError =
-                                        'End date & time cannot be before start date & time.';
-                                  }
-                                });
-                                if (_formKey.currentState!.validate() &&
-                                    _dateError == null &&
-                                    startDate != null &&
-                                    endDate != null) {
-                                  // Proceed with event creation
-                                } else if (startDate == null ||
-                                    endDate == null) {
-                                  setState(() {
-                                    _dateError =
-                                        'Both start and end date & time are required.';
-                                  });
-                                }
-                              },
-                              icon: const Icon(Icons.rocket_launch),
-                              label: const Text(
-                                'Create Event',
-                                style: TextStyle(fontSize: 16),
+                              onPressed: _isSubmitting ? null : _submitForm,
+                              icon: _isSubmitting
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Icon(Icons.rocket_launch),
+                              label: Text(
+                                _isSubmitting
+                                    ? 'Creating Event...'
+                                    : 'Create Event',
+                                style: const TextStyle(fontSize: 16),
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.indigo,
                                 foregroundColor: Colors.white,
+                                disabledBackgroundColor: Colors.indigo
+                                    .withOpacity(0.6),
+                                disabledForegroundColor: Colors.white,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
