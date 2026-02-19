@@ -21,6 +21,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   Future<void> _pickDateTime(bool isStart) async {
     final date = await showDatePicker(
       context: context,
+      initialDate: DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime(2100),
     );
@@ -90,109 +91,91 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 ),
               ],
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Create New Event',
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Create New Event',
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Fill in the details below to launch your event and start inviting attendees.',
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 32),
 
-                    const SizedBox(height: 8),
+                  _label('Event Name'),
+                  TextFormField(
+                    controller: eventNameController,
+                    validator: (v) =>
+                        v == null || v.isEmpty ? 'Required' : null,
+                  ),
 
-                    const Text(
-                      'Fill in the details below to launch your event and start inviting attendees.',
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
-                    ),
+                  const SizedBox(height: 16),
 
-                    const SizedBox(height: 24),
+                  _label('About the Event'),
+                  TextFormField(
+                    controller: descriptionController,
+                    maxLines: 4,
+                    validator: (v) =>
+                        v == null || v.isEmpty ? 'Required' : null,
+                  ),
 
-                    _label('Event Name'),
-                    TextFormField(
-                      controller: eventNameController,
-                      validator: (v) =>
-                          v == null || v.isEmpty ? 'Required' : null,
-                    ),
+                  const SizedBox(height: 16),
 
-                    const SizedBox(height: 16),
-
-                    _label('About the Event'),
-                    TextFormField(
-                      controller: descriptionController,
-                      maxLines: 4,
-                      validator: (v) =>
-                          v == null || v.isEmpty ? 'Required' : null,
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    _label('Start Date & Time'),
-                    OutlinedButton(
-                      onPressed: () => _pickDateTime(true),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          startDateTime == null
-                              ? 'Select start date & time'
-                              : startDateTime.toString(),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _datePicker(
+                          label: 'Start Date & Time',
+                          value: startDateTime,
+                          onTap: () => _pickDateTime(true),
                         ),
                       ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    _label('End Date & Time'),
-                    OutlinedButton(
-                      onPressed: () => _pickDateTime(false),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          endDateTime == null
-                              ? 'Select end date & time'
-                              : endDateTime.toString(),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _datePicker(
+                          label: 'End Date & Time',
+                          value: endDateTime,
+                          onTap: () => _pickDateTime(false),
                         ),
                       ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  _label('Venue or Link'),
+                  TextFormField(
+                    controller: venueController,
+                    validator: (v) =>
+                        v == null || v.isEmpty ? 'Required' : null,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  _label('Max Attendees'),
+                  TextFormField(
+                    controller: maxAttendeesController,
+                    keyboardType: TextInputType.number,
+                    validator: (v) =>
+                        v == null || v.isEmpty ? 'Required' : null,
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: _submitForm,
+                      child: const Text('Create Event'),
                     ),
-
-                    const SizedBox(height: 16),
-
-                    _label('Venue or Link'),
-                    TextFormField(
-                      controller: venueController,
-                      validator: (v) =>
-                          v == null || v.isEmpty ? 'Required' : null,
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    _label('Max Attendees'),
-                    TextFormField(
-                      controller: maxAttendeesController,
-                      keyboardType: TextInputType.number,
-                      validator: (v) =>
-                          v == null || v.isEmpty ? 'Required' : null,
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: _submitForm,
-                        child: const Text('Create Event'),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -203,8 +186,37 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   Widget _label(String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold)),
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(text, style: const TextStyle(fontWeight: FontWeight.w600)),
+    );
+  }
+
+  Widget _datePicker({
+    required String label,
+    required DateTime? value,
+    required VoidCallback onTap,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _label(label),
+        InkWell(
+          onTap: onTap,
+          child: Container(
+            height: 56,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF7F9FC),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value == null ? 'mm/dd/yyyy --:--' : value.toString(),
+              style: const TextStyle(color: Colors.black54),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
