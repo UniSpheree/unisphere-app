@@ -83,8 +83,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           _dateError = null;
         }
       } else {
-        if (startDate != null && selected.isBefore(startDate!)) {
-          _dateError = 'End date & time cannot be before start date & time.';
+        if (startDate != null && !selected.isAfter(startDate!)) {
+          _dateError = 'End date & time must be after start date & time.';
         } else {
           endDate = selected;
           _dateError = null;
@@ -97,8 +97,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     setState(() {
       if (startDate == null || endDate == null) {
         _dateError = 'Both start and end date & time are required.';
-      } else if (endDate!.isBefore(startDate!)) {
-        _dateError = 'End date & time cannot be before start date & time.';
+      } else if (!endDate!.isAfter(startDate!)) {
+        _dateError = 'End date & time must be after start date & time.';
       } else {
         _dateError = null;
       }
@@ -328,6 +328,13 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                               if (value == null || value.trim().isEmpty) {
                                 return 'Event Name is required';
                               }
+                              final trimmed = value.trim();
+                              final validName = RegExp(
+                                r"^[a-zA-Z0-9 &',.\-()]+$",
+                              );
+                              if (!validName.hasMatch(trimmed)) {
+                                return 'Event name contains invalid special characters';
+                              }
                               return null;
                             },
                           ),
@@ -341,6 +348,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
                                 return 'Event description is required';
+                              }
+                              final trimmed = value.trim();
+                              final hasAlphanumeric = RegExp(r'[a-zA-Z0-9]');
+                              if (!hasAlphanumeric.hasMatch(trimmed)) {
+                                return 'Description must contain meaningful text';
                               }
                               return null;
                             },
@@ -548,8 +560,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                             null) {
                                           return 'Max Attendees must be a number';
                                         }
-                                        if (int.parse(value.trim()) < 0) {
-                                          return 'Max Attendees cannot be negative';
+                                        if (int.parse(value.trim()) < 1) {
+                                          return 'Max Attendees must be at least 1';
                                         }
                                         return null;
                                       },
@@ -588,8 +600,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                               null) {
                                             return 'Max Attendees must be a number';
                                           }
-                                          if (int.parse(value.trim()) < 0) {
-                                            return 'Max Attendees cannot be negative';
+                                          if (int.parse(value.trim()) < 1) {
+                                            return 'Max Attendees must be at least 1';
                                           }
                                           return null;
                                         },
