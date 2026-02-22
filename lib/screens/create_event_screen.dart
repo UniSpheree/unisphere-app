@@ -1,6 +1,9 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/header.dart';
 
 class CreateEventScreen extends StatefulWidget {
@@ -107,43 +110,121 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     if (!_formKey.currentState!.validate() || _dateError != null) return;
 
     setState(() => _isSubmitting = true);
-    await Future.delayed(const Duration(seconds: 2));
-    setState(() => _isSubmitting = false);
 
-    if (!mounted) return;
+    try {
+      // small artificial delay to improve UX
+      await Future.delayed(const Duration(milliseconds: 700));
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: Colors.green.shade600,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        content: const Row(
-          children: [
-            Icon(Icons.check_circle_outline, color: Colors.white),
-            SizedBox(width: 10),
-            Text(
-              'Event created successfully!',
-              style: TextStyle(color: Colors.white),
-            ),
-          ],
+      // Build payload
+      final payload = {
+        'name': eventNameController.text.trim(),
+        'description': descriptionController.text.trim(),
+        'venue': venueController.text.trim(),
+        'maxAttendees': int.tryParse(maxAttendeesController.text.trim()) ?? 0,
+        'start': startDate,
+        'end': endDate,
+        'category': eventCategory,
+        'visibility': eventVisibility,
+        'createdAt': FieldValue.serverTimestamp(),
+      };
+
+      // Debug log
+      // ignore: avoid_print
+      print('Saving event to Firestore: $payload');
+
+      // Attempt write with a timeout so UI doesn't hang indefinitely
+      await FirebaseFirestore.instance
+          .collection('events')
+          .add(payload)
+          .timeout(const Duration(seconds: 10));
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.green.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          content: const Row(
+            children: [
+              Icon(Icons.check_circle_outline, color: Colors.white),
+              SizedBox(width: 10),
+              Text(
+                'Event created successfully!',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
 
-    eventNameController.clear();
-    descriptionController.clear();
-    venueController.clear();
-    maxAttendeesController.clear();
-    _formKey.currentState!.reset();
-    setState(() {
-      startDate = null;
-      endDate = null;
-      eventCategory = null;
-      eventVisibility = 'Public';
-      _dateError = null;
-    });
+      // Clear form and reset state only on success
+      eventNameController.clear();
+      descriptionController.clear();
+      venueController.clear();
+      maxAttendeesController.clear();
+      _formKey.currentState!.reset();
+      setState(() {
+        startDate = null;
+        endDate = null;
+        eventCategory = null;
+        eventVisibility = 'Public';
+        _dateError = null;
+      });
 
-    Navigator.pushNamed(context, '/dashboard');
+      // Navigate after successful save
+      Navigator.pushNamed(context, '/dashboard');
+    } on TimeoutException catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.orange.shade700,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          content: const Row(
+            children: [
+              Icon(Icons.access_time, color: Colors.white),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Timed out while saving. Check your network or Firestore rules and try again.',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.white),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Failed to save event: $e',
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
   }
 
   @override
