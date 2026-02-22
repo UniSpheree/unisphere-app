@@ -35,15 +35,33 @@ Finder _creatingEventBtn() => find.ancestor(
   matching: find.bySubtype<ButtonStyleButton>(),
 );
 
-Future<void> _confirmDatePicker(WidgetTester tester) async {
-  // Flutter date picker OK button
-  final okFinder = find.text('OK');
-  if (okFinder.evaluate().isEmpty) {
-    await tester.tap(find.text('Ok'));
-  } else {
-    await tester.tap(okFinder.last);
-  }
+// Finds the InkWell date-picker containers by index (0=start, 1=end)
+Finder _datePicker(int index) => find
+    .ancestor(
+      of: find.text('dd/mm/yyyy --:--').at(index),
+      matching: find.byType(InkWell),
+    )
+    .first;
+
+Future<void> _tapDatePicker(WidgetTester tester, int index) async {
+  final picker = _datePicker(index);
+  await tester.ensureVisible(picker);
   await tester.pumpAndSettle();
+  await tester.tap(picker);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _confirmDatePicker(WidgetTester tester) async {
+  // Try both capitalizations Flutter uses across versions
+  for (final label in ['OK', 'Ok', 'ok']) {
+    final f = find.text(label);
+    if (f.evaluate().isNotEmpty) {
+      await tester.tap(f.last);
+      await tester.pumpAndSettle();
+      return;
+    }
+  }
+  throw Exception('Could not find date/time picker OK button');
 }
 
 Future<void> _pickDateAndTime(WidgetTester tester) async {
@@ -64,25 +82,40 @@ Future<void> _fillValidForm(WidgetTester tester) async {
     ),
     'A great description',
   );
-  await tester.tap(find.text('Select a category'));
+
+  // Scroll category into view before tapping
+  final categoryFinder = find.text('Select a category');
+  await tester.ensureVisible(categoryFinder);
+  await tester.pumpAndSettle();
+  await tester.tap(categoryFinder);
   await tester.pumpAndSettle();
   await tester.tap(find.text('Academic').last);
   await tester.pumpAndSettle();
+
   await tester.enterText(
     find.widgetWithText(TextFormField, 'Physical address or URL'),
     'Room 101',
   );
   await tester.enterText(find.widgetWithText(TextFormField, 'e.g. 100'), '50');
+
   // Pick start date
-  await tester.tap(find.text('dd/mm/yyyy --:--').first);
-  await tester.pumpAndSettle();
+  await _tapDatePicker(tester, 0);
   await _pickDateAndTime(tester);
-  // Pick end date – need to advance to a later time
-  // The end picker's initialDate is constrained to >= startDate, so OK gives same day
-  // which is NOT before start, so it will be accepted
-  await tester.tap(find.text('dd/mm/yyyy --:--').first);
-  await tester.pumpAndSettle();
+
+  // Pick end date
+  await _tapDatePicker(
+    tester,
+    0,
+  ); // after start filled, only 1 placeholder left
   await _pickDateAndTime(tester);
+}
+
+Future<void> _tapSubmitButton(WidgetTester tester) async {
+  final btn = _createEventBtn();
+  await tester.ensureVisible(btn.first);
+  await tester.pumpAndSettle();
+  await tester.tap(btn.first);
+  await tester.pumpAndSettle();
 }
 
 void main() {
@@ -139,9 +172,7 @@ void main() {
       await _pumpApp(tester);
       addTearDown(tester.view.reset);
 
-      // Tap the ElevatedButton specifically
-      await tester.tap(_createEventBtn().first);
-      await tester.pumpAndSettle();
+      await _tapSubmitButton(tester);
 
       expect(find.text('Event Name is required'), findsOneWidget);
       expect(find.text('Event description is required'), findsOneWidget);
@@ -162,8 +193,7 @@ void main() {
         find.widgetWithText(TextFormField, 'e.g. 100'),
         'abc',
       );
-      await tester.tap(_createEventBtn().first);
-      await tester.pumpAndSettle();
+      await _tapSubmitButton(tester);
 
       expect(find.text('Max Attendees must be a number'), findsOneWidget);
     });
@@ -176,8 +206,7 @@ void main() {
         find.widgetWithText(TextFormField, 'e.g. 100'),
         '-5',
       );
-      await tester.tap(_createEventBtn().first);
-      await tester.pumpAndSettle();
+      await _tapSubmitButton(tester);
 
       expect(find.text('Max Attendees cannot be negative'), findsOneWidget);
     });
@@ -188,8 +217,7 @@ void main() {
       await _pumpApp(tester);
       addTearDown(tester.view.reset);
 
-      await tester.tap(_createEventBtn().first);
-      await tester.pumpAndSettle();
+      await _tapSubmitButton(tester);
       expect(find.text('Event category is required'), findsOneWidget);
 
       await tester.tap(find.text('Select a category'));
@@ -197,8 +225,7 @@ void main() {
       await tester.tap(find.text('Academic').last);
       await tester.pumpAndSettle();
 
-      await tester.tap(_createEventBtn().first);
-      await tester.pumpAndSettle();
+      await _tapSubmitButton(tester);
       expect(find.text('Event category is required'), findsNothing);
     });
 
@@ -222,8 +249,7 @@ void main() {
 
       expect(find.text('dd/mm/yyyy --:--'), findsNWidgets(2));
 
-      await tester.tap(find.text('dd/mm/yyyy --:--').first);
-      await tester.pumpAndSettle();
+      await _tapDatePicker(tester, 0);
       await _pickDateAndTime(tester);
 
       // one placeholder should remain (end date not picked)
@@ -236,12 +262,10 @@ void main() {
       await _pumpApp(tester);
       addTearDown(tester.view.reset);
 
-      await tester.tap(find.text('dd/mm/yyyy --:--').first);
-      await tester.pumpAndSettle();
+      await _tapDatePicker(tester, 0);
       await _pickDateAndTime(tester);
 
-      await tester.tap(_createEventBtn().first);
-      await tester.pumpAndSettle();
+      await _tapSubmitButton(tester);
 
       expect(
         find.text('Both start and end date & time are required.'),
@@ -256,8 +280,7 @@ void main() {
       addTearDown(tester.view.reset);
 
       // Pick a start date
-      await tester.tap(find.text('dd/mm/yyyy --:--').first);
-      await tester.pumpAndSettle();
+      await _tapDatePicker(tester, 0);
       await _pickDateAndTime(tester);
 
       // Now directly call pickDateTime(false) via the end date InkWell
@@ -266,8 +289,7 @@ void main() {
       // We do this by verifying the _dateError text appears when end < start.
       // We can't set an arbitrary past date through the picker (firstDate constraint),
       // so we verify the submit-path date error instead which exercises the same UI.
-      await tester.tap(_createEventBtn().first);
-      await tester.pumpAndSettle();
+      await _tapSubmitButton(tester);
       expect(
         find.text('Both start and end date & time are required.'),
         findsOneWidget,
@@ -305,6 +327,8 @@ void main() {
 
       await _fillValidForm(tester);
 
+      await tester.ensureVisible(_createEventBtn().first);
+      await tester.pumpAndSettle();
       await tester.tap(_createEventBtn().first);
       await tester.pump();
 
@@ -325,6 +349,8 @@ void main() {
         addTearDown(tester.view.reset);
 
         await _fillValidForm(tester);
+        await tester.ensureVisible(_createEventBtn().first);
+        await tester.pumpAndSettle();
         await tester.tap(_createEventBtn().first);
         await tester.pumpAndSettle();
 
