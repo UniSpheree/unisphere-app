@@ -15,20 +15,9 @@ Future<void> pumpHeader(
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
 
-  final routes = <String, WidgetBuilder>{
-    '/dashboard': (_) => const Scaffold(body: Text('Dashboard Page')),
-    '/events': (_) => const Scaffold(body: Text('Events Page')),
-    '/tickets': (_) => const Scaffold(body: Text('Tickets Page')),
-    '/calendar': (_) => const Scaffold(body: Text('Calendar Page')),
-  };
-
   await tester.pumpWidget(
     MaterialApp(
       initialRoute: initialRoute,
-      routes: {
-        ...routes,
-        // Wrap each route's scaffold with AppHeader so header is always present.
-      },
       onGenerateRoute: (settings) {
         return MaterialPageRoute(
           settings: settings,
