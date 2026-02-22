@@ -200,12 +200,15 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                 fontSize: 14,
                               ),
                             ),
-                            const Text(
-                              'Create New Event',
-                              style: TextStyle(
-                                color: Colors.indigo,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
+                            const Flexible(
+                              child: Text(
+                                'Create New Event',
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Colors.indigo,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
                           ],
