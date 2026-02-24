@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "315915532592",
+  "project_id": "unisphere-b635b",
+  "storage_bucket": "unisphere-b635b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:315915532592:android:a0ac1eafd490a1ebd670f5",
+        "android_client_info": {
+          "package_name": "com.example.union_shop"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyDCI_mPMTSloNstopQvMcuB_v7EztbgA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:315915532592:android:83d9c2197fdc0709d670f5",
+        "android_client_info": {
+          "package_name": "com.example.unisphere_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyDCI_mPMTSloNstopQvMcuB_v7EztbgA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
