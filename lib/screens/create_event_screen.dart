@@ -5,7 +5,6 @@ import '../widgets/header.dart';
 
 class CreateEventScreen extends StatefulWidget {
   const CreateEventScreen({super.key});
-
   @override
   State<CreateEventScreen> createState() => _CreateEventScreenState();
 }
