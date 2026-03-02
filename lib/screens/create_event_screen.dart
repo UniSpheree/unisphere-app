@@ -172,8 +172,10 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                         Row(
                           children: [
                             InkWell(
-                              onTap: () =>
-                                  Navigator.pushNamed(context, '/dashboard'),
+                              onTap: () => Navigator.pushReplacementNamed(
+                                context,
+                                '/login',
+                              ),
                               borderRadius: BorderRadius.circular(8),
                               child: const Icon(
                                 Icons.arrow_back,
@@ -183,8 +185,10 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             ),
                             const SizedBox(width: 8),
                             GestureDetector(
-                              onTap: () =>
-                                  Navigator.pushNamed(context, '/dashboard'),
+                              onTap: () => Navigator.pushReplacementNamed(
+                                context,
+                                '/login',
+                              ),
                               child: const Text(
                                 'Dashboard',
                                 style: TextStyle(
