@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     // ── Fake auth: any university email + password passing strength rules ──
-    // Both roles land on Dashboard; role is passed as route argument
+    // Organiser → Create Events, Attendee → Dashboard
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -50,11 +50,15 @@ class _LoginScreenState extends State<LoginScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
-    Navigator.pushReplacementNamed(
-      context,
-      '/dashboard',
-      arguments: _selectedRole,
-    );
+    if (_selectedRole == 'Organiser') {
+      Navigator.pushReplacementNamed(context, '/create-event');
+    } else {
+      Navigator.pushReplacementNamed(
+        context,
+        '/dashboard',
+        arguments: _selectedRole,
+      );
+    }
   }
 
   // ── UI ────────────────────────────────────────────────────────────────────
