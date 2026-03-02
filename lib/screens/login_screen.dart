@@ -20,6 +20,10 @@ class _LoginScreenState extends State<LoginScreen> {
   String _selectedRole = 'Attendee'; // 'Attendee' | 'Organiser'
   bool _isLoading = false;
 
+  // ── Fake credentials ──────────────────────────────────────────────────────
+  static const _fakeEmail = 'alex@university.edu';
+  static const _fakePassword = 'password123';
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -27,8 +31,45 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  /// Placeholder – fake login logic will be added in the next commit.
-  Future<void> _handleLogin() async {}
+  Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+    await Future.delayed(const Duration(milliseconds: 900));
+    setState(() => _isLoading = false);
+
+    if (!mounted) return;
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email == _fakeEmail && password == _fakePassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Welcome back! Logged in as $_selectedRole.',
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: const Color(0xFF2D3A8C),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+      // TODO: navigate to dashboard when that screen exists
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Invalid email or password.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    }
+  }
 
   // ── UI ────────────────────────────────────────────────────────────────────
   @override
