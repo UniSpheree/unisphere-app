@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import '../widgets/header.dart';
 
 class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
+  final String role; // 'Attendee' | 'Organiser'
+
+  const DashboardScreen({super.key, this.role = 'Attendee'});
 
   // Fake upcoming events for the attendee dashboard
   static const _upcomingEvents = [
@@ -155,6 +157,84 @@ class DashboardScreen extends StatelessWidget {
                     ),
 
                     const SizedBox(height: 28),
+
+                    // ── Organiser call-to-action ────────────────────────
+                    if (role == 'Organiser') ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(22),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEEF0FB),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: const Color(0xFF2D3A8C).withOpacity(0.25),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF2D3A8C),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.add_circle_outline,
+                                color: Colors.white,
+                                size: 26,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Ready to create an event?',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1A1F36),
+                                    ),
+                                  ),
+                                  SizedBox(height: 3),
+                                  Text(
+                                    'Manage and publish your university events.',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            ElevatedButton.icon(
+                              onPressed: () => Navigator.pushNamed(
+                                context,
+                                '/create-event',
+                              ),
+                              icon: const Icon(Icons.arrow_forward, size: 16),
+                              label: const Text('Create Event'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF2D3A8C),
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                    ],
 
                     // ── Stats row ───────────────────────────────────────
                     Row(
