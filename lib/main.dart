@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/create_event_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/profile_screen.dart';
 import 'screens/register_screen.dart';
 
 void main() {
@@ -28,6 +29,7 @@ class MyApp extends StatelessWidget {
         '/login': (_) => const LoginScreen(),
         '/register': (_) => const RegisterScreen(),
         '/forgot-password': (_) => const ForgotPasswordScreen(),
+        '/profile': (_) => const ProfileScreen(),
         '/create-event': (_) => const CreateEventScreen(),
       },
     );

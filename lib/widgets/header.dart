@@ -99,13 +99,11 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
             ] else
               const Spacer(),
 
-            // Profile icon (placeholder)
+            // Profile icon (desktop)
             if (!isMobile)
               IconButton(
                 tooltip: 'My Profile',
-                onPressed: () {
-                  // TODO: Navigate to profile screen
-                },
+                onPressed: () => Navigator.pushNamed(context, '/profile'),
                 icon: CircleAvatar(
                   radius: 16,
                   backgroundColor: Colors.indigo.withOpacity(0.12),
@@ -125,7 +123,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                 ),
                 onSelected: (route) {
                   if (route == '/profile') {
-                    // TODO: Navigate to profile screen
+                    Navigator.pushNamed(context, '/profile');
                     return;
                   }
                   Navigator.pushNamed(context, route);
