@@ -1,6 +1,8 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../widgets/header.dart';
 
 class CreateEventScreen extends StatefulWidget {
@@ -25,6 +27,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   bool _bannerHovered = false;
   String? _dateError;
   bool _isSubmitting = false;
+  File? _bannerImage;
+  final ImagePicker _imagePicker = ImagePicker();
 
   final List<String> eventCategories = [
     'Academic',
@@ -44,6 +48,46 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       'desc': 'Society / course',
     },
   ];
+
+  Future<void> _pickBannerImage() async {
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1200,
+        maxHeight: 630,
+        imageQuality: 85,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _bannerImage = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.white),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Failed to pick image: $e',
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+  }
 
   Future<void> pickDateTime(bool isStart) async {
     final date = await showDatePicker(
@@ -111,6 +155,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     setState(() => _isSubmitting = false);
 
     if (!mounted) return;
+
+    // Here you would typically save the event data including _bannerImage
+    // For now, we'll just show success message
+    String bannerPath = _bannerImage?.path ?? 'No banner uploaded';
+    debugPrint('Event Banner Path: $bannerPath');
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
