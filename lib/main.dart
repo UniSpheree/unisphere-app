@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/create_event_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/register_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,11 +16,18 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'UniSphere',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2D3A8C)),
         useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFFF5F7FB),
+        scaffoldBackgroundColor: const Color(0xFFF0F2F8),
+        fontFamily: 'Roboto',
       ),
-      home: const CreateEventScreen(),
+      // ── Initial route ────────────────────────────────────────────────────
+      initialRoute: '/login',
+      routes: {
+        '/login': (_) => const LoginScreen(),
+        '/register': (_) => const RegisterScreen(),
+        '/create-event': (_) => const CreateEventScreen(),
+      },
     );
   }
 }
