@@ -28,6 +28,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   bool _bannerHovered = false;
   String? _dateError;
   bool _isSubmitting = false;
+  int _formResetVersion = 0;
   XFile? _bannerImage;
   final ImagePicker _imagePicker = ImagePicker();
 
@@ -187,12 +188,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   void _clearForm() {
     FocusScope.of(context).unfocus();
-    eventNameController.clear();
-    descriptionController.clear();
-    venueController.clear();
-    maxAttendeesController.clear();
-    _formKey.currentState?.reset();
+    eventNameController.text = '';
+    descriptionController.text = '';
+    venueController.text = '';
+    maxAttendeesController.text = '';
     setState(() {
+      _formResetVersion++;
       startDate = null;
       endDate = null;
       eventCategory = null;
@@ -860,6 +861,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextFormField(
+        key: ValueKey('${controller.hashCode}_$_formResetVersion'),
         controller: controller,
         maxLines: maxLines,
         keyboardType: keyboardType,
