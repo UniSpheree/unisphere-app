@@ -31,8 +31,17 @@ class MyApp extends StatelessWidget {
         '/register': (_) => const RegisterScreen(),
         '/forgot-password': (_) => const ForgotPasswordScreen(),
         '/profile': (_) => const ProfileScreen(),
-        '/dashboard': (_) => const DashboardScreen(),
         '/create-event': (_) => const CreateEventScreen(),
+      },
+      onGenerateRoute: (settings) {
+        if (settings.name == '/dashboard') {
+          final role = (settings.arguments as String?) ?? 'Attendee';
+          return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => DashboardScreen(role: role),
+          );
+        }
+        return null;
       },
     );
   }
