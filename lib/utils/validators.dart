@@ -65,3 +65,26 @@ String? validateUniversityEmail(String? value) {
 
   return null; // valid
 }
+
+/// Validates a registration password.
+///
+/// Rules:
+/// 1. Not empty.
+/// 2. At least 8 characters.
+/// 3. Contains at least one digit (0-9).
+/// 4. Contains at least one special character (!@#\$%^&*?_~-).
+String? validatePassword(String? value) {
+  if (value == null || value.isEmpty) {
+    return 'Password is required';
+  }
+  if (value.length < 8) {
+    return 'Password must be at least 8 characters';
+  }
+  if (!RegExp(r'\d').hasMatch(value)) {
+    return 'Password must contain at least one number';
+  }
+  if (!RegExp(r'[!@#\$%^&*?_~\-]').hasMatch(value)) {
+    return 'Password must contain at least one special character (!@#\$%^&*?_~-)';
+  }
+  return null;
+}
