@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/create_event_screen.dart';
+import 'screens/forgot_password_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (_) => const LoginScreen(),
         '/register': (_) => const RegisterScreen(),
+        '/forgot-password': (_) => const ForgotPasswordScreen(),
         '/create-event': (_) => const CreateEventScreen(),
       },
     );
