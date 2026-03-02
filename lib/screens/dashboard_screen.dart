@@ -216,7 +216,7 @@ class DashboardScreen extends StatelessWidget {
                                 '/create-event',
                               ),
                               icon: const Icon(Icons.arrow_forward, size: 16),
-                              label: const Text('Go to Create Events'),
+                              label: const Text('Login to Create Events'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF2D3A8C),
                                 foregroundColor: Colors.white,
