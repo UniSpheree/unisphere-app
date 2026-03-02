@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/create_event_screen.dart';
+import 'screens/dashboard_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/profile_screen.dart';
@@ -30,6 +31,7 @@ class MyApp extends StatelessWidget {
         '/register': (_) => const RegisterScreen(),
         '/forgot-password': (_) => const ForgotPasswordScreen(),
         '/profile': (_) => const ProfileScreen(),
+        '/dashboard': (_) => const DashboardScreen(),
         '/create-event': (_) => const CreateEventScreen(),
       },
     );
