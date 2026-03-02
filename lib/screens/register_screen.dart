@@ -198,15 +198,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       prefixIcon: Icons.lock_outline,
                       obscureText: _obscurePassword,
                       controller: _passwordController,
-                      validator: (v) {
-                        if (v == null || v.isEmpty) {
-                          return 'Password is required';
-                        }
-                        if (v.length < 6) {
-                          return 'At least 6 characters';
-                        }
-                        return null;
-                      },
+                      validator: validatePassword,
                       suffixWidget: IconButton(
                         icon: Icon(
                           _obscurePassword
