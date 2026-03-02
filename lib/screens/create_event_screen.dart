@@ -180,11 +180,18 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       ),
     );
 
+    _clearForm();
+
+    Navigator.pushNamed(context, '/dashboard');
+  }
+
+  void _clearForm() {
+    FocusScope.of(context).unfocus();
     eventNameController.clear();
     descriptionController.clear();
     venueController.clear();
     maxAttendeesController.clear();
-    _formKey.currentState!.reset();
+    _formKey.currentState?.reset();
     setState(() {
       startDate = null;
       endDate = null;
@@ -192,9 +199,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       eventVisibility = 'Public';
       _dateError = null;
       _bannerImage = null;
+      _bannerHovered = false;
     });
-
-    Navigator.pushNamed(context, '/dashboard');
   }
 
   @override
@@ -528,7 +534,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           Padding(
                             padding: const EdgeInsets.only(bottom: 16),
                             child: DropdownButtonFormField<String>(
-                              initialValue: eventCategory,
+                              value: eventCategory,
                               hint: const Text('Select a category'),
                               decoration: InputDecoration(
                                 filled: true,
