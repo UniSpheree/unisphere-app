@@ -56,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       );
-      // TODO: navigate to dashboard when that screen exists
+      Navigator.pushReplacementNamed(context, '/create-event');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
