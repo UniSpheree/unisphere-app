@@ -1,6 +1,8 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../widgets/header.dart';
 
 class CreateEventScreen extends StatefulWidget {
@@ -25,6 +27,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   bool _bannerHovered = false;
   String? _dateError;
   bool _isSubmitting = false;
+  File? _bannerImage;
+  final ImagePicker _imagePicker = ImagePicker();
 
   final List<String> eventCategories = [
     'Academic',
@@ -44,6 +48,46 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       'desc': 'Society / course',
     },
   ];
+
+  Future<void> _pickBannerImage() async {
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1200,
+        maxHeight: 630,
+        imageQuality: 85,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _bannerImage = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.white),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Failed to pick image: $e',
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+  }
 
   Future<void> pickDateTime(bool isStart) async {
     final date = await showDatePicker(
@@ -112,6 +156,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
     if (!mounted) return;
 
+    // Here you would typically save the event data including _bannerImage
+    // For now, we'll just show success message
+    String bannerPath = _bannerImage?.path ?? 'No banner uploaded';
+    debugPrint('Event Banner Path: $bannerPath');
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: Colors.green.shade600,
@@ -141,6 +190,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       eventCategory = null;
       eventVisibility = 'Public';
       _dateError = null;
+      _bannerImage = null;
     });
 
     Navigator.pushNamed(context, '/dashboard');
@@ -258,7 +308,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                               onExit: (_) =>
                                   setState(() => _bannerHovered = false),
                               child: GestureDetector(
-                                onTap: () {},
+                                onTap: _pickBannerImage,
                                 child: AnimatedContainer(
                                   duration: const Duration(milliseconds: 200),
                                   width: double.infinity,
@@ -274,47 +324,112 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                           : Colors.indigo.withOpacity(0.35),
                                       width: 2,
                                     ),
+                                    image: _bannerImage != null
+                                        ? DecorationImage(
+                                            image: FileImage(_bannerImage!),
+                                            fit: BoxFit.cover,
+                                          )
+                                        : null,
                                   ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(14),
-                                        decoration: BoxDecoration(
-                                          color: _bannerHovered
-                                              ? Colors.indigo.withOpacity(0.12)
-                                              : Colors.indigo.withOpacity(0.07),
-                                          shape: BoxShape.circle,
+                                  child: _bannerImage == null
+                                      ? Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.all(14),
+                                              decoration: BoxDecoration(
+                                                color: _bannerHovered
+                                                    ? Colors.indigo.withOpacity(
+                                                        0.12,
+                                                      )
+                                                    : Colors.indigo.withOpacity(
+                                                        0.07,
+                                                      ),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Icon(
+                                                Icons
+                                                    .add_photo_alternate_outlined,
+                                                size: 36,
+                                                color: _bannerHovered
+                                                    ? Colors.indigo
+                                                    : Colors.indigo.withOpacity(
+                                                        0.6,
+                                                      ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 12),
+                                            Text(
+                                              'Upload Event Banner',
+                                              style: TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w600,
+                                                color: _bannerHovered
+                                                    ? Colors.indigo
+                                                    : Colors.indigo.withOpacity(
+                                                        0.7,
+                                                      ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              'Recommended size: 1200 × 630px (PNG, JPG)',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey.shade500,
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                      : Stack(
+                                          children: [
+                                            Positioned(
+                                              top: 8,
+                                              right: 8,
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.black54,
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                child: IconButton(
+                                                  icon: const Icon(
+                                                    Icons.edit,
+                                                    color: Colors.white,
+                                                    size: 20,
+                                                  ),
+                                                  onPressed: _pickBannerImage,
+                                                  tooltip: 'Change banner',
+                                                ),
+                                              ),
+                                            ),
+                                            Positioned(
+                                              top: 8,
+                                              right: 56,
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.black54,
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                child: IconButton(
+                                                  icon: const Icon(
+                                                    Icons.close,
+                                                    color: Colors.white,
+                                                    size: 20,
+                                                  ),
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      _bannerImage = null;
+                                                    });
+                                                  },
+                                                  tooltip: 'Remove banner',
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        child: Icon(
-                                          Icons.add_photo_alternate_outlined,
-                                          size: 36,
-                                          color: _bannerHovered
-                                              ? Colors.indigo
-                                              : Colors.indigo.withOpacity(0.6),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Text(
-                                        'Upload Event Banner',
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: _bannerHovered
-                                              ? Colors.indigo
-                                              : Colors.indigo.withOpacity(0.7),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Recommended size: 1200 × 630px (PNG, JPG)',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey.shade500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
                                 ),
                               ),
                             ),
