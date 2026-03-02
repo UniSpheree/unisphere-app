@@ -61,6 +61,52 @@ class DashboardScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // ── Back breadcrumb ─────────────────────────────────
+                    Row(
+                      children: [
+                        InkWell(
+                          onTap: () => Navigator.pushReplacementNamed(
+                            context,
+                            '/login',
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                          child: const Icon(
+                            Icons.arrow_back,
+                            size: 20,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () => Navigator.pushReplacementNamed(
+                            context,
+                            '/login',
+                          ),
+                          child: const Text(
+                            'Login',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        const Text(
+                          '  /  ',
+                          style: TextStyle(color: Colors.grey, fontSize: 14),
+                        ),
+                        const Text(
+                          'Dashboard',
+                          style: TextStyle(
+                            color: Color(0xFF1A1F36),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
                     // ── Welcome banner ──────────────────────────────────
                     Container(
                       width: double.infinity,
