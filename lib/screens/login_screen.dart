@@ -21,10 +21,6 @@ class _LoginScreenState extends State<LoginScreen> {
   String _selectedRole = 'Attendee'; // 'Attendee' | 'Organiser'
   bool _isLoading = false;
 
-  // ── Fake credentials ──────────────────────────────────────────────────────
-  static const _fakeEmail = 'alex@university.edu';
-  static const _fakePassword = 'password123';
-
   @override
   void dispose() {
     _emailController.dispose();
@@ -41,35 +37,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (!mounted) return;
 
-    final email = _emailController.text.trim();
-    final password = _passwordController.text;
-
-    if (email == _fakeEmail && password == _fakePassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Welcome back! Logged in as $_selectedRole.',
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: const Color(0xFF2D3A8C),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    // ── Fake auth: any university email + password passing strength rules ──
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Welcome back! Logged in as $_selectedRole.',
+          style: const TextStyle(color: Colors.white),
         ),
-      );
-      Navigator.pushReplacementNamed(context, '/create-event');
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-            'Invalid email or password.',
-            style: TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.redAccent,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-      );
-    }
+        backgroundColor: const Color(0xFF2D3A8C),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    );
+    Navigator.pushReplacementNamed(context, '/create-event');
   }
 
   // ── UI ────────────────────────────────────────────────────────────────────
@@ -148,12 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       prefixIcon: Icons.lock_outline,
                       obscureText: _obscurePassword,
                       controller: _passwordController,
-                      validator: (v) {
-                        if (v == null || v.isEmpty) {
-                          return 'Password is required';
-                        }
-                        return null;
-                      },
+                      validator: validatePassword,
                       suffixWidget: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
