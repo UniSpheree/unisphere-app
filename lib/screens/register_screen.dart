@@ -15,50 +15,31 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-  // Attendee controllers
-  final _attendeeFirstNameController = TextEditingController();
-  final _attendeeLastNameController = TextEditingController();
-  final _attendeeEmailController = TextEditingController();
-  String? _attendeeSelectedUniversity;
-  final TextEditingController _attendeeUniversityFieldController = TextEditingController();
-  final TextEditingController _attendeeUniversitySearchController = TextEditingController();
-  final _attendeePasswordController = TextEditingController();
-  final _attendeeConfirmPasswordController = TextEditingController();
-
-  // Organiser controllers
-  final _organiserFirstNameController = TextEditingController();
-  final _organiserLastNameController = TextEditingController();
-  final _organiserEmailController = TextEditingController();
-  String? _organiserSelectedUniversity;
-  final TextEditingController _organiserUniversityFieldController = TextEditingController();
-  final TextEditingController _organiserUniversitySearchController = TextEditingController();
-  final _organiserPasswordController = TextEditingController();
-  final _organiserConfirmPasswordController = TextEditingController();
+  // Unified controllers (role selection removed)
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _emailController = TextEditingController();
+  String? _selectedUniversity;
+  final TextEditingController _universityFieldController = TextEditingController();
+  final TextEditingController _universitySearchController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
   bool _agreeToTerms = false;
-  String _selectedRole = 'Attendee';
+  // Role selection removed
   bool _isLoading = false;
 
   @override
   void dispose() {
-    // Attendee
-    _attendeeUniversitySearchController.dispose();
-    _attendeeUniversityFieldController.dispose();
-    _attendeeFirstNameController.dispose();
-    _attendeeLastNameController.dispose();
-    _attendeeEmailController.dispose();
-    _attendeePasswordController.dispose();
-    _attendeeConfirmPasswordController.dispose();
-    // Organiser
-    _organiserUniversitySearchController.dispose();
-    _organiserUniversityFieldController.dispose();
-    _organiserFirstNameController.dispose();
-    _organiserLastNameController.dispose();
-    _organiserEmailController.dispose();
-    _organiserPasswordController.dispose();
-    _organiserConfirmPasswordController.dispose();
+    _universitySearchController.dispose();
+    _universityFieldController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -80,32 +61,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     setState(() => _isLoading = true);
-    final isAttendee = _selectedRole == 'Attendee';
-    final firstName = isAttendee
-        ? _attendeeFirstNameController.text.trim()
-        : _organiserFirstNameController.text.trim();
-    final lastName = isAttendee
-        ? _attendeeLastNameController.text.trim()
-        : _organiserLastNameController.text.trim();
-    final email = isAttendee
-        ? _attendeeEmailController.text.trim().toLowerCase()
-        : _organiserEmailController.text.trim().toLowerCase();
-    final password = isAttendee
-        ? _attendeePasswordController.text
-        : _organiserPasswordController.text;
-    final university = isAttendee
-        ? _attendeeUniversityFieldController.text.trim()
-        : _organiserUniversityFieldController.text.trim();
-
-    final isApproved = _selectedRole == 'Attendee';
+    final firstName = _firstNameController.text.trim();
+    final lastName = _lastNameController.text.trim();
+    final email = _emailController.text.trim().toLowerCase();
+    final password = _passwordController.text;
+    final university = _universityFieldController.text.trim();
     final success = await MockBackend().register(
       email: email,
       password: password,
       firstName: firstName,
       lastName: lastName,
-      role: _selectedRole,
+      role: 'Attendee',
       university: university,
-      isApproved: isApproved,
+      isApproved: true,
     );
     setState(() => _isLoading = false);
 
@@ -123,12 +91,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       );
-      // Go to dashboard for attendee, create event for organiser (match login logic)
-      if (_selectedRole == 'Organiser') {
-        Navigator.pushReplacementNamed(context, '/create-event');
-      } else {
-        Navigator.pushReplacementNamed(context, '/dashboard', arguments: _selectedRole);
-      }
+      // Always go to dashboard after registration
+      Navigator.pushReplacementNamed(context, '/dashboard');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -205,14 +169,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     const SizedBox(height: 24),
 
-                    // ── Role toggle ───────────────────────────────────────
-                    RoleToggle(
-                      selected: _selectedRole,
-                      onChanged: (role) =>
-                          setState(() => _selectedRole = role),
-                    ),
-
-                    const SizedBox(height: 24),
+                    // ── Role toggle removed ──
 
                     // ── First name + Last name (side by side) ─────────────
                     Row(
@@ -222,7 +179,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             label: 'First Name',
                             hintText: 'Alex',
                             prefixIcon: Icons.person_outline,
-                            controller: _selectedRole == 'Attendee' ? _attendeeFirstNameController : _organiserFirstNameController,
+                            controller: _firstNameController,
                             validator: (v) =>
                                 (v == null || v.trim().isEmpty)
                                     ? 'Required'
@@ -235,7 +192,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             label: 'Last Name',
                             hintText: 'Smith',
                             prefixIcon: Icons.person_outline,
-                            controller: _selectedRole == 'Attendee' ? _attendeeLastNameController : _organiserLastNameController,
+                            controller: _lastNameController,
                             validator: (v) =>
                                 (v == null || v.trim().isEmpty)
                                     ? 'Required'
@@ -252,7 +209,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       label: 'University Email Address',
                       hintText: 'alex@university.edu',
                       prefixIcon: Icons.email_outlined,
-                      controller: _selectedRole == 'Attendee' ? _attendeeEmailController : _organiserEmailController,
+                      controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       validator: validateUniversityEmail,
                     ),
@@ -281,8 +238,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 uni.toLowerCase().contains(textEditingValue.text.toLowerCase()));
                           },
                           fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-                            final fieldController = _selectedRole == 'Attendee' ? _attendeeUniversityFieldController : _organiserUniversityFieldController;
-                            fieldController.text = controller.text;
+                            _universityFieldController.text = controller.text;
                             return TextFormField(
                               controller: controller,
                               focusNode: focusNode,
@@ -322,7 +278,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 if (!ukUniversities.contains(v)) {
                                   return 'Institution does not exist.';
                                 }
-                                final email = (_selectedRole == 'Attendee' ? _attendeeEmailController : _organiserEmailController).text.trim().toLowerCase();
+                                final email = _emailController.text.trim().toLowerCase();
                                 final parts = email.split('@');
                                 if (parts.length == 2) {
                                   final domain = parts[1];
@@ -343,13 +299,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           },
                           onSelected: (String selection) {
                             setState(() {
-                              if (_selectedRole == 'Attendee') {
-                                _attendeeSelectedUniversity = selection;
-                                _attendeeUniversityFieldController.text = selection;
-                              } else {
-                                _organiserSelectedUniversity = selection;
-                                _organiserUniversityFieldController.text = selection;
-                              }
+                              _selectedUniversity = selection;
+                              _universityFieldController.text = selection;
                             });
                           },
                         ),
@@ -363,7 +314,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       label: 'Password',
                       prefixIcon: Icons.lock_outline,
                       obscureText: _obscurePassword,
-                      controller: _selectedRole == 'Attendee' ? _attendeePasswordController : _organiserPasswordController,
+                      controller: _passwordController,
                       validator: validatePassword,
                       suffixWidget: IconButton(
                         icon: Icon(
@@ -386,9 +337,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       label: 'Confirm Password',
                       prefixIcon: Icons.lock_outline,
                       obscureText: _obscureConfirm,
-                      controller: _selectedRole == 'Attendee' ? _attendeeConfirmPasswordController : _organiserConfirmPasswordController,
+                      controller: _confirmPasswordController,
                       validator: (v) {
-                        final password = _selectedRole == 'Attendee' ? _attendeePasswordController.text : _organiserPasswordController.text;
+                        final password = _passwordController.text;
                         if (v == null || v.isEmpty) {
                           return 'Please confirm your password';
                         }
