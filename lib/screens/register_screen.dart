@@ -4,6 +4,7 @@ import '../widgets/auth_header.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/role_toggle.dart';
 import '../utils/unis.dart';
+import '../utils/mock_backend.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -14,14 +15,25 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-  final _emailController = TextEditingController();
-  String? _selectedUniversity;
-  final TextEditingController _universitySearchController = TextEditingController();
-  List<String> _filteredUniversities = List.from(ukUniversities);
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
+  // Attendee controllers
+  final _attendeeFirstNameController = TextEditingController();
+  final _attendeeLastNameController = TextEditingController();
+  final _attendeeEmailController = TextEditingController();
+  String? _attendeeSelectedUniversity;
+  final TextEditingController _attendeeUniversityFieldController = TextEditingController();
+  final TextEditingController _attendeeUniversitySearchController = TextEditingController();
+  final _attendeePasswordController = TextEditingController();
+  final _attendeeConfirmPasswordController = TextEditingController();
+
+  // Organiser controllers
+  final _organiserFirstNameController = TextEditingController();
+  final _organiserLastNameController = TextEditingController();
+  final _organiserEmailController = TextEditingController();
+  String? _organiserSelectedUniversity;
+  final TextEditingController _organiserUniversityFieldController = TextEditingController();
+  final TextEditingController _organiserUniversitySearchController = TextEditingController();
+  final _organiserPasswordController = TextEditingController();
+  final _organiserConfirmPasswordController = TextEditingController();
 
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
@@ -31,12 +43,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
-      _universitySearchController.dispose();
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
+    // Attendee
+    _attendeeUniversitySearchController.dispose();
+    _attendeeUniversityFieldController.dispose();
+    _attendeeFirstNameController.dispose();
+    _attendeeLastNameController.dispose();
+    _attendeeEmailController.dispose();
+    _attendeePasswordController.dispose();
+    _attendeeConfirmPasswordController.dispose();
+    // Organiser
+    _organiserUniversitySearchController.dispose();
+    _organiserUniversityFieldController.dispose();
+    _organiserFirstNameController.dispose();
+    _organiserLastNameController.dispose();
+    _organiserEmailController.dispose();
+    _organiserPasswordController.dispose();
+    _organiserConfirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -58,32 +80,74 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 1000));
+    final isAttendee = _selectedRole == 'Attendee';
+    final firstName = isAttendee
+        ? _attendeeFirstNameController.text.trim()
+        : _organiserFirstNameController.text.trim();
+    final lastName = isAttendee
+        ? _attendeeLastNameController.text.trim()
+        : _organiserLastNameController.text.trim();
+    final email = isAttendee
+        ? _attendeeEmailController.text.trim().toLowerCase()
+        : _organiserEmailController.text.trim().toLowerCase();
+    final password = isAttendee
+        ? _attendeePasswordController.text
+        : _organiserPasswordController.text;
+    final university = isAttendee
+        ? _attendeeUniversityFieldController.text.trim()
+        : _organiserUniversityFieldController.text.trim();
+
+    final isApproved = _selectedRole == 'Attendee';
+    final success = await MockBackend().register(
+      email: email,
+      password: password,
+      firstName: firstName,
+      lastName: lastName,
+      role: _selectedRole,
+      university: university,
+      isApproved: isApproved,
+    );
     setState(() => _isLoading = false);
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Account created! Welcome, ${_firstNameController.text.trim()}.',
-          style: const TextStyle(color: Colors.white),
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Account created! Welcome, $firstName.',
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: const Color(0xFF2D3A8C),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        backgroundColor: const Color(0xFF2D3A8C),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-    );
-
-    // Navigate back to login after successful registration
-    Navigator.pushReplacementNamed(context, '/login');
+      );
+      // Go to dashboard for attendee, create event for organiser (match login logic)
+      if (_selectedRole == 'Organiser') {
+        Navigator.pushReplacementNamed(context, '/create-event');
+      } else {
+        Navigator.pushReplacementNamed(context, '/dashboard', arguments: _selectedRole);
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'An account with this email already exists.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
-      appBar: const AuthHeader(),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
@@ -108,6 +172,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // ── Logo ────────────────────────────────────────────
+                    GestureDetector(
+                      onTap: () => Navigator.maybePop(context),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 18.0),
+                        child: Center(
+                          child: Image.asset(
+                            'assets/image.png',
+                            height: 64,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ),
                     // ── Title ────────────────────────────────────────────
                     const Text(
                       'Create your Account',
@@ -144,7 +222,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             label: 'First Name',
                             hintText: 'Alex',
                             prefixIcon: Icons.person_outline,
-                            controller: _firstNameController,
+                            controller: _selectedRole == 'Attendee' ? _attendeeFirstNameController : _organiserFirstNameController,
                             validator: (v) =>
                                 (v == null || v.trim().isEmpty)
                                     ? 'Required'
@@ -157,7 +235,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             label: 'Last Name',
                             hintText: 'Smith',
                             prefixIcon: Icons.person_outline,
-                            controller: _lastNameController,
+                            controller: _selectedRole == 'Attendee' ? _attendeeLastNameController : _organiserLastNameController,
                             validator: (v) =>
                                 (v == null || v.trim().isEmpty)
                                     ? 'Required'
@@ -174,7 +252,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       label: 'University Email Address',
                       hintText: 'alex@university.edu',
                       prefixIcon: Icons.email_outlined,
-                      controller: _emailController,
+                      controller: _selectedRole == 'Attendee' ? _attendeeEmailController : _organiserEmailController,
                       keyboardType: TextInputType.emailAddress,
                       validator: validateUniversityEmail,
                     ),
@@ -182,34 +260,100 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(height: 18),
 
                     // ── Institution / University Autocomplete ───────────
-                    Autocomplete<String>(
-                      optionsBuilder: (TextEditingValue textEditingValue) {
-                        if (textEditingValue.text == '') {
-                          return const Iterable<String>.empty();
-                        }
-                        return ukUniversities.where((String uni) =>
-                            uni.toLowerCase().contains(textEditingValue.text.toLowerCase()));
-                      },
-                      fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-                        return TextFormField(
-                          controller: controller,
-                          focusNode: focusNode,
-                          decoration: const InputDecoration(
-                            labelText: 'Institution / University',
-                            prefixIcon: Icon(Icons.school_outlined),
-                            border: OutlineInputBorder(),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Institution / University',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1A1F36),
                           ),
-                          validator: (v) =>
-                              (v == null || v.isEmpty)
-                                  ? 'Institution is required'
-                                  : null,
-                        );
-                      },
-                      onSelected: (String selection) {
-                        setState(() {
-                          _selectedUniversity = selection;
-                        });
-                      },
+                        ),
+                        const SizedBox(height: 6),
+                        Autocomplete<String>(
+                          optionsBuilder: (TextEditingValue textEditingValue) {
+                            if (textEditingValue.text == '') {
+                              return const Iterable<String>.empty();
+                            }
+                            return ukUniversities.where((String uni) =>
+                                uni.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                          },
+                          fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                            final fieldController = _selectedRole == 'Attendee' ? _attendeeUniversityFieldController : _organiserUniversityFieldController;
+                            fieldController.text = controller.text;
+                            return TextFormField(
+                              controller: controller,
+                              focusNode: focusNode,
+                              style: const TextStyle(fontSize: 14, color: Color(0xFF1A1F36)),
+                              decoration: InputDecoration(
+                                hintText: 'Select or type your institution',
+                                hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                                prefixIcon: const Icon(Icons.school_outlined, size: 18, color: Color(0xFF757575)),
+                                filled: true,
+                                fillColor: Colors.white,
+                                contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(color: Colors.grey.shade300),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(color: Colors.grey.shade300),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(color: Color(0xFF2D3A8C), width: 1.5),
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(color: Colors.red, width: 1.2),
+                                ),
+                                focusedErrorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(color: Colors.red, width: 1.5),
+                                ),
+                              ),
+                              validator: (v) {
+                                if (v == null || v.isEmpty) {
+                                  return 'Institution is required';
+                                }
+                                if (!ukUniversities.contains(v)) {
+                                  return 'Institution does not exist.';
+                                }
+                                final email = (_selectedRole == 'Attendee' ? _attendeeEmailController : _organiserEmailController).text.trim().toLowerCase();
+                                final parts = email.split('@');
+                                if (parts.length == 2) {
+                                  final domain = parts[1];
+                                  // Try to extract university name from domain
+                                  final domainParts = domain.split('.');
+                                  if (domainParts.length >= 3) {
+                                    // e.g. ox.ac.uk, cam.ac.uk, manchester.ac.uk
+                                    final uniFromDomain = domainParts[0];
+                                    final lowerV = v.toLowerCase();
+                                    if (lowerV.contains(uniFromDomain)) {
+                                      return 'You cannot enter your own university.';
+                                    }
+                                  }
+                                }
+                                return null;
+                              },
+                            );
+                          },
+                          onSelected: (String selection) {
+                            setState(() {
+                              if (_selectedRole == 'Attendee') {
+                                _attendeeSelectedUniversity = selection;
+                                _attendeeUniversityFieldController.text = selection;
+                              } else {
+                                _organiserSelectedUniversity = selection;
+                                _organiserUniversityFieldController.text = selection;
+                              }
+                            });
+                          },
+                        ),
+                      ],
                     ),
 
                     const SizedBox(height: 18),
@@ -219,7 +363,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       label: 'Password',
                       prefixIcon: Icons.lock_outline,
                       obscureText: _obscurePassword,
-                      controller: _passwordController,
+                      controller: _selectedRole == 'Attendee' ? _attendeePasswordController : _organiserPasswordController,
                       validator: validatePassword,
                       suffixWidget: IconButton(
                         icon: Icon(
@@ -242,12 +386,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       label: 'Confirm Password',
                       prefixIcon: Icons.lock_outline,
                       obscureText: _obscureConfirm,
-                      controller: _confirmPasswordController,
+                      controller: _selectedRole == 'Attendee' ? _attendeeConfirmPasswordController : _organiserConfirmPasswordController,
                       validator: (v) {
+                        final password = _selectedRole == 'Attendee' ? _attendeePasswordController.text : _organiserPasswordController.text;
                         if (v == null || v.isEmpty) {
                           return 'Please confirm your password';
                         }
-                        if (v != _passwordController.text) {
+                        if (v != password) {
                           return 'Passwords do not match';
                         }
                         return null;
