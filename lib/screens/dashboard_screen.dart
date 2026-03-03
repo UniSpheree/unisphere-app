@@ -158,83 +158,27 @@ class DashboardScreen extends StatelessWidget {
 
                     const SizedBox(height: 28),
 
-                    // ── Organiser call-to-action ────────────────────────
-                    if (role == 'Organiser') ...[
-                      Container(
+                    // ── Create Event button ─────────────────────────────
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 28),
+                      child: SizedBox(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(22),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEEF0FB),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: const Color(0xFF2D3A8C).withOpacity(0.25),
+                        child: ElevatedButton.icon(
+                          onPressed: () => Navigator.pushNamed(context, '/create-event'),
+                          icon: const Icon(Icons.add_circle_outline, size: 20),
+                          label: const Text('Create Event', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2D3A8C),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
                         ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF2D3A8C),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.add_circle_outline,
-                                color: Colors.white,
-                                size: 26,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            const Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Ready to create an event?',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF1A1F36),
-                                    ),
-                                  ),
-                                  SizedBox(height: 3),
-                                  Text(
-                                    'Manage and publish your university events.',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            ElevatedButton.icon(
-                              onPressed: () => Navigator.pushNamed(
-                                context,
-                                '/create-event',
-                              ),
-                              icon: const Icon(Icons.arrow_forward, size: 16),
-                              label: const Text('Login to Create Events'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF2D3A8C),
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 12,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
-                      const SizedBox(height: 28),
-                    ],
+                    ),
 
                     // ── Stats row ───────────────────────────────────────
                     Row(
