@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../utils/validators.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/auth_text_field.dart';
+import '../utils/mock_backend.dart';
 
 /// Forgot-password flow – 3 steps:
 ///   1. Enter university email
@@ -49,11 +50,25 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Future<void> _submitEmail() async {
     if (!_emailFormKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 900));
-    setState(() {
-      _isLoading = false;
-      _step = 2;
-    });
+    final email = _emailController.text.trim().toLowerCase();
+    final exists = await MockBackend().forgotPassword(email);
+    setState(() => _isLoading = false);
+    if (!mounted) return;
+    if (exists) {
+      setState(() => _step = 2);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'No account found with this email.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    }
   }
 
   Future<void> _submitCode() async {
@@ -83,22 +98,38 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Future<void> _submitNewPassword() async {
     if (!_pwFormKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 900));
+    final email = _emailController.text.trim().toLowerCase();
+    final newPassword = _newPasswordController.text;
+    final success = await MockBackend().resetPassword(email, newPassword);
     setState(() => _isLoading = false);
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text(
-          'Password reset successfully! Please log in.',
-          style: TextStyle(color: Colors.white),
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Password reset successfully! Please log in.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: const Color(0xFF2D3A8C),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        backgroundColor: const Color(0xFF2D3A8C),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-    );
-    Navigator.pushReplacementNamed(context, '/login');
+      );
+      Navigator.pushReplacementNamed(context, '/login');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Failed to reset password. Please try again.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    }
   }
 
   // ── Build ─────────────────────────────────────────────────────────────────
