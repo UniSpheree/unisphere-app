@@ -41,24 +41,50 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Welcome back! Logged in as $_selectedRole.',
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: const Color(0xFF2D3A8C),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      final user = MockBackend().users.firstWhere(
+        (u) => u.email == email && u.password == password,
+        orElse: () => MockUser(
+          email: '',
+          password: '',
+          firstName: '',
+          lastName: '',
+          role: '',
+          university: '',
+          isApproved: false,
         ),
       );
-      if (_selectedRole == 'Organiser') {
-        Navigator.pushReplacementNamed(context, '/create-event');
+      if (user != null && user.role == _selectedRole) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Welcome back! Logged in as $_selectedRole.',
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: const Color(0xFF2D3A8C),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
+        if (_selectedRole == 'Organiser') {
+          Navigator.pushReplacementNamed(context, '/create-event');
+        } else {
+          Navigator.pushReplacementNamed(
+            context,
+            '/dashboard',
+            arguments: _selectedRole,
+          );
+        }
       } else {
-        Navigator.pushReplacementNamed(
-          context,
-          '/dashboard',
-          arguments: _selectedRole,
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'You must log in as the role you registered for.',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
         );
       }
     } else {
