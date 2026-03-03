@@ -3,6 +3,7 @@ import '../utils/validators.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/role_toggle.dart';
+import '../utils/mock_backend.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -32,31 +33,45 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 900));
+    final email = _emailController.text.trim().toLowerCase();
+    final password = _passwordController.text;
+    final success = await MockBackend().login(email: email, password: password);
     setState(() => _isLoading = false);
 
     if (!mounted) return;
 
-    // ── Fake auth: any university email + password passing strength rules ──
-    // Organiser → Create Events, Attendee → Dashboard
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Welcome back! Logged in as $_selectedRole.',
-          style: const TextStyle(color: Colors.white),
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Welcome back! Logged in as $_selectedRole.',
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: const Color(0xFF2D3A8C),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        backgroundColor: const Color(0xFF2D3A8C),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-    );
-    if (_selectedRole == 'Organiser') {
-      Navigator.pushReplacementNamed(context, '/create-event');
+      );
+      if (_selectedRole == 'Organiser') {
+        Navigator.pushReplacementNamed(context, '/create-event');
+      } else {
+        Navigator.pushReplacementNamed(
+          context,
+          '/dashboard',
+          arguments: _selectedRole,
+        );
+      }
     } else {
-      Navigator.pushReplacementNamed(
-        context,
-        '/dashboard',
-        arguments: _selectedRole,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Invalid email or password.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
       );
     }
   }
@@ -66,7 +81,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
-      appBar: const AuthHeader(),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
@@ -91,6 +105,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // ── Logo ────────────────────────────────────────────
+                    GestureDetector(
+                      onTap: () => Navigator.maybePop(context),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 18.0),
+                        child: Center(
+                          child: Image.asset(
+                            'assets/image.png',
+                            height: 64,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ),
                     // ── Title ────────────────────────────────────────────
                     const Text(
                       'Welcome to UniSphere',
