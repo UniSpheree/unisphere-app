@@ -3,6 +3,7 @@ import '../utils/validators.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/role_toggle.dart';
+import '../utils/unis.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -16,7 +17,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _institutionController = TextEditingController();
+  String? _selectedUniversity;
+  final TextEditingController _universitySearchController = TextEditingController();
+  List<String> _filteredUniversities = List.from(ukUniversities);
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
@@ -28,10 +31,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
+      _universitySearchController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
-    _institutionController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -178,16 +181,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     const SizedBox(height: 18),
 
-                    // ── Institution ───────────────────────────────────────
-                    AuthTextField(
-                      label: 'Institution / University',
-                      hintText: 'University of Example',
-                      prefixIcon: Icons.school_outlined,
-                      controller: _institutionController,
-                      validator: (v) =>
-                          (v == null || v.trim().isEmpty)
-                              ? 'Institution is required'
-                              : null,
+                    // ── Institution / University Autocomplete ───────────
+                    Autocomplete<String>(
+                      optionsBuilder: (TextEditingValue textEditingValue) {
+                        if (textEditingValue.text == '') {
+                          return const Iterable<String>.empty();
+                        }
+                        return ukUniversities.where((String uni) =>
+                            uni.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                      },
+                      fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                        return TextFormField(
+                          controller: controller,
+                          focusNode: focusNode,
+                          decoration: const InputDecoration(
+                            labelText: 'Institution / University',
+                            prefixIcon: Icon(Icons.school_outlined),
+                            border: OutlineInputBorder(),
+                          ),
+                          validator: (v) =>
+                              (v == null || v.isEmpty)
+                                  ? 'Institution is required'
+                                  : null,
+                        );
+                      },
+                      onSelected: (String selection) {
+                        setState(() {
+                          _selectedUniversity = selection;
+                        });
+                      },
                     ),
 
                     const SizedBox(height: 18),

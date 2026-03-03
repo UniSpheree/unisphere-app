@@ -1,5 +1,6 @@
-/// Shared field validators used across the app.
 library;
+import 'unis.dart';
+/// Shared field validators used across the app.
 
 /// Blocked consumer / free-mail domains that are NOT university addresses.
 const _blockedDomains = {
@@ -63,7 +64,12 @@ String? validateUniversityEmail(String? value) {
     return 'Enter a valid email address';
   }
 
-  return null; // valid
+  // Accept only UK university emails (any .ac.uk domain)
+  final ukUniversityDomainRegex = RegExp(r'^[a-z0-9\-\.]+\.ac\.uk$');
+  if (!ukUniversityDomainRegex.hasMatch(domain)) {
+    return 'Enter a valid UK university email';
+  }
+  return null;
 }
 
 /// Validates a registration password.
