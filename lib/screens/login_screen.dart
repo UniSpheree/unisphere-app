@@ -19,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _obscurePassword = true;
   bool _keepLoggedIn = false;
-  String _selectedRole = 'Attendee'; // 'Attendee' | 'Organiser'
+  // Removed role selection; role will be determined later in dashboard
   bool _isLoading = false;
 
   @override
@@ -41,62 +41,31 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (success) {
-      final user = MockBackend().users.firstWhere(
-        (u) => u.email == email && u.password == password,
-        orElse: () => MockUser(
-          email: '',
-          password: '',
-          firstName: '',
-          lastName: '',
-          role: '',
-          university: '',
-          isApproved: false,
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Welcome back! Login successful.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Color(0xFF2D3A8C),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
         ),
       );
-      if (user != null && user.role == _selectedRole) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Welcome back! Logged in as $_selectedRole.',
-              style: const TextStyle(color: Colors.white),
-            ),
-            backgroundColor: const Color(0xFF2D3A8C),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          ),
-        );
-        if (_selectedRole == 'Organiser') {
-          Navigator.pushReplacementNamed(context, '/create-event');
-        } else {
-          Navigator.pushReplacementNamed(
-            context,
-            '/dashboard',
-            arguments: _selectedRole,
-          );
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text(
-              'You must log in as the role you registered for.',
-              style: TextStyle(color: Colors.white),
-            ),
-            backgroundColor: Colors.redAccent,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          ),
-        );
-      }
+      Navigator.pushReplacementNamed(
+        context,
+        '/dashboard',
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
+        const SnackBar(
+          content: Text(
             'Invalid email or password.',
             style: TextStyle(color: Colors.white),
           ),
           backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
         ),
       );
     }
@@ -164,14 +133,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 24),
 
-                    // ── Role toggle ───────────────────────────────────────
-                    RoleToggle(
-                      selected: _selectedRole,
-                      onChanged: (role) =>
-                          setState(() => _selectedRole = role),
-                    ),
-
-                    const SizedBox(height: 24),
+                    // ── Role toggle removed ──
+                    // (Role selection is now handled later in the dashboard)
 
                     // ── Email ─────────────────────────────────────────────
                     AuthTextField(
