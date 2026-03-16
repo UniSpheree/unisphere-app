@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:unisphere_app/widgets/app_footer.dart';
+import 'create_event_screen.dart';
 
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
@@ -332,7 +333,14 @@ class _HeroText extends StatelessWidget {
               child: const Text('Discover Events'),
             ),
             OutlinedButton(
-              onPressed: null,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CreateEventScreen(),
+                  ),
+                );
+              },
               style: ButtonStyle(
                 foregroundColor: MaterialStatePropertyAll(AppColors.primary),
                 side: MaterialStatePropertyAll(
