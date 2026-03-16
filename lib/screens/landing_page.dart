@@ -8,7 +8,7 @@ class LandingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-  body: SingleChildScrollView(
+      body: SingleChildScrollView(
         child: Column(
           children: [
             _Navbar(),
