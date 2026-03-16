@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:unisphere_app/widgets/app_footer.dart';
 
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
@@ -7,7 +8,7 @@ class LandingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: const SingleChildScrollView(
+  body: SingleChildScrollView(
         child: Column(
           children: [
             _Navbar(),
@@ -16,7 +17,7 @@ class LandingPage extends StatelessWidget {
             _AudienceSection(),
             _HowItWorksSection(),
             _CTASection(),
-            _Footer(),
+            const AppFooter(),
           ],
         ),
       ),
@@ -80,18 +81,15 @@ class _SectionContainer extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
   final Color? color;
 
-  const _SectionContainer({
-    required this.child,
-    this.padding,
-    this.color,
-  });
+  const _SectionContainer({required this.child, this.padding, this.color});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
       color: color,
-      padding: padding ??
+      padding:
+          padding ??
           const EdgeInsets.symmetric(
             horizontal: AppSpacing.sectionX,
             vertical: AppSpacing.sectionY,
@@ -216,10 +214,7 @@ class _NavItem extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _NavItem({
-    required this.label,
-    required this.onTap,
-  });
+  const _NavItem({required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -340,7 +335,9 @@ class _HeroText extends StatelessWidget {
               onPressed: null,
               style: ButtonStyle(
                 foregroundColor: MaterialStatePropertyAll(AppColors.primary),
-                side: MaterialStatePropertyAll(BorderSide(color: AppColors.border)),
+                side: MaterialStatePropertyAll(
+                  BorderSide(color: AppColors.border),
+                ),
                 padding: MaterialStatePropertyAll(
                   const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
                 ),
@@ -369,7 +366,11 @@ class _HeroBullet extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 18),
+        const Icon(
+          Icons.check_circle_rounded,
+          color: AppColors.primary,
+          size: 18,
+        ),
         const SizedBox(width: 8),
         Text(
           text,
@@ -516,7 +517,11 @@ class _HeroVisual extends StatelessWidget {
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.trending_up_rounded, color: Colors.white, size: 18),
+                  Icon(
+                    Icons.trending_up_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
                   SizedBox(width: 8),
                   Text(
                     '2.4k event views',
@@ -524,11 +529,11 @@ class _HeroVisual extends StatelessWidget {
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -617,10 +622,7 @@ class _StatItem extends StatelessWidget {
   final String value;
   final String label;
 
-  const _StatItem({
-    required this.value,
-    required this.label,
-  });
+  const _StatItem({required this.value, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -640,10 +642,7 @@ class _StatItem extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             label,
-            style: const TextStyle(
-              color: AppColors.muted,
-              fontSize: 15,
-            ),
+            style: const TextStyle(color: AppColors.muted, fontSize: 15),
           ),
         ],
       ),
@@ -807,9 +806,7 @@ class _AudiencePanel extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(item, style: AppTextStyles.body),
-                  ),
+                  Expanded(child: Text(item, style: AppTextStyles.body)),
                 ],
               ),
             ),
@@ -1050,7 +1047,7 @@ class _CTASection extends StatelessWidget {
                             child: const Text('Create an Event'),
                           ),
                         ],
-                      )
+                      ),
                     ],
                   )
                 : Row(
@@ -1088,9 +1085,12 @@ class _CTASection extends StatelessWidget {
                           ElevatedButton(
                             onPressed: null,
                             style: ButtonStyle(
-                              backgroundColor: MaterialStatePropertyAll(Colors.white),
-                              foregroundColor:
-                                  MaterialStatePropertyAll(AppColors.primary),
+                              backgroundColor: MaterialStatePropertyAll(
+                                Colors.white,
+                              ),
+                              foregroundColor: MaterialStatePropertyAll(
+                                AppColors.primary,
+                              ),
                               elevation: MaterialStatePropertyAll(0),
                               padding: MaterialStatePropertyAll(
                                 const EdgeInsets.symmetric(
@@ -1100,8 +1100,9 @@ class _CTASection extends StatelessWidget {
                               ),
                               shape: MaterialStatePropertyAll(
                                 RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(14)),
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(14),
+                                  ),
                                 ),
                               ),
                             ),
@@ -1110,8 +1111,9 @@ class _CTASection extends StatelessWidget {
                           OutlinedButton(
                             onPressed: null,
                             style: ButtonStyle(
-                              foregroundColor:
-                                  MaterialStatePropertyAll(Colors.white),
+                              foregroundColor: MaterialStatePropertyAll(
+                                Colors.white,
+                              ),
                               side: MaterialStatePropertyAll(
                                 BorderSide(color: Colors.white30),
                               ),
@@ -1123,8 +1125,9 @@ class _CTASection extends StatelessWidget {
                               ),
                               shape: MaterialStatePropertyAll(
                                 RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(14)),
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(14),
+                                  ),
                                 ),
                               ),
                             ),
@@ -1141,76 +1144,4 @@ class _CTASection extends StatelessWidget {
   }
 }
 
-class _Footer extends StatelessWidget {
-  const _Footer();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      color: const Color(0xff0f172a),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: AppSpacing.maxWidth),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final isMobile = constraints.maxWidth < 700;
-              return isMobile
-                  ? const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'UniSphere',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          'Discover, share, and manage events with confidence.',
-                          style: TextStyle(color: Colors.white70),
-                        ),
-                        SizedBox(height: 20),
-                        Text(
-                          '© UniSphere — Event Discovery Platform',
-                          style: TextStyle(color: Colors.white54),
-                        ),
-                      ],
-                    )
-                  : const Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'UniSphere',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              'Discover, share, and manage events with confidence.',
-                              style: TextStyle(color: Colors.white70),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          '© UniSphere — Event Discovery Platform',
-                          style: TextStyle(color: Colors.white54),
-                        ),
-                      ],
-                    );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-}
+// Footer replaced by AppFooter widget in lib/widgets/app_footer.dart
