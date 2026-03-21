@@ -2,13 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:unisphere_app/widgets/header.dart';
 
 class ViewEventScreen extends StatefulWidget {
-  const ViewEventScreen({super.key});
+  final String role; // 'admin', 'organiser', 'student'
+  final String currentUserId;
+  final String organiserId;
+
+  const ViewEventScreen({
+    super.key,
+    required this.role,
+    required this.currentUserId,
+    required this.organiserId,
+  });
 
   @override
   _ViewEventScreenState createState() => _ViewEventScreenState();
 }
 
 class _ViewEventScreenState extends State<ViewEventScreen> {
+  bool get canEdit =>
+      widget.role == 'admin' ||
+      (widget.role == 'organiser' && widget.currentUserId == widget.organiserId);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,13 +73,13 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
             ),
 
             const SizedBox(height: 20),
-            _sectionTitle('Organizer'),
+            _sectionTitle('Organiser'),
             const SizedBox(height: 8),
             const Card(
               child: ListTile(
                 leading: CircleAvatar(child: Icon(Icons.person_outline)),
                 title: Text('Student Affairs Office'),
-                subtitle: Text('Contact: organizer@unisphere.edu'),
+                subtitle: Text('Contact: organiser@unisphere.edu'),
               ),
             ),
 
@@ -98,13 +111,34 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
                   icon: const Icon(Icons.share_outlined),
                   label: const Text('Share'),
                 ),
+
+                // Admin/Organiser-only actions
+                if (canEdit)
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      // TODO: navigate to edit screen or open edit modal
+                    },
+                    icon: const Icon(Icons.edit_outlined),
+                    label: const Text('Edit Event'),
+                  ),
+                if (canEdit)
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      // TODO: archive/delete action with confirmation
+                    },
+                    icon: const Icon(Icons.delete_outline),
+                    label: const Text('Delete'),
+                  ),
               ],
             ),
 
-            // TODO: Implement admin permissions to page
-            const SizedBox(height: 20),
-            _sectionTitle('Key User Tools (Next)'),
-            
+            if (canEdit) ...[
+              const SizedBox(height: 20),
+              _sectionTitle('Key User Tools (Next)'),
+              // TODO: organiser/admin tools here
+            ],
+
+            // ...existing code...
           ],
         ),
       ),
