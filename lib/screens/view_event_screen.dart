@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:unisphere_app/widgets/header.dart';
 
-class ViewEventScreen extends StatelessWidget {
+class ViewEventScreen extends StatefulWidget {
   const ViewEventScreen({super.key});
 
+  @override
+  _ViewEventScreenState createState() => _ViewEventScreenState();
+}
+
+class _ViewEventScreenState extends State<ViewEventScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
