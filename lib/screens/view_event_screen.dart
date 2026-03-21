@@ -16,10 +16,7 @@ class ViewEventScreen extends StatelessWidget {
             const Text(
               'Event Title',
               textAlign: TextAlign.left,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
@@ -54,10 +51,7 @@ class ViewEventScreen extends StatelessWidget {
               'with the actual event details, schedule, venue information, and '
               'other relevant content.',
               textAlign: TextAlign.left,
-              style: TextStyle(
-                fontSize: 16,
-                height: 1.5,
-              ),
+              style: TextStyle(fontSize: 16, height: 1.5),
             ),
 
             const SizedBox(height: 20),
@@ -71,6 +65,41 @@ class ViewEventScreen extends StatelessWidget {
               ),
             ),
 
+            const SizedBox(height: 20),
+            _sectionTitle('Actions'),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    // TODO: connect RSVP/join flow
+                  },
+                  icon: const Icon(Icons.check_circle_outline),
+                  label: const Text('Join Event'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    // TODO: connect save/bookmark flow
+                  },
+                  icon: const Icon(Icons.bookmark_border),
+                  label: const Text('Save'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    // TODO: connect share flow
+                  },
+                  icon: const Icon(Icons.share_outlined),
+                  label: const Text('Share'),
+                ),
+              ],
+            ),
+
+            // TODO: Implement admin permissions to page
+            const SizedBox(height: 20),
+            _sectionTitle('Key User Tools (Next)'),
+            
           ],
         ),
       ),
@@ -85,11 +114,6 @@ class ViewEventScreen extends StatelessWidget {
   }
 
   Widget _infoChip(IconData icon, String label) {
-    return Chip(
-      avatar: Icon(icon, size: 18),
-      label: Text(label),
-    );
+    return Chip(avatar: Icon(icon, size: 18), label: Text(label));
   }
 }
-
-
