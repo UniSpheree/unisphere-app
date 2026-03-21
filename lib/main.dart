@@ -22,9 +22,9 @@ class MyApp extends StatelessWidget {
       home: const ViewEventScreen(
         role: 'organizer',
         currentUserId: 'user123',
-        organiserId: 'user123',
+        organiserId: 'user1234',
       ),
-      // Temporary ViewEventScreen for debugging purposes
+      // Temporarily ViewEventScreen for debugging purposes, navigation wasn't considered atp
       // Do not match organiserId to see Attendee view
     );
   }

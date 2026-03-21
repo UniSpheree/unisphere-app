@@ -17,6 +17,7 @@ class ViewEventScreen extends StatefulWidget {
   _ViewEventScreenState createState() => _ViewEventScreenState();
 }
 
+// Placeholder text will be replaced with relevant backend parameters later
 class _ViewEventScreenState extends State<ViewEventScreen> {
   bool get canEdit =>
       widget.role == 'admin' ||
@@ -39,7 +40,7 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Image.network(
-                'https://picsum.photos/900/500',
+                'https://picsum.photos/900/500', // placeholder image
                 width: double.infinity,
                 height: 220,
                 fit: BoxFit.cover,
@@ -53,11 +54,11 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _infoChip(Icons.calendar_today_outlined, 'May 25, 2026'),
-                _infoChip(Icons.access_time_outlined, '2:00 PM - 5:00 PM'),
-                _infoChip(Icons.location_on_outlined, 'Main Campus Gym'),
-                _infoChip(Icons.group_outlined, '120 slots'),
-                _infoChip(Icons.event_busy_outlined, 'Reg. until May 22'),
+                _infoChip(Icons.calendar_today_outlined, 'May 25, 2026'), // placeholder info
+                _infoChip(Icons.access_time_outlined, '2:00 PM - 5:00 PM'), // placeholder info
+                _infoChip(Icons.location_on_outlined, 'Main Campus Gym'), // placeholder info
+                _infoChip(Icons.group_outlined, '120 slots'), // placeholder info
+                _infoChip(Icons.event_busy_outlined, 'Reg. until May 22'), // placeholder info
               ],
             ),
 
@@ -67,7 +68,7 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
             const Text(
               'This is the event description section. You can replace this text '
               'with the actual event details, schedule, venue information, and '
-              'other relevant content.',
+              'other relevant content.', // placeholder info
               textAlign: TextAlign.left,
               style: TextStyle(fontSize: 16, height: 1.5),
             ),
@@ -78,8 +79,8 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
             const Card(
               child: ListTile(
                 leading: CircleAvatar(child: Icon(Icons.person_outline)),
-                title: Text('Student Affairs Office'),
-                subtitle: Text('Contact: organiser@unisphere.edu'),
+                title: Text('Student Affairs Office'),  // placeholder info
+                subtitle: Text('Contact: organiser@unisphere.edu'), // placeholder info
               ),
             ),
 
@@ -132,13 +133,6 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
               ],
             ),
 
-            if (canEdit) ...[
-              const SizedBox(height: 20),
-              _sectionTitle('Key User Tools (Next)'),
-              // TODO: organiser/admin tools here
-            ],
-
-            // ...existing code...
           ],
         ),
       ),
