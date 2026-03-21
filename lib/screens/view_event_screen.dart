@@ -59,6 +59,18 @@ class ViewEventScreen extends StatelessWidget {
                 height: 1.5,
               ),
             ),
+
+            const SizedBox(height: 20),
+            _sectionTitle('Organizer'),
+            const SizedBox(height: 8),
+            const Card(
+              child: ListTile(
+                leading: CircleAvatar(child: Icon(Icons.person_outline)),
+                title: Text('Student Affairs Office'),
+                subtitle: Text('Contact: organizer@unisphere.edu'),
+              ),
+            ),
+
           ],
         ),
       ),
