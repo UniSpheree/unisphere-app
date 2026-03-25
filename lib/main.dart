@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/create_event_screen.dart';
+import 'screens/profile_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,6 +20,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFF5F7FB),
       ),
       home: const CreateEventScreen(),
+      routes: {'/profile': (context) => const ProfilePage()},
     );
   }
 }
