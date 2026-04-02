@@ -141,7 +141,7 @@ class _Navbar extends StatelessWidget {
                         _NavItem(label: 'Find Events', onTap: () {}),
                         _NavItem(label: 'Create Events', onTap: () {}),
                         _NavItem(label: 'My Tickets', onTap: () {}),
-                        _NavItem(label: 'Sign in', onTap: () {}),
+                        _NavItem(label: 'About us', onTap: () {}),
                         const SizedBox(width: 12),
                         OutlinedButton(
                           onPressed: () {},
@@ -156,25 +156,9 @@ class _Navbar extends StatelessWidget {
                               vertical: 16,
                             ),
                           ),
-                          child: const Text('Log In'),
+                          child: const Text('Sign In'),
                         ),
-                        const SizedBox(width: 12),
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 22,
-                              vertical: 18,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text('Get Started'),
-                        ),
+                        
                       ],
                     ),
                   ],
