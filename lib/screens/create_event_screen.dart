@@ -183,7 +183,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
     _clearForm();
 
-  Navigator.pop(context);
+    Navigator.pop(context);
   }
 
   void _clearForm() {
