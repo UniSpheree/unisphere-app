@@ -207,7 +207,10 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppHeader(),
+      appBar: const PreferredSize(
+        preferredSize: Size.fromHeight(72),
+        child: AppHeader(),
+      ),
       body: LayoutBuilder(
         builder: (context, constraints) {
           final isMobile = constraints.maxWidth < 600;

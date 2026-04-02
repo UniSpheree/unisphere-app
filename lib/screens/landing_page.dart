@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:unisphere_app/widgets/app_footer.dart';
+import 'package:unisphere_app/widgets/header.dart';
 import 'create_event_screen.dart';
 
 class LandingPage extends StatelessWidget {
@@ -12,7 +13,28 @@ class LandingPage extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            _Navbar(),
+            AppHeader(
+              onHostEventTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CreateEventScreen(),
+                  ),
+                );
+              },
+              onFindEventsTap: () {},
+              onCreateEventsTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CreateEventScreen(),
+                  ),
+                );
+              },
+              onMyTicketsTap: () {},
+              onAboutTap: () {},
+              onSignInTap: () {},
+            ),
             _HeroSection(),
             _StatsSection(),
             _AudienceSection(),
@@ -105,118 +127,6 @@ class _SectionContainer extends StatelessWidget {
   }
 }
 
-class _Navbar extends StatelessWidget {
-  const _Navbar();
-
-  @override
-  Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final isMobile = width < 850;
-
-    return Container(
-      width: double.infinity,
-      color: Colors.white.withOpacity(0.96),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: AppSpacing.maxWidth),
-          child: isMobile
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const _Brand(),
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.menu_rounded),
-                      color: AppColors.text,
-                    ),
-                  ],
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const _Brand(),
-                    Row(
-                      children: [
-                        _NavItem(label: 'Find Events', onTap: () {}),
-                        _NavItem(label: 'Create Events', onTap: () {}),
-                        _NavItem(label: 'My Tickets', onTap: () {}),
-                        _NavItem(label: 'About us', onTap: () {}),
-                        const SizedBox(width: 12),
-                        OutlinedButton(
-                          onPressed: () {},
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.primary,
-                            side: const BorderSide(color: AppColors.border),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 18,
-                              vertical: 16,
-                            ),
-                          ),
-                          child: const Text('Sign In'),
-                        ),
-                        
-                      ],
-                    ),
-                  ],
-                ),
-        ),
-      ),
-    );
-  }
-}
-
-class _Brand extends StatelessWidget {
-  const _Brand();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Row(
-      children: [
-        CircleAvatar(
-          radius: 18,
-          backgroundColor: AppColors.primary,
-          child: Icon(Icons.public, color: Colors.white, size: 18),
-        ),
-        SizedBox(width: 12),
-        Text(
-          'UniSphere',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: AppColors.text,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _NavItem extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-
-  const _NavItem({required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6),
-      child: TextButton(
-        onPressed: onTap,
-        style: TextButton.styleFrom(
-          foregroundColor: AppColors.text,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        ),
-        child: Text(label),
-      ),
-    );
-  }
-}
-
 class _HeroSection extends StatelessWidget {
   const _HeroSection();
 
@@ -230,10 +140,10 @@ class _HeroSection extends StatelessWidget {
       child: isMobile
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const _HeroText(),
-                const SizedBox(height: 40),
-                const _HeroVisual(),
+              children: const [
+                _HeroText(),
+                SizedBox(height: 40),
+                _HeroVisual(),
               ],
             )
           : const Row(
@@ -306,7 +216,7 @@ class _HeroText extends StatelessWidget {
                 foregroundColor: MaterialStatePropertyAll(Colors.white),
                 elevation: MaterialStatePropertyAll(0),
                 padding: MaterialStatePropertyAll(
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                  EdgeInsets.symmetric(horizontal: 24, vertical: 18),
                 ),
                 shape: MaterialStatePropertyAll(
                   RoundedRectangleBorder(
@@ -314,7 +224,7 @@ class _HeroText extends StatelessWidget {
                   ),
                 ),
               ),
-              child: const Text('Discover Events'),
+              child: Text('Discover Events'),
             ),
             OutlinedButton(
               onPressed: () {
@@ -331,7 +241,7 @@ class _HeroText extends StatelessWidget {
                   BorderSide(color: AppColors.border),
                 ),
                 padding: MaterialStatePropertyAll(
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                  EdgeInsets.symmetric(horizontal: 24, vertical: 18),
                 ),
                 shape: MaterialStatePropertyAll(
                   RoundedRectangleBorder(
@@ -1085,7 +995,7 @@ class _CTASection extends StatelessWidget {
                               ),
                               elevation: MaterialStatePropertyAll(0),
                               padding: MaterialStatePropertyAll(
-                                const EdgeInsets.symmetric(
+                                EdgeInsets.symmetric(
                                   horizontal: 22,
                                   vertical: 18,
                                 ),
@@ -1110,7 +1020,7 @@ class _CTASection extends StatelessWidget {
                                 BorderSide(color: Colors.white30),
                               ),
                               padding: MaterialStatePropertyAll(
-                                const EdgeInsets.symmetric(
+                                EdgeInsets.symmetric(
                                   horizontal: 22,
                                   vertical: 18,
                                 ),
@@ -1135,5 +1045,3 @@ class _CTASection extends StatelessWidget {
     );
   }
 }
-
-// Footer replaced by AppFooter widget in lib/widgets/app_footer.dart
