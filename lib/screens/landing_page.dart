@@ -138,10 +138,10 @@ class _Navbar extends StatelessWidget {
                     const _Brand(),
                     Row(
                       children: [
-                        _NavItem(label: 'Features', onTap: () {}),
-                        _NavItem(label: 'Attendees', onTap: () {}),
-                        _NavItem(label: 'Organisers', onTap: () {}),
-                        _NavItem(label: 'How it works', onTap: () {}),
+                        _NavItem(label: 'Find Events', onTap: () {}),
+                        _NavItem(label: 'Create Events', onTap: () {}),
+                        _NavItem(label: 'My Tickets', onTap: () {}),
+                        _NavItem(label: 'Sign in', onTap: () {}),
                         const SizedBox(width: 12),
                         OutlinedButton(
                           onPressed: () {},
