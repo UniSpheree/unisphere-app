@@ -54,27 +54,39 @@ class AppFooter extends StatelessWidget {
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              brandName,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
+                        // Make the left column flexible so long text can wrap/shrink
+                        // instead of causing a RenderFlex overflow when constrained
+                        // to `footerMaxWidth`.
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                brandName,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              tagline,
-                              style: const TextStyle(color: Colors.white70),
-                            ),
-                          ],
+                              const SizedBox(height: 8),
+                              Text(
+                                tagline,
+                                style: const TextStyle(color: Colors.white70),
+                              ),
+                            ],
+                          ),
                         ),
-                        Text(
-                          copyrightText,
-                          style: const TextStyle(color: Colors.white54),
+                        const SizedBox(width: 12),
+                        // Allow the copyright text to take only the space it needs
+                        // and ellipsize if it's too long for the remaining area.
+                        Flexible(
+                          child: Text(
+                            copyrightText,
+                            style: const TextStyle(color: Colors.white54),
+                            textAlign: TextAlign.right,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ],
                     );
