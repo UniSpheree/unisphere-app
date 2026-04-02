@@ -183,7 +183,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
     _clearForm();
 
-    Navigator.pushNamed(context, '/dashboard');
+  Navigator.pop(context);
   }
 
   void _clearForm() {
@@ -233,8 +233,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                         Row(
                           children: [
                             InkWell(
-                              onTap: () =>
-                                  Navigator.pushNamed(context, '/dashboard'),
+                              onTap: () => Navigator.pop(context),
                               borderRadius: BorderRadius.circular(8),
                               child: const Icon(
                                 Icons.arrow_back,
@@ -244,10 +243,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             ),
                             const SizedBox(width: 8),
                             GestureDetector(
-                              onTap: () =>
-                                  Navigator.pushNamed(context, '/dashboard'),
+                              onTap: () => Navigator.pop(context),
                               child: const Text(
-                                'Dashboard',
+                                'Landing Page',
                                 style: TextStyle(
                                   color: Colors.grey,
                                   fontSize: 14,
