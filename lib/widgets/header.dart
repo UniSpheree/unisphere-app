@@ -211,12 +211,30 @@ class _Brand extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        CircleAvatar(
-          radius: 18,
-          backgroundColor: _HeaderColors.primary,
-          // Use bundled asset as logo; falls back to an icon if asset isn't available at runtime
-          backgroundImage: const AssetImage('assets/image.png'),
-          child: const Icon(Icons.public, color: Colors.white, size: 18),
+        // Use the bundled asset but visually scale the image so it appears larger
+        // without increasing the header's layout height: keep the container fixed
+        // and scale the image inside it.
+        SizedBox(
+          width: 48,
+          height: 48,
+          // Allow the image to render larger than the boxed layout without
+          // clipping by using an OverflowBox. We intentionally avoid ClipRRect
+          // here so the scaled image isn't cropped by the container bounds.
+          child: DecoratedBox(
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+            child: Center(
+              child: OverflowBox(
+                maxWidth: 80,
+                maxHeight: 80,
+                child: Image.asset(
+                  'assets/image.png',
+                  fit: BoxFit.cover,
+                  width: 64,
+                  height: 64,
+                ),
+              ),
+            ),
+          ),
         ),
         const SizedBox(width: 12),
         const Text(
