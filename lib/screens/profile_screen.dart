@@ -23,7 +23,8 @@ class ProfileScreen extends StatelessWidget {
                 Row(
                   children: [
                     InkWell(
-                      onTap: () => Navigator.pushReplacementNamed(context, '/'),
+                      onTap: () =>
+                          Navigator.pushReplacementNamed(context, '/logged-in'),
                       borderRadius: BorderRadius.circular(8),
                       child: const Icon(
                         Icons.arrow_back,
@@ -33,7 +34,8 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     GestureDetector(
-                      onTap: () => Navigator.pushReplacementNamed(context, '/'),
+                      onTap: () =>
+                          Navigator.pushReplacementNamed(context, '/logged-in'),
                       child: const Text(
                         'Landing Page',
                         style: TextStyle(color: Colors.grey, fontSize: 14),
