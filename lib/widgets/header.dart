@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:unisphere_app/screens/create_event_screen.dart';
 
 class AppHeader extends StatelessWidget {
   final VoidCallback? onFindEventsTap;
@@ -49,7 +50,17 @@ class AppHeader extends StatelessWidget {
                             onFindEventsTap?.call();
                             break;
                           case 'create':
-                            onCreateEventsTap?.call();
+                            if (onCreateEventsTap != null) {
+                              onCreateEventsTap!.call();
+                            } else {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const CreateEventScreen(),
+                                ),
+                              );
+                            }
                             break;
                           case 'tickets':
                             onMyTicketsTap?.call();
@@ -78,15 +89,9 @@ class AppHeader extends StatelessWidget {
                           value: 'tickets',
                           child: Text('My Tickets'),
                         ),
-                        PopupMenuItem(
-                          value: 'about',
-                          child: Text('About us'),
-                        ),
+                        PopupMenuItem(value: 'about', child: Text('About us')),
                         PopupMenuDivider(),
-                        PopupMenuItem(
-                          value: 'signin',
-                          child: Text('Sign In'),
-                        ),
+                        PopupMenuItem(value: 'signin', child: Text('Sign In')),
                         PopupMenuItem(
                           value: 'host',
                           child: Text('Host an Event'),
@@ -107,16 +112,23 @@ class AppHeader extends StatelessWidget {
                         ),
                         _NavItem(
                           label: 'Create Events',
-                          onTap: onCreateEventsTap ?? () {},
+                          onTap:
+                              onCreateEventsTap ??
+                              () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const CreateEventScreen(),
+                                  ),
+                                );
+                              },
                         ),
                         _NavItem(
                           label: 'My Tickets',
                           onTap: onMyTicketsTap ?? () {},
                         ),
-                        _NavItem(
-                          label: 'About us',
-                          onTap: onAboutTap ?? () {},
-                        ),
+                        _NavItem(label: 'About us', onTap: onAboutTap ?? () {}),
                         const SizedBox(width: 12),
                         OutlinedButton(
                           onPressed: onSignInTap,
@@ -183,10 +195,7 @@ class _NavItem extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _NavItem({
-    required this.label,
-    required this.onTap,
-  });
+  const _NavItem({required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
