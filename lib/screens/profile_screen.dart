@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/header.dart';
+import '../utils/mock_backend.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -187,8 +188,11 @@ class ProfileScreen extends StatelessWidget {
                   width: double.infinity,
                   height: 48,
                   child: OutlinedButton.icon(
-                    onPressed: () =>
-                        Navigator.pushReplacementNamed(context, '/'),
+                    onPressed: () {
+                      // Clear mock session and return to anonymous landing page
+                      MockBackend().logout();
+                      Navigator.pushReplacementNamed(context, '/');
+                    },
                     icon: const Icon(
                       Icons.logout,
                       size: 18,
