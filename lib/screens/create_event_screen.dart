@@ -208,10 +208,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   @override
   Widget build(BuildContext context) {
     // Import MockBackend and check organiser approval
-    final currentUser = (ModalRoute.of(context)?.settings.arguments as Map?)?['user'];
+    final currentUser =
+        (ModalRoute.of(context)?.settings.arguments as Map?)?['user'];
     // fallback to singleton if not passed
     final user = currentUser ?? MockBackend().currentUser;
-    final showApprovalBanner = user != null && user.role == 'organiser' && user.isApproved == false;
+    final showApprovalBanner =
+        user != null && user.role == 'organiser' && user.isApproved == false;
     return Scaffold(
       appBar: const PreferredSize(
         preferredSize: Size.fromHeight(72),
@@ -229,7 +231,10 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     Container(
                       width: double.infinity,
                       color: Colors.orange.shade100,
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 16,
+                      ),
                       margin: const EdgeInsets.only(bottom: 12),
                       child: Row(
                         children: [
@@ -238,7 +243,10 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           Expanded(
                             child: Text(
                               'Organizer approval pending',
-                              style: TextStyle(color: Colors.orange.shade900, fontWeight: FontWeight.w600),
+                              style: TextStyle(
+                                color: Colors.orange.shade900,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ],

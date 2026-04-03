@@ -92,15 +92,9 @@ class AppHeader extends StatelessWidget {
                           value: 'tickets',
                           child: Text('My Tickets'),
                         ),
-                        PopupMenuItem(
-                          value: 'about',
-                          child: Text('About us'),
-                        ),
+                        PopupMenuItem(value: 'about', child: Text('About us')),
                         PopupMenuDivider(),
-                        PopupMenuItem(
-                          value: 'signin',
-                          child: Text('Sign In'),
-                        ),
+                        PopupMenuItem(value: 'signin', child: Text('Sign In')),
                         PopupMenuItem(
                           value: 'host',
                           child: Text('Host an Event'),
@@ -126,7 +120,8 @@ class AppHeader extends StatelessWidget {
                         ),
                         _NavItem(
                           label: 'Create Events',
-                          onTap: onCreateEventsTap ??
+                          onTap:
+                              onCreateEventsTap ??
                               () {
                                 Navigator.push(
                                   context,
@@ -141,10 +136,7 @@ class AppHeader extends StatelessWidget {
                           label: 'My Tickets',
                           onTap: onMyTicketsTap ?? () {},
                         ),
-                        _NavItem(
-                          label: 'About us',
-                          onTap: onAboutTap ?? () {},
-                        ),
+                        _NavItem(label: 'About us', onTap: onAboutTap ?? () {}),
                         const SizedBox(width: 12),
                         OutlinedButton(
                           onPressed: onSignInTap,
@@ -184,8 +176,7 @@ class AppHeader extends StatelessWidget {
                               Navigator.pushNamed(context, '/profile'),
                           icon: CircleAvatar(
                             radius: 16,
-                            backgroundColor:
-                                Colors.indigo.withOpacity(0.12),
+                            backgroundColor: Colors.indigo.withOpacity(0.12),
                             child: const Icon(
                               Icons.person_outline,
                               size: 20,
@@ -243,10 +234,7 @@ class _NavItem extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _NavItem({
-    required this.label,
-    required this.onTap,
-  });
+  const _NavItem({required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {

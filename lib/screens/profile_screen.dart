@@ -41,8 +41,9 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 44,
-                        backgroundColor:
-                            const Color(0xFF2D3A8C).withOpacity(0.12),
+                        backgroundColor: const Color(
+                          0xFF2D3A8C,
+                        ).withOpacity(0.12),
                         child: const Icon(
                           Icons.person_outline,
                           size: 44,

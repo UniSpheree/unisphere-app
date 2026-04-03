@@ -70,10 +70,8 @@ class DashboardScreen extends StatelessWidget {
                     Row(
                       children: [
                         InkWell(
-                          onTap: () => Navigator.pushReplacementNamed(
-                            context,
-                            '/login',
-                          ),
+                          onTap: () =>
+                              Navigator.pushReplacementNamed(context, '/login'),
                           borderRadius: BorderRadius.circular(8),
                           child: const Icon(
                             Icons.arrow_back,
@@ -83,16 +81,11 @@ class DashboardScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         GestureDetector(
-                          onTap: () => Navigator.pushReplacementNamed(
-                            context,
-                            '/login',
-                          ),
+                          onTap: () =>
+                              Navigator.pushReplacementNamed(context, '/login'),
                           child: const Text(
                             'Login',
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontSize: 14,
-                            ),
+                            style: TextStyle(color: Colors.grey, fontSize: 14),
                           ),
                         ),
                         const Text(
@@ -167,9 +160,16 @@ class DashboardScreen extends StatelessWidget {
                       child: SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
-                          onPressed: () => Navigator.pushNamed(context, '/create-event'),
+                          onPressed: () =>
+                              Navigator.pushNamed(context, '/create-event'),
                           icon: const Icon(Icons.add_circle_outline, size: 20),
-                          label: const Text('Create Event', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          label: const Text(
+                            'Create Event',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF2D3A8C),
                             foregroundColor: Colors.white,
@@ -361,8 +361,7 @@ class _EventCard extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: color.withOpacity(0.10),
               borderRadius: BorderRadius.circular(20),
