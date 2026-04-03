@@ -71,7 +71,7 @@ class DashboardScreen extends StatelessWidget {
                       children: [
                         InkWell(
                           onTap: () =>
-                              Navigator.pushReplacementNamed(context, '/login'),
+                              Navigator.pushReplacementNamed(context, '/'),
                           borderRadius: BorderRadius.circular(8),
                           child: const Icon(
                             Icons.arrow_back,
@@ -82,9 +82,9 @@ class DashboardScreen extends StatelessWidget {
                         const SizedBox(width: 8),
                         GestureDetector(
                           onTap: () =>
-                              Navigator.pushReplacementNamed(context, '/login'),
+                              Navigator.pushReplacementNamed(context, '/'),
                           child: const Text(
-                            'Login',
+                            'Home Page',
                             style: TextStyle(color: Colors.grey, fontSize: 14),
                           ),
                         ),

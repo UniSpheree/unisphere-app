@@ -186,7 +186,7 @@ class ProfileScreen extends StatelessWidget {
                   height: 48,
                   child: OutlinedButton.icon(
                     onPressed: () =>
-                        Navigator.pushReplacementNamed(context, '/login'),
+                        Navigator.pushReplacementNamed(context, '/'),
                     icon: const Icon(
                       Icons.logout,
                       size: 18,

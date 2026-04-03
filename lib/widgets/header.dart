@@ -75,7 +75,7 @@ class AppHeader extends StatelessWidget {
                             onHostEventTap?.call();
                             break;
                           case 'profile':
-                            Navigator.pushNamed(context, '/profile');
+                            Navigator.pushNamed(context, '/register');
                             break;
                         }
                       },
@@ -171,9 +171,9 @@ class AppHeader extends StatelessWidget {
                         ),
                         const SizedBox(width: 12),
                         IconButton(
-                          tooltip: 'My Profile',
+                          tooltip: 'Register',
                           onPressed: () =>
-                              Navigator.pushNamed(context, '/profile'),
+                              Navigator.pushNamed(context, '/register'),
                           icon: CircleAvatar(
                             radius: 16,
                             backgroundColor: Colors.indigo.withOpacity(0.12),
