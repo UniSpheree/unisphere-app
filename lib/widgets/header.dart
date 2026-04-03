@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:unisphere_app/screens/create_event_screen.dart';
+import 'package:unisphere_app/utils/mock_backend.dart';
 
 class AppHeader extends StatelessWidget {
   final VoidCallback? onFindEventsTap;
@@ -75,7 +76,11 @@ class AppHeader extends StatelessWidget {
                             onHostEventTap?.call();
                             break;
                           case 'profile':
-                            Navigator.pushNamed(context, '/register');
+                            if (MockBackend().currentUser != null) {
+                              Navigator.pushNamed(context, '/profile');
+                            } else {
+                              Navigator.pushNamed(context, '/register');
+                            }
                             break;
                         }
                       },
@@ -171,9 +176,16 @@ class AppHeader extends StatelessWidget {
                         ),
                         const SizedBox(width: 12),
                         IconButton(
-                          tooltip: 'Register',
-                          onPressed: () =>
-                              Navigator.pushNamed(context, '/register'),
+                          tooltip: MockBackend().currentUser != null
+                              ? 'Profile'
+                              : 'Register',
+                          onPressed: () {
+                            if (MockBackend().currentUser != null) {
+                              Navigator.pushNamed(context, '/profile');
+                            } else {
+                              Navigator.pushNamed(context, '/register');
+                            }
+                          },
                           icon: CircleAvatar(
                             radius: 16,
                             backgroundColor: Colors.indigo.withOpacity(0.12),
