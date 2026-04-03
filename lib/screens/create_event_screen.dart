@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../widgets/header.dart';
+import '../utils/mock_backend.dart';
 
 class CreateEventScreen extends StatefulWidget {
   const CreateEventScreen({super.key});
@@ -206,6 +207,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Import MockBackend and check organiser approval
+    final currentUser = (ModalRoute.of(context)?.settings.arguments as Map?)?['user'];
+    // fallback to singleton if not passed
+    final user = currentUser ?? MockBackend().currentUser;
+    final showApprovalBanner = user != null && user.role == 'organiser' && user.isApproved == false;
     return Scaffold(
       appBar: const PreferredSize(
         preferredSize: Size.fromHeight(72),
@@ -219,6 +225,25 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  if (showApprovalBanner)
+                    Container(
+                      width: double.infinity,
+                      color: Colors.orange.shade100,
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.info_outline, color: Colors.orange),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Organizer approval pending',
+                              style: TextStyle(color: Colors.orange.shade900, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   Container(
                     width: isMobile ? double.infinity : 720,
                     margin: EdgeInsets.fromLTRB(
@@ -233,7 +258,14 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                         Row(
                           children: [
                             InkWell(
+<<<<<<< HEAD
                               onTap: () => Navigator.pop(context),
+=======
+                              onTap: () => Navigator.pushReplacementNamed(
+                                context,
+                                '/dashboard',
+                              ),
+>>>>>>> origin/main
                               borderRadius: BorderRadius.circular(8),
                               child: const Icon(
                                 Icons.arrow_back,
@@ -243,7 +275,14 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             ),
                             const SizedBox(width: 8),
                             GestureDetector(
+<<<<<<< HEAD
                               onTap: () => Navigator.pop(context),
+=======
+                              onTap: () => Navigator.pushReplacementNamed(
+                                context,
+                                '/dashboard',
+                              ),
+>>>>>>> origin/main
                               child: const Text(
                                 'Landing Page',
                                 style: TextStyle(
