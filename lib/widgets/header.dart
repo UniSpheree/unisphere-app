@@ -209,15 +209,17 @@ class _Brand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       children: [
         CircleAvatar(
           radius: 18,
           backgroundColor: _HeaderColors.primary,
-          child: Icon(Icons.public, color: Colors.white, size: 18),
+          // Use bundled asset as logo; falls back to an icon if asset isn't available at runtime
+          backgroundImage: const AssetImage('assets/image.png'),
+          child: const Icon(Icons.public, color: Colors.white, size: 18),
         ),
-        SizedBox(width: 12),
-        Text(
+        const SizedBox(width: 12),
+        const Text(
           'UniSphere',
           style: TextStyle(
             fontSize: 22,
