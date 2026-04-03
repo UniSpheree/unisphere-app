@@ -8,7 +8,10 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
-      appBar: AppHeader(),
+      appBar: const PreferredSize(
+        preferredSize: Size.fromHeight(72),
+        child: AppHeader(),
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),

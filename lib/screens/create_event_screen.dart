@@ -258,14 +258,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                         Row(
                           children: [
                             InkWell(
-<<<<<<< HEAD
                               onTap: () => Navigator.pop(context),
-=======
-                              onTap: () => Navigator.pushReplacementNamed(
-                                context,
-                                '/dashboard',
-                              ),
->>>>>>> origin/main
                               borderRadius: BorderRadius.circular(8),
                               child: const Icon(
                                 Icons.arrow_back,
@@ -275,14 +268,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             ),
                             const SizedBox(width: 8),
                             GestureDetector(
-<<<<<<< HEAD
                               onTap: () => Navigator.pop(context),
-=======
-                              onTap: () => Navigator.pushReplacementNamed(
-                                context,
-                                '/dashboard',
-                              ),
->>>>>>> origin/main
                               child: const Text(
                                 'Landing Page',
                                 style: TextStyle(

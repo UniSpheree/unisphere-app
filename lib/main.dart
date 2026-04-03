@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
-import 'screens/landing_page.dart';
-=======
 import 'screens/create_event_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/register_screen.dart';
->>>>>>> origin/main
 
 void main() {
   runApp(const MyApp());
@@ -28,9 +24,6 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFF0F2F8),
         fontFamily: 'Roboto',
       ),
-<<<<<<< HEAD
-      home: const LandingPage(),
-=======
       // ── Initial route ────────────────────────────────────────────────────
       initialRoute: '/login',
       routes: {
@@ -50,7 +43,6 @@ class MyApp extends StatelessWidget {
         }
         return null;
       },
->>>>>>> origin/main
     );
   }
 }
