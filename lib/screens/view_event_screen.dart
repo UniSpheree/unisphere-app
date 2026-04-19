@@ -165,12 +165,6 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Event Title',
-          textAlign: TextAlign.left,
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: Image.network(
@@ -179,6 +173,12 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
             height: 260,
             fit: BoxFit.cover,
           ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Event Title',
+          textAlign: TextAlign.left,
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
       ],
     );
