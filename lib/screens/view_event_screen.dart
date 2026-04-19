@@ -21,7 +21,8 @@ class ViewEventScreen extends StatefulWidget {
 class _ViewEventScreenState extends State<ViewEventScreen> {
   bool get canEdit =>
       widget.role == 'admin' ||
-      (widget.role == 'organiser' && widget.currentUserId == widget.organiserId);
+      (widget.role == 'organiser' &&
+          widget.currentUserId == widget.organiserId);
 
   @override
   Widget build(BuildContext context) {
@@ -52,50 +53,11 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
                       children: [
                         Expanded(flex: 3, child: _buildHeroSection()),
                         const SizedBox(width: 16),
-                        Expanded(
-                          flex: 2,
-                          child: _buildRightPanelPlaceholder(),
-                        ),
+                        Expanded(flex: 2, child: _buildRightPanelPlaceholder()),
                       ],
                     ),
 
                   const SizedBox(height: 16),
-
-                  // NEW: quick event metadata (high priority for decision-making)
-                  // When viewed, the page will state information about the viewed event in segmented chips with correct icons
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _infoChip(Icons.calendar_today_outlined, 'May 25, 2026'), // placeholder info
-                      _infoChip(Icons.access_time_outlined, '2:00 PM - 5:00 PM'), // placeholder info
-                      _infoChip(Icons.location_on_outlined, 'Main Campus Gym'), // placeholder info
-                      _infoChip(Icons.group_outlined, '120 slots'), // placeholder info
-                      _infoChip(Icons.event_busy_outlined, 'Reg. until May 22'), // placeholder info
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-                  _sectionTitle('Description'),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'This is the event description section. You can replace this text '
-                    'with the actual event details, schedule, venue information, and '
-                    'other relevant content.', // placeholder info
-                    textAlign: TextAlign.left,
-                    style: TextStyle(fontSize: 16, height: 1.5),
-                  ),
-
-                  const SizedBox(height: 20),
-                  _sectionTitle('Organiser'),
-                  const SizedBox(height: 8),
-                  const Card(
-                    child: ListTile(
-                      leading: CircleAvatar(child: Icon(Icons.person_outline)),
-                      title: Text('Student Affairs Office'), // placeholder info
-                      subtitle: Text('Contact: organiser@unisphere.edu'), // placeholder info
-                    ),
-                  ),
 
                   const SizedBox(height: 20),
                   _sectionTitle('Actions'),
@@ -154,13 +116,6 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
     );
   }
 
-  Widget _sectionTitle(String text) {
-    return Text(
-      text,
-      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-    );
-  }
-
   Widget _buildHeroSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -178,7 +133,63 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
         const Text(
           'Event Title',
           textAlign: TextAlign.left,
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        _sectionTitle('Organiser', fontSize: 18),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                CircleAvatar(child: Icon(Icons.person_outline)),
+                SizedBox(width: 10),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('Student Affairs Office'), // placeholder info
+                    Text(
+                      'Contact: organiser@unisphere.edu',
+                    ), // placeholder info
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _infoChip(
+              Icons.calendar_today_outlined,
+              'May 25, 2026',
+            ), // placeholder info
+            _infoChip(
+              Icons.access_time_outlined,
+              '2:00 PM - 5:00 PM',
+            ), // placeholder info
+            _infoChip(
+              Icons.location_on_outlined,
+              'Main Campus Gym',
+            ), // placeholder info
+            _infoChip(Icons.group_outlined, '120 slots'), // placeholder info
+            _infoChip(
+              Icons.event_busy_outlined,
+              'Reg. until May 22',
+            ), // placeholder info
+          ],
+        ),
+        _sectionTitle('Overview'),
+        const SizedBox(height: 8),
+        const Text(
+          'This is the event description section. You can replace this text '
+          'with the actual event details, schedule, venue information, and '
+          'other relevant content.', // placeholder info
+          textAlign: TextAlign.left,
+          style: TextStyle(fontSize: 16, height: 1.5),
         ),
       ],
     );
@@ -195,6 +206,16 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
       child: const Text(
         'Availability and attendee actions panel will go here.',
         style: TextStyle(fontSize: 14, color: Colors.black54),
+      ),
+    );
+  }
+
+  Widget _sectionTitle(String text, {int fontSize = 22}) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: fontSize.toDouble(),
+        fontWeight: FontWeight.w600,
       ),
     );
   }
