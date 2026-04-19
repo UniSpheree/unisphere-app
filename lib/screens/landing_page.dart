@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:unisphere_app/widgets/app_footer.dart';
 import 'package:unisphere_app/widgets/header.dart';
 import 'create_event_screen.dart';
+import 'discover_event_screen.dart';
 
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
@@ -22,7 +23,14 @@ class LandingPage extends StatelessWidget {
                   ),
                 );
               },
-              onFindEventsTap: () {},
+              onFindEventsTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DiscoverEventScreen(),
+                  ),
+                );
+              },
               onCreateEventsTap: () {
                 Navigator.push(
                   context,
@@ -210,7 +218,14 @@ class _HeroText extends StatelessWidget {
           runSpacing: 14,
           children: [
             ElevatedButton(
-              onPressed: null,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DiscoverEventScreen(),
+                  ),
+                );
+              },
               style: ButtonStyle(
                 backgroundColor: MaterialStatePropertyAll(AppColors.primary),
                 foregroundColor: MaterialStatePropertyAll(Colors.white),
@@ -918,7 +933,14 @@ class _CTASection extends StatelessWidget {
                         runSpacing: 12,
                         children: [
                           ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const DiscoverEventScreen(),
+                                ),
+                              );
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
                               foregroundColor: AppColors.primary,
