@@ -21,6 +21,13 @@ class ViewEventScreen extends StatefulWidget {
 // Placeholder text will be replaced with relevant backend parameters later
 class _ViewEventScreenState extends State<ViewEventScreen> {
   bool _hasJoined = false;
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _heroKey = GlobalKey();
+  final GlobalKey _rightPanelKey = GlobalKey();
+
+  double _heroHeight = 0;
+  double _rightPanelHeight = 0;
+  double _rightPanelTranslateY = 0;
   String _eventTitle = 'Event Title';
   String _eventDescription =
       'This is the event description section. You can replace this text with the actual event details, schedule, venue information, and other relevant content.';
@@ -38,6 +45,52 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
       widget.role == 'admin' ||
       (widget.role == 'organiser' &&
           widget.currentUserId == widget.organiserId);
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_handleScrollForStickyPanel);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_handleScrollForStickyPanel);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _measurePanelBounds() {
+    final heroContext = _heroKey.currentContext;
+    final panelContext = _rightPanelKey.currentContext;
+
+    if (heroContext == null || panelContext == null) return;
+
+    final heroBox = heroContext.findRenderObject() as RenderBox?;
+    final panelBox = panelContext.findRenderObject() as RenderBox?;
+
+    if (heroBox == null || panelBox == null) return;
+
+    final nextHeroHeight = heroBox.size.height;
+    final nextRightPanelHeight = panelBox.size.height;
+
+    if (_heroHeight != nextHeroHeight || _rightPanelHeight != nextRightPanelHeight) {
+      setState(() {
+        _heroHeight = nextHeroHeight;
+        _rightPanelHeight = nextRightPanelHeight;
+      });
+    }
+  }
+
+  void _handleScrollForStickyPanel() {
+    final maxTranslate = (_heroHeight - _rightPanelHeight).clamp(0.0, double.infinity);
+    final nextTranslate = _scrollController.offset.clamp(0.0, maxTranslate);
+
+    if ((_rightPanelTranslateY - nextTranslate).abs() > 0.5) {
+      setState(() {
+        _rightPanelTranslateY = nextTranslate;
+      });
+    }
+  }
 
   void _handleJoinEvent() {
     // TODO: replace with backend join-event request when API is available.
@@ -124,62 +177,59 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 900;
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || isMobile) return;
+      _measurePanelBounds();
+      _handleScrollForStickyPanel();
+    });
+
     return Scaffold(
       appBar: AppHeader(),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          if (isMobile) {
-            return SingleChildScrollView(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 980),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 24,
-                    ),
-                    child: Column(
+      body: SingleChildScrollView(
+        controller: _scrollController,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 980),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 24,
+              ),
+              child: isMobile
+                  ? Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildHeroSection(),
                         const SizedBox(height: 18),
                         _buildRightPanel(),
                       ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }
-
-          return Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 980),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 24,
-                ),
-                child: SizedBox(
-                  height: constraints.maxHeight,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: SingleChildScrollView(
-                          child: _buildHeroSection(),
+                    )
+                  : Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: KeyedSubtree(
+                            key: _heroKey,
+                            child: _buildHeroSection(),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 18),
-                      Expanded(flex: 2, child: _buildRightPanel()),
-                    ],
-                  ),
-                ),
-              ),
+                        const SizedBox(width: 18),
+                        Expanded(
+                          flex: 2,
+                          child: Transform.translate(
+                            offset: Offset(0, _rightPanelTranslateY),
+                            child: KeyedSubtree(
+                              key: _rightPanelKey,
+                              child: _buildRightPanel(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }
@@ -323,7 +373,7 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
                           },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: canEdit
-                      ? const Color(0xFF6D28D9)
+                      ? const Color.fromARGB(255, 40, 58, 217)
                       : _hasJoined
                       ? const Color(0xFF16A34A)
                       : const Color(0xFF6D28D9),
