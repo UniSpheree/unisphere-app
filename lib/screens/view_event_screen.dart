@@ -59,6 +59,8 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
     super.dispose();
   }
 
+  // Measures rendered heights of the hero and right panel so sticky movement
+  // can be bounded to the hero section's vertical range.
   void _measurePanelBounds() {
     final heroContext = _heroKey.currentContext;
     final panelContext = _rightPanelKey.currentContext;
@@ -81,6 +83,8 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
     }
   }
 
+  // Keeps the right panel "sticky" on desktop by translating it with page
+  // scroll, clamped so it never moves above the top or past the hero bottom.
   void _handleScrollForStickyPanel() {
     final maxTranslate = (_heroHeight - _rightPanelHeight).clamp(0.0, double.infinity);
     final nextTranslate = _scrollController.offset.clamp(0.0, maxTranslate);
