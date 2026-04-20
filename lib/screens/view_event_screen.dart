@@ -188,6 +188,8 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
   }
 
   Widget _buildBreadcrumbs() {
+    // TODO: Insert Discover Events breadcrumb by passing middleCrumbLabel and middleCrumbRoute from the caller.
+    // TODO: Correct breadcrumbs from View-Event to Create-Event
     final hasMiddleCrumb =
         widget.middleCrumbLabel != null && widget.middleCrumbLabel!.isNotEmpty;
 
