@@ -7,11 +7,21 @@ class ViewEventScreen extends StatefulWidget {
   final String currentUserId;
   final String organiserId;
 
+  // Breadcrumb config for reusable navigation hierarchy.
+  final String dashboardLabel;
+  final String dashboardRoute;
+  final String? middleCrumbLabel;
+  final String? middleCrumbRoute;
+
   const ViewEventScreen({
     super.key,
     required this.role,
     required this.currentUserId,
     required this.organiserId,
+    this.dashboardLabel = 'Dashboard',
+    this.dashboardRoute = '/dashboard',
+    this.middleCrumbLabel,
+    this.middleCrumbRoute,
   });
 
   @override
@@ -38,8 +48,8 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
   DateTime _eventEndDate = DateTime(2026, 5, 25, 17, 0);
   int _totalSlots = 120;
   int _availableSlots = 10;
-  String _organiserName = 'Student Affairs Office';
-  String _organiserContact = 'Contact: organiser@unisphere.edu';
+  final String _organiserName = 'Student Affairs Office';
+  final String _organiserContact = 'Contact: organiser@unisphere.edu';
 
   bool get canEdit =>
       widget.role == 'admin' ||
@@ -177,6 +187,61 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
     });
   }
 
+  Widget _buildBreadcrumbs() {
+    final hasMiddleCrumb =
+        widget.middleCrumbLabel != null && widget.middleCrumbLabel!.isNotEmpty;
+
+    return Row(
+      children: [
+        InkWell(
+          onTap: () => Navigator.pushNamed(context, widget.dashboardRoute),
+          borderRadius: BorderRadius.circular(8),
+          child: const Icon(Icons.arrow_back, size: 20, color: Colors.grey),
+        ),
+        const SizedBox(width: 8),
+        GestureDetector(
+          onTap: () => Navigator.pushNamed(context, widget.dashboardRoute),
+          child: Text(
+            widget.dashboardLabel,
+            style: const TextStyle(color: Colors.grey, fontSize: 14),
+          ),
+        ),
+        const Text('  /  ', style: TextStyle(color: Colors.grey, fontSize: 14)),
+        if (hasMiddleCrumb) ...[
+          GestureDetector(
+            onTap: widget.middleCrumbRoute == null
+                ? null
+                : () => Navigator.pushNamed(context, widget.middleCrumbRoute!),
+            child: Text(
+              widget.middleCrumbLabel!,
+              style: TextStyle(
+                color: widget.middleCrumbRoute == null
+                    ? Colors.grey
+                    : const Color(0xFF2D3A8C),
+                fontSize: 14,
+              ),
+            ),
+          ),
+          const Text(
+            '  /  ',
+            style: TextStyle(color: Colors.grey, fontSize: 14),
+          ),
+        ],
+        Flexible(
+          child: Text(
+            _eventTitle,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Color(0xFF2D3A8C),
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 900;
@@ -199,38 +264,45 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
                 horizontal: 24,
                 vertical: 24,
               ),
-              child: isMobile
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildHeroSection(),
-                        const SizedBox(height: 18),
-                        _buildRightPanel(),
-                      ],
-                    )
-                  : Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: KeyedSubtree(
-                            key: _heroKey,
-                            child: _buildHeroSection(),
-                          ),
-                        ),
-                        const SizedBox(width: 18),
-                        Expanded(
-                          flex: 2,
-                          child: Transform.translate(
-                            offset: Offset(0, _rightPanelTranslateY),
-                            child: KeyedSubtree(
-                              key: _rightPanelKey,
-                              child: _buildRightPanel(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildBreadcrumbs(),
+                  const SizedBox(height: 14),
+                  isMobile
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildHeroSection(),
+                            const SizedBox(height: 18),
+                            _buildRightPanel(),
+                          ],
+                        )
+                      : Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: KeyedSubtree(
+                                key: _heroKey,
+                                child: _buildHeroSection(),
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 18),
+                            Expanded(
+                              flex: 2,
+                              child: Transform.translate(
+                                offset: Offset(0, _rightPanelTranslateY),
+                                child: KeyedSubtree(
+                                  key: _rightPanelKey,
+                                  child: _buildRightPanel(),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                ],
+              ),
             ),
           ),
         ),
