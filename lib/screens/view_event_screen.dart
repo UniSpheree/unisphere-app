@@ -19,10 +19,26 @@ class ViewEventScreen extends StatefulWidget {
 
 // Placeholder text will be replaced with relevant backend parameters later
 class _ViewEventScreenState extends State<ViewEventScreen> {
+  bool _hasJoined = false;
+
   bool get canEdit =>
       widget.role == 'admin' ||
       (widget.role == 'organiser' &&
           widget.currentUserId == widget.organiserId);
+
+  void _handleJoinEvent() {
+    // TODO: replace with backend join-event request when API is available.
+    setState(() {
+      _hasJoined = true;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Joined event!!'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -186,10 +202,11 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
                 onPressed: availableSlots == 0
                     ? null
                     : () {
-                        // TODO: connect RSVP/join flow
+                        _handleJoinEvent();
                       },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6D28D9),
+                  backgroundColor:
+                      _hasJoined ? const Color(0xFF16A34A) : const Color(0xFF6D28D9),
                   foregroundColor: Colors.white,
                   elevation: 0,
                   minimumSize: const Size.fromHeight(48),
@@ -198,7 +215,7 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
                   ),
                 ),
                 icon: const Icon(Icons.check_circle_outline),
-                label: const Text('Join Event'),
+                label: Text(_hasJoined ? 'Joined' : 'Join Event'),
               ),
               const SizedBox(height: 10),
               OutlinedButton.icon(
