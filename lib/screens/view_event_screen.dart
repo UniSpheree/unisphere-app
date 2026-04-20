@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:unisphere_app/widgets/header.dart';
+import 'create_event_screen.dart';
 
 class ViewEventScreen extends StatefulWidget {
   final String role; // 'admin', 'organiser', 'student'
@@ -36,6 +37,25 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
       const SnackBar(
         content: Text('Joined event!!'),
         behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _handleEditEvent() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CreateEventScreen(
+          initialEventName: 'Event Title',
+          initialDescription:
+              'This is the event description section. You can replace this text with the actual event details, schedule, venue information, and other relevant content.',
+          initialVenue: 'Main Campus Gym',
+          initialMaxAttendees: '120',
+          initialStartDate: DateTime(2026, 5, 25, 14, 0),
+          initialEndDate: DateTime(2026, 5, 25, 17, 0),
+          initialCategory: 'Sports',
+          initialVisibility: 'Public',
+        ),
       ),
     );
   }
@@ -239,9 +259,7 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
             children: [
               ElevatedButton.icon(
                 onPressed: canEdit
-                    ? () {
-                        // TODO: open the owner edit flow and wire in create_event_screen.
-                      }
+                    ? _handleEditEvent
                     : availableSlots == 0
                         ? null
                         : () {

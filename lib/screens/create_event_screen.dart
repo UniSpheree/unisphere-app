@@ -7,7 +7,26 @@ import 'package:image_picker/image_picker.dart';
 import '../widgets/header.dart';
 
 class CreateEventScreen extends StatefulWidget {
-  const CreateEventScreen({super.key});
+  final String? initialEventName;
+  final String? initialDescription;
+  final String? initialVenue;
+  final String? initialMaxAttendees;
+  final DateTime? initialStartDate;
+  final DateTime? initialEndDate;
+  final String? initialCategory;
+  final String? initialVisibility;
+
+  const CreateEventScreen({
+    super.key,
+    this.initialEventName,
+    this.initialDescription,
+    this.initialVenue,
+    this.initialMaxAttendees,
+    this.initialStartDate,
+    this.initialEndDate,
+    this.initialCategory,
+    this.initialVisibility,
+  });
 
   @override
   State<CreateEventScreen> createState() => _CreateEventScreenState();
@@ -50,6 +69,19 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       'desc': 'Society / course',
     },
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    eventNameController.text = widget.initialEventName ?? '';
+    descriptionController.text = widget.initialDescription ?? '';
+    venueController.text = widget.initialVenue ?? '';
+    maxAttendeesController.text = widget.initialMaxAttendees ?? '';
+    startDate = widget.initialStartDate;
+    endDate = widget.initialEndDate;
+    eventCategory = widget.initialCategory;
+    eventVisibility = widget.initialVisibility ?? 'Public';
+  }
 
   Future<void> _pickBannerImage() async {
     try {
