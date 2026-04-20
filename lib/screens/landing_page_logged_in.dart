@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:unisphere_app/widgets/header.dart';
 import 'create_event_screen.dart';
 
-class PersonalizedLandingPage extends StatelessWidget {
+class PersonalizedLandingPage extends StatefulWidget {
   final String userName;
   final String role;
 
@@ -100,11 +100,40 @@ class PersonalizedLandingPage extends StatelessWidget {
   ];
 
   @override
+  State<PersonalizedLandingPage> createState() => _PersonalizedLandingPageState();
+}
+
+class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
+  // State variables
+  late String _selectedFilter;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedFilter = 'All';
+  }
+
+  void _setFilter(String filter) {
+    setState(() {
+      _selectedFilter = filter;
+    });
+  }
+
+  List<Map<String, dynamic>> get _filteredEvents {
+    if (_selectedFilter == 'All') {
+      return PersonalizedLandingPage.discoverEvents;
+    }
+    return PersonalizedLandingPage.discoverEvents
+        .where((event) => event['category'] == _selectedFilter)
+        .toList();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final isOrganiser = role.toLowerCase() == 'organiser';
+    final isOrganiser = widget.role.toLowerCase() == 'organiser';
 
     return Scaffold(
-      backgroundColor: background,
+      backgroundColor: PersonalizedLandingPage.background,
       body: Column(
         children: [
           AppHeader(
@@ -140,12 +169,15 @@ class PersonalizedLandingPage extends StatelessWidget {
                     child: Column(
                       children: [
                         _DiscoverSection(
-                          userName: userName,
+                          userName: widget.userName,
                           isOrganiser: isOrganiser,
+                          selectedFilter: _selectedFilter,
+                          filteredEvents: _filteredEvents,
+                          onFilterChanged: _setFilter,
                         ),
                         const SizedBox(height: 20),
                         _DashboardPanel(
-                          userName: userName,
+                          userName: widget.userName,
                           isOrganiser: isOrganiser,
                         ),
                       ],
@@ -161,8 +193,11 @@ class PersonalizedLandingPage extends StatelessWidget {
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.fromLTRB(28, 28, 20, 28),
                         child: _DiscoverSection(
-                          userName: userName,
+                          userName: widget.userName,
                           isOrganiser: isOrganiser,
+                          selectedFilter: _selectedFilter,
+                          filteredEvents: _filteredEvents,
+                          onFilterChanged: _setFilter,
                         ),
                       ),
                     ),
@@ -171,13 +206,13 @@ class PersonalizedLandingPage extends StatelessWidget {
                       decoration: const BoxDecoration(
                         color: Color(0xFFF8FAFC),
                         border: Border(
-                          left: BorderSide(color: border),
+                          left: BorderSide(color: PersonalizedLandingPage.border),
                         ),
                       ),
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.all(24),
                         child: _DashboardPanel(
-                          userName: userName,
+                            userName: widget.userName,
                           isOrganiser: isOrganiser,
                         ),
                       ),
@@ -196,10 +231,16 @@ class PersonalizedLandingPage extends StatelessWidget {
 class _DiscoverSection extends StatelessWidget {
   final String userName;
   final bool isOrganiser;
+  final String selectedFilter;
+  final List<Map<String, dynamic>> filteredEvents;
+  final Function(String) onFilterChanged;
 
   const _DiscoverSection({
     required this.userName,
     required this.isOrganiser,
+    required this.selectedFilter,
+    required this.filteredEvents,
+    required this.onFilterChanged,
   });
 
   @override
@@ -263,7 +304,10 @@ class _DiscoverSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 24),
-        const _CategoryChips(),
+        _CategoryChips(
+          selectedFilter: selectedFilter,
+          onFilterChanged: onFilterChanged,
+        ),
         const SizedBox(height: 24),
         LayoutBuilder(
           builder: (context, constraints) {
@@ -271,7 +315,7 @@ class _DiscoverSection extends StatelessWidget {
             final crossAxisCount = isSmall ? 1 : 2;
 
             return GridView.builder(
-              itemCount: PersonalizedLandingPage.discoverEvents.length,
+              itemCount: filteredEvents.length,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -281,7 +325,7 @@ class _DiscoverSection extends StatelessWidget {
                 childAspectRatio: isSmall ? 2.2 : 1.45,
               ),
               itemBuilder: (context, index) {
-                final event = PersonalizedLandingPage.discoverEvents[index];
+                final event = filteredEvents[index];
                 return _DiscoverEventCard(event: event);
               },
             );
@@ -445,7 +489,13 @@ class _SearchAndFilters extends StatelessWidget {
 }
 
 class _CategoryChips extends StatelessWidget {
-  const _CategoryChips();
+  final String selectedFilter;
+  final Function(String) onFilterChanged;
+
+  const _CategoryChips({
+    required this.selectedFilter,
+    required this.onFilterChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -462,23 +512,26 @@ class _CategoryChips extends StatelessWidget {
       spacing: 10,
       runSpacing: 10,
       children: chips.map((chip) {
-        final selected = chip == 'All';
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: selected ? PersonalizedLandingPage.primary : Colors.white,
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(
-              color: selected
-                  ? PersonalizedLandingPage.primary
-                  : PersonalizedLandingPage.border,
+        final isSelected = chip == selectedFilter;
+        return GestureDetector(
+          onTap: () => onFilterChanged(chip),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: isSelected ? PersonalizedLandingPage.primary : Colors.white,
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: isSelected
+                    ? PersonalizedLandingPage.primary
+                    : PersonalizedLandingPage.border,
+              ),
             ),
-          ),
-          child: Text(
-            chip,
-            style: TextStyle(
-              color: selected ? Colors.white : PersonalizedLandingPage.text,
-              fontWeight: FontWeight.w600,
+            child: Text(
+              chip,
+              style: TextStyle(
+                color: isSelected ? Colors.white : PersonalizedLandingPage.text,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         );
