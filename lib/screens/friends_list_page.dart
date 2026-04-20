@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'chat_page.dart';
+
 class FriendsListPage extends StatelessWidget {
   const FriendsListPage({super.key});
 
@@ -18,13 +20,21 @@ class FriendsListPage extends StatelessWidget {
         separatorBuilder: (context, i) => const Divider(height: 1),
         itemBuilder: (context, i) {
           final friend = friends[i];
+          final friendName = friend['name']!;
           return ListTile(
             leading: const CircleAvatar(child: Icon(Icons.person)),
-            title: Text(friend['name']!),
+            title: Text(friendName),
             subtitle: Text(friend['status']!),
             trailing: IconButton(
               icon: const Icon(Icons.message),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChatPage(friendName: friendName),
+                  ),
+                );
+              },
             ),
           );
         },

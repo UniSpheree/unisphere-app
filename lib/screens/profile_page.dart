@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/header.dart';
+import 'chat_page.dart';
 import 'calendar_page.dart';
 import 'my_events_page.dart';
 import 'friends_list_page.dart';
@@ -16,6 +17,9 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   String name = 'John Doe';
   String description = 'A short description about the user goes here.';
+  String email = 'john.doe@email.com';
+  String university = 'Sample University';
+  bool isOrganiser = false;
 
   @override
   Widget build(BuildContext context) {
@@ -64,6 +68,64 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         textAlign: TextAlign.left,
                       ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.email,
+                            size: 18,
+                            color: Colors.indigo,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(email, style: const TextStyle(fontSize: 15)),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.school,
+                            size: 18,
+                            color: Colors.indigo,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            university,
+                            style: const TextStyle(fontSize: 15),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Text(
+                            'Role: ',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text(isOrganiser ? 'Organiser' : 'Attendee'),
+                          const SizedBox(width: 12),
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                isOrganiser = !isOrganiser;
+                              });
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isOrganiser
+                                  ? Colors.orange
+                                  : Colors.indigo,
+                              foregroundColor: Colors.white,
+                              minimumSize: Size(0, 32),
+                              padding: EdgeInsets.symmetric(horizontal: 16),
+                            ),
+                            child: Text(
+                              isOrganiser
+                                  ? 'Switch to Attendee'
+                                  : 'Switch to Organiser',
+                            ),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
                         onPressed: () {
@@ -73,6 +135,13 @@ class _ProfilePageState extends State<ProfilePage> {
                           final descController = TextEditingController(
                             text: description,
                           );
+                          final emailController = TextEditingController(
+                            text: email,
+                          );
+                          final universityController = TextEditingController(
+                            text: university,
+                          );
+                          final emailFormKey = GlobalKey<FormState>();
                           showDialog(
                             context: context,
                             builder: (context) {
@@ -83,61 +152,83 @@ class _ProfilePageState extends State<ProfilePage> {
                                 child: Container(
                                   width: 400,
                                   padding: const EdgeInsets.all(32),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      const Text(
-                                        'Edit Profile',
-                                        style: TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 24),
-                                      TextField(
-                                        controller: nameController,
-                                        decoration: const InputDecoration(
-                                          labelText: 'Name',
-                                          border: OutlineInputBorder(),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 20),
-                                      TextField(
-                                        controller: descController,
-                                        decoration: const InputDecoration(
-                                          labelText: 'Description',
-                                          border: OutlineInputBorder(),
-                                        ),
-                                        minLines: 2,
-                                        maxLines: 4,
-                                      ),
-                                      const SizedBox(height: 28),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context),
-                                            child: const Text('Cancel'),
+                                  child: Form(
+                                    key: emailFormKey,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        const Text(
+                                          'Edit Profile',
+                                          style: TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
                                           ),
-                                          const SizedBox(width: 12),
-                                          ElevatedButton(
-                                            onPressed: () {
-                                              setState(() {
-                                                name = nameController.text;
-                                                description =
-                                                    descController.text;
-                                              });
-                                              Navigator.pop(context);
-                                            },
-                                            child: const Text('Save'),
+                                        ),
+                                        const SizedBox(height: 24),
+                                        TextField(
+                                          controller: nameController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Name',
+                                            border: OutlineInputBorder(),
                                           ),
-                                        ],
-                                      ),
-                                    ],
+                                        ),
+                                        const SizedBox(height: 20),
+                                        TextField(
+                                          controller: descController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Description',
+                                            border: OutlineInputBorder(),
+                                          ),
+                                          minLines: 2,
+                                          maxLines: 4,
+                                        ),
+                                        const SizedBox(height: 20),
+                                        TextField(
+                                          controller: emailController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Email',
+                                            border: OutlineInputBorder(),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 20),
+                                        TextField(
+                                          controller: universityController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'University',
+                                            border: OutlineInputBorder(),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 28),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(context),
+                                              child: const Text('Cancel'),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  name = nameController.text;
+                                                  description =
+                                                      descController.text;
+                                                  email = emailController.text;
+                                                  university =
+                                                      universityController.text;
+                                                });
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text('Save'),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               );
@@ -214,7 +305,16 @@ class _ProfilePageState extends State<ProfilePage> {
                               subtitle: const Text('Online'),
                               trailing: IconButton(
                                 icon: const Icon(Icons.message),
-                                onPressed: () {},
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const ChatPage(
+                                        friendName: 'Jane Smith',
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                               minLeadingWidth: 0,
                             ),
@@ -228,13 +328,22 @@ class _ProfilePageState extends State<ProfilePage> {
                                 child: Icon(Icons.person, color: Colors.white),
                               ),
                               title: const Text(
-                                'John Appleseed',
+                                'John App',
                                 overflow: TextOverflow.ellipsis,
                               ),
                               subtitle: const Text('Offline'),
                               trailing: IconButton(
                                 icon: const Icon(Icons.message),
-                                onPressed: () {},
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const ChatPage(
+                                        friendName: 'John App',
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                               minLeadingWidth: 0,
                             ),
@@ -254,7 +363,16 @@ class _ProfilePageState extends State<ProfilePage> {
                               subtitle: const Text('Online'),
                               trailing: IconButton(
                                 icon: const Icon(Icons.message),
-                                onPressed: () {},
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const ChatPage(
+                                        friendName: 'Emily Doe',
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                               minLeadingWidth: 0,
                             ),
@@ -286,27 +404,29 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const MyEventsPage(),
+                          if (isOrganiser)
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const MyEventsPage(),
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.indigo.shade50,
+                                  foregroundColor: Colors.indigo,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.indigo.shade50,
-                                foregroundColor: Colors.indigo,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
                                 ),
+                                child: const Text('My Events'),
                               ),
-                              child: const Text('My Events'),
                             ),
-                          ),
                         ],
                       ),
                     ],
