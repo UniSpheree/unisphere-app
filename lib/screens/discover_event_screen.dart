@@ -89,25 +89,19 @@ class DiscoverEventScreen extends StatelessWidget {
                               ),
                               const SizedBox(width: 12),
                               Container(
-                                height: 48,
-                                width: 48,
+                                height: 54,
+                                width: 54,
                                 decoration: BoxDecoration(
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.05),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(color: const Color(0xFFE5E7EB)),
                                 ),
                                 child: IconButton(
                                   onPressed: () {
                                   },
-                                  icon: Icon(
-                                    Icons.filter_list,
-                                    color: Colors.grey[600],
+                                  icon: const Icon(
+                                    Icons.tune_rounded,
+                                    color: Color(0xFF4F46E5),
                                     size: 20,
                                   ),
                                   tooltip: 'Filter events',
