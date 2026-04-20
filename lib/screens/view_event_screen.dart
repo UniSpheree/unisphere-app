@@ -61,6 +61,8 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
                       children: [
                         _buildHeroSection(),
                         const SizedBox(height: 16),
+                        _buildRightPanel(),
+                        const SizedBox(height: 16),
                       ],
                     )
                   else
