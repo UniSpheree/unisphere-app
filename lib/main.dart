@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/create_event_screen.dart';
+import 'screens/landing_page.dart';
+import 'screens/landing_page_logged_in.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/login_screen.dart';
@@ -24,9 +26,11 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFF0F2F8),
         fontFamily: 'Roboto',
       ),
-      // ── Initial route ────────────────────────────────────────────────────
-      initialRoute: '/login',
+      // ── Initial route (landing page as the app entry point)
+      initialRoute: '/',
       routes: {
+        '/': (_) => const LandingPage(),
+        '/logged-in': (_) => const PersonalizedLandingPage(),
         '/login': (_) => const LoginScreen(),
         '/register': (_) => const RegisterScreen(),
         '/forgot-password': (_) => const ForgotPasswordScreen(),

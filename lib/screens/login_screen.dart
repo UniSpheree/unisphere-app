@@ -49,12 +49,17 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           backgroundColor: Color(0xFF2D3A8C),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+          ),
         ),
       );
-      Navigator.pushReplacementNamed(
+      // After successful login, go to the landing page and clear history
+      // Navigate to logged-in landing page after successful login
+      Navigator.pushNamedAndRemoveUntil(
         context,
-        '/dashboard',
+        '/logged-in',
+        (route) => false,
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -65,7 +70,9 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+          ),
         ),
       );
     }
@@ -178,10 +185,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: () => Navigator.pushNamed(
-                          context,
-                          '/forgot-password',
-                        ),
+                        onPressed: () =>
+                            Navigator.pushNamed(context, '/forgot-password'),
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.zero,
                           minimumSize: Size.zero,
@@ -277,10 +282,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(fontSize: 13, color: Colors.grey),
                         ),
                         GestureDetector(
-                          onTap: () => Navigator.pushNamed(
-                            context,
-                            '/register',
-                          ),
+                          onTap: () =>
+                              Navigator.pushNamed(context, '/register'),
                           child: const Text(
                             'Request Access',
                             style: TextStyle(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/header.dart';
+import '../utils/mock_backend.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -8,7 +9,10 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
-      appBar: AppHeader(),
+      appBar: const PreferredSize(
+        preferredSize: Size.fromHeight(72),
+        child: AppHeader(),
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
@@ -16,6 +20,43 @@ class ProfileScreen extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 480),
             child: Column(
               children: [
+                // ── Back / breadcrumb ───────────────────────────────────
+                Row(
+                  children: [
+                    InkWell(
+                      onTap: () =>
+                          Navigator.pushReplacementNamed(context, '/logged-in'),
+                      borderRadius: BorderRadius.circular(8),
+                      child: const Icon(
+                        Icons.arrow_back,
+                        size: 20,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () =>
+                          Navigator.pushReplacementNamed(context, '/logged-in'),
+                      child: const Text(
+                        'Landing Page',
+                        style: TextStyle(color: Colors.grey, fontSize: 14),
+                      ),
+                    ),
+                    const Text(
+                      '  /  ',
+                      style: TextStyle(color: Colors.grey, fontSize: 14),
+                    ),
+                    const Text(
+                      'Profile',
+                      style: TextStyle(
+                        color: Color(0xFF1A1F36),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
                 // ── Avatar card ──────────────────────────────────────────
                 Container(
                   width: double.infinity,
@@ -38,8 +79,9 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 44,
-                        backgroundColor:
-                            const Color(0xFF2D3A8C).withOpacity(0.12),
+                        backgroundColor: const Color(
+                          0xFF2D3A8C,
+                        ).withOpacity(0.12),
                         child: const Icon(
                           Icons.person_outline,
                           size: 44,
@@ -146,8 +188,11 @@ class ProfileScreen extends StatelessWidget {
                   width: double.infinity,
                   height: 48,
                   child: OutlinedButton.icon(
-                    onPressed: () =>
-                        Navigator.pushReplacementNamed(context, '/login'),
+                    onPressed: () {
+                      // Clear mock session and return to anonymous landing page
+                      MockBackend().logout();
+                      Navigator.pushReplacementNamed(context, '/');
+                    },
                     icon: const Icon(
                       Icons.logout,
                       size: 18,

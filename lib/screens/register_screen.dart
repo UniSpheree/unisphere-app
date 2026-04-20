@@ -20,8 +20,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
   String? _selectedUniversity;
-  final TextEditingController _universityFieldController = TextEditingController();
-  final TextEditingController _universitySearchController = TextEditingController();
+  final TextEditingController _universityFieldController =
+      TextEditingController();
+  final TextEditingController _universitySearchController =
+      TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
@@ -91,8 +93,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       );
-      // Always go to dashboard after registration
-      Navigator.pushReplacementNamed(context, '/dashboard');
+      // After successful registration, go to the logged-in landing page and clear history
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/logged-in',
+        (route) => false,
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -180,10 +186,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             hintText: 'Alex',
                             prefixIcon: Icons.person_outline,
                             controller: _firstNameController,
-                            validator: (v) =>
-                                (v == null || v.trim().isEmpty)
-                                    ? 'Required'
-                                    : null,
+                            validator: (v) => (v == null || v.trim().isEmpty)
+                                ? 'Required'
+                                : null,
                           ),
                         ),
                         const SizedBox(width: 14),
@@ -193,10 +198,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             hintText: 'Smith',
                             prefixIcon: Icons.person_outline,
                             controller: _lastNameController,
-                            validator: (v) =>
-                                (v == null || v.trim().isEmpty)
-                                    ? 'Required'
-                                    : null,
+                            validator: (v) => (v == null || v.trim().isEmpty)
+                                ? 'Required'
+                                : null,
                           ),
                         ),
                       ],
@@ -234,69 +238,107 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             if (textEditingValue.text == '') {
                               return const Iterable<String>.empty();
                             }
-                            return ukUniversities.where((String uni) =>
-                                uni.toLowerCase().contains(textEditingValue.text.toLowerCase()));
-                          },
-                          fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-                            _universityFieldController.text = controller.text;
-                            return TextFormField(
-                              controller: controller,
-                              focusNode: focusNode,
-                              style: const TextStyle(fontSize: 14, color: Color(0xFF1A1F36)),
-                              decoration: InputDecoration(
-                                hintText: 'Select or type your institution',
-                                hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-                                prefixIcon: const Icon(Icons.school_outlined, size: 18, color: Color(0xFF757575)),
-                                filled: true,
-                                fillColor: Colors.white,
-                                contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: Colors.grey.shade300),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: Colors.grey.shade300),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(color: Color(0xFF2D3A8C), width: 1.5),
-                                ),
-                                errorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(color: Colors.red, width: 1.2),
-                                ),
-                                focusedErrorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(color: Colors.red, width: 1.5),
-                                ),
+                            return ukUniversities.where(
+                              (String uni) => uni.toLowerCase().contains(
+                                textEditingValue.text.toLowerCase(),
                               ),
-                              validator: (v) {
-                                if (v == null || v.isEmpty) {
-                                  return 'Institution is required';
-                                }
-                                if (!ukUniversities.contains(v)) {
-                                  return 'Institution does not exist.';
-                                }
-                                final email = _emailController.text.trim().toLowerCase();
-                                final parts = email.split('@');
-                                if (parts.length == 2) {
-                                  final domain = parts[1];
-                                  // Try to extract university name from domain
-                                  final domainParts = domain.split('.');
-                                  if (domainParts.length >= 3) {
-                                    // e.g. ox.ac.uk, cam.ac.uk, manchester.ac.uk
-                                    final uniFromDomain = domainParts[0];
-                                    final lowerV = v.toLowerCase();
-                                    if (lowerV.contains(uniFromDomain)) {
-                                      return 'You cannot enter your own university.';
-                                    }
-                                  }
-                                }
-                                return null;
-                              },
                             );
                           },
+                          fieldViewBuilder:
+                              (
+                                context,
+                                controller,
+                                focusNode,
+                                onFieldSubmitted,
+                              ) {
+                                _universityFieldController.text =
+                                    controller.text;
+                                return TextFormField(
+                                  controller: controller,
+                                  focusNode: focusNode,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Color(0xFF1A1F36),
+                                  ),
+                                  decoration: InputDecoration(
+                                    hintText: 'Select or type your institution',
+                                    hintStyle: TextStyle(
+                                      color: Colors.grey.shade400,
+                                      fontSize: 14,
+                                    ),
+                                    prefixIcon: const Icon(
+                                      Icons.school_outlined,
+                                      size: 18,
+                                      color: Color(0xFF757575),
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 14,
+                                      horizontal: 14,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: BorderSide(
+                                        color: Colors.grey.shade300,
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: BorderSide(
+                                        color: Colors.grey.shade300,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(
+                                        color: Color(0xFF2D3A8C),
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    errorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(
+                                        color: Colors.red,
+                                        width: 1.2,
+                                      ),
+                                    ),
+                                    focusedErrorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(
+                                        color: Colors.red,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                  ),
+                                  validator: (v) {
+                                    if (v == null || v.isEmpty) {
+                                      return 'Institution is required';
+                                    }
+                                    if (!ukUniversities.contains(v)) {
+                                      return 'Institution does not exist.';
+                                    }
+                                    final email = _emailController.text
+                                        .trim()
+                                        .toLowerCase();
+                                    final parts = email.split('@');
+                                    if (parts.length == 2) {
+                                      final domain = parts[1];
+                                      // Try to extract university name from domain
+                                      final domainParts = domain.split('.');
+                                      if (domainParts.length >= 3) {
+                                        // e.g. ox.ac.uk, cam.ac.uk, manchester.ac.uk
+                                        final uniFromDomain = domainParts[0];
+                                        final lowerV = v.toLowerCase();
+                                        if (lowerV.contains(uniFromDomain)) {
+                                          return 'You cannot enter your own university.';
+                                        }
+                                      }
+                                    }
+                                    return null;
+                                  },
+                                );
+                              },
                           onSelected: (String selection) {
                             setState(() {
                               _selectedUniversity = selection;
@@ -356,9 +398,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           size: 18,
                           color: Colors.grey.shade500,
                         ),
-                        onPressed: () => setState(
-                          () => _obscureConfirm = !_obscureConfirm,
-                        ),
+                        onPressed: () =>
+                            setState(() => _obscureConfirm = !_obscureConfirm),
                       ),
                     ),
 
