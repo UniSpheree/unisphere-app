@@ -142,6 +142,12 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
   }
 
   Widget _buildRightPanel() {
+    const int totalSlots = 120;
+    const int availableSlots = 10; // placeholder info
+    final double availability = totalSlots == 0
+        ? 0
+        : availableSlots.clamp(0, totalSlots) / totalSlots;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -155,75 +161,62 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
         children: [
           _sectionTitle('Availability', fontSize: 18),
           const SizedBox(height: 8),
-          const Text(
-            '120 slots available',
-            style: TextStyle(fontSize: 14, color: Colors.black54),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: availability,
+              minHeight: 10,
+              backgroundColor: const Color(0xFFE5E7EB),
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(Color(0xFF6D28D9)),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '$availableSlots / $totalSlots slots Available',
+            style: const TextStyle(fontSize: 14, color: Colors.black54),
           ),
           const SizedBox(height: 16),
           _sectionTitle('Actions', fontSize: 18),
           const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                // TODO: connect RSVP/join flow
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6D28D9),
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              icon: const Icon(Icons.check_circle_outline),
-              label: const Text('Join Event'),
-            ),
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () {
-                // TODO: connect share flow
-              },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF6D28D9),
-                side: const BorderSide(color: Color(0xFF6D28D9)),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              icon: const Icon(Icons.share_outlined),
-              label: const Text('Share'),
-            ),
-          ),
-          const SizedBox(height: 16),
-          _sectionTitle('Organiser', fontSize: 18),
-          const SizedBox(height: 8),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  CircleAvatar(child: Icon(Icons.person_outline)),
-                  SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('Student Affairs Office'), // placeholder info
-                      Text(
-                        'Contact: organiser@unisphere.edu',
-                      ), // placeholder info
-                    ],
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ElevatedButton.icon(
+                onPressed: availableSlots == 0
+                    ? null
+                    : () {
+                        // TODO: connect RSVP/join flow
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6D28D9),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  minimumSize: const Size.fromHeight(48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                ],
+                ),
+                icon: const Icon(Icons.check_circle_outline),
+                label: const Text('Join Event'),
               ),
-            ),
+              const SizedBox(height: 10),
+              OutlinedButton.icon(
+                onPressed: () {
+                  // TODO: connect share flow
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF6D28D9),
+                  side: const BorderSide(color: Color(0xFF6D28D9)),
+                  minimumSize: const Size.fromHeight(48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                icon: const Icon(Icons.share_outlined),
+                label: const Text('Share'),
+              ),
+            ],
           ),
         ],
       ),
