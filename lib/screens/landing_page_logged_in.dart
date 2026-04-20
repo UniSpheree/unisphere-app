@@ -106,11 +106,21 @@ class PersonalizedLandingPage extends StatefulWidget {
 class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
   // State variables
   late String _selectedFilter;
+  late String _searchQuery;
+  late TextEditingController _searchController;
 
   @override
   void initState() {
     super.initState();
     _selectedFilter = 'All';
+    _searchQuery = '';
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   void _setFilter(String filter) {
@@ -119,13 +129,32 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
     });
   }
 
+  void _setSearchQuery(String query) {
+    setState(() {
+      _searchQuery = query;
+    });
+  }
+
   List<Map<String, dynamic>> get _filteredEvents {
-    if (_selectedFilter == 'All') {
-      return PersonalizedLandingPage.discoverEvents;
+    final baseEvents = _selectedFilter == 'All'
+        ? PersonalizedLandingPage.discoverEvents
+        : PersonalizedLandingPage.discoverEvents
+            .where((event) => event['category'] == _selectedFilter)
+            .toList();
+
+    if (_searchQuery.isEmpty) {
+      return baseEvents;
     }
-    return PersonalizedLandingPage.discoverEvents
-        .where((event) => event['category'] == _selectedFilter)
-        .toList();
+
+    final query = _searchQuery.toLowerCase();
+    return baseEvents.where((event) {
+      final category = (event['category'] as String).toLowerCase();
+      final title = (event['title'] as String).toLowerCase();
+      final titleWords = title.split(' ');
+
+      return category.startsWith(query) ||
+          titleWords.any((word) => word.contains(query));
+    }).toList();
   }
 
   @override
@@ -174,6 +203,8 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
                           selectedFilter: _selectedFilter,
                           filteredEvents: _filteredEvents,
                           onFilterChanged: _setFilter,
+                          searchController: _searchController,
+                          onSearchChanged: _setSearchQuery,
                         ),
                         const SizedBox(height: 20),
                         _DashboardPanel(
@@ -198,6 +229,8 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
                           selectedFilter: _selectedFilter,
                           filteredEvents: _filteredEvents,
                           onFilterChanged: _setFilter,
+                          searchController: _searchController,
+                          onSearchChanged: _setSearchQuery,
                         ),
                       ),
                     ),
@@ -234,6 +267,8 @@ class _DiscoverSection extends StatelessWidget {
   final String selectedFilter;
   final List<Map<String, dynamic>> filteredEvents;
   final Function(String) onFilterChanged;
+  final TextEditingController searchController;
+  final ValueChanged<String> onSearchChanged;
 
   const _DiscoverSection({
     required this.userName,
@@ -241,6 +276,8 @@ class _DiscoverSection extends StatelessWidget {
     required this.selectedFilter,
     required this.filteredEvents,
     required this.onFilterChanged,
+    required this.searchController,
+    required this.onSearchChanged,
   });
 
   @override
@@ -253,7 +290,10 @@ class _DiscoverSection extends StatelessWidget {
           isOrganiser: isOrganiser,
         ),
         const SizedBox(height: 24),
-        const _SearchAndFilters(),
+        _SearchAndFilters(
+          searchController: searchController,
+          onSearchChanged: onSearchChanged,
+        ),
         const SizedBox(height: 28),
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -430,7 +470,13 @@ class _TopWelcomeStrip extends StatelessWidget {
 }
 
 class _SearchAndFilters extends StatelessWidget {
-  const _SearchAndFilters();
+  final TextEditingController searchController;
+  final ValueChanged<String> onSearchChanged;
+
+  const _SearchAndFilters({
+    required this.searchController,
+    required this.onSearchChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -452,15 +498,22 @@ class _SearchAndFilters extends StatelessWidget {
                 ),
               ],
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.search_rounded, color: PersonalizedLandingPage.muted),
-                SizedBox(width: 12),
+                const Icon(Icons.search_rounded, color: PersonalizedLandingPage.muted),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    'Search events, societies, categories, places...',
-                    style: TextStyle(
-                      color: PersonalizedLandingPage.muted,
+                  child: TextField(
+                    controller: searchController,
+                    onChanged: onSearchChanged,
+                    decoration: const InputDecoration(
+                      hintText: 'Search events, societies, categories, places...',
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    style: const TextStyle(
+                      color: PersonalizedLandingPage.text,
                       fontSize: 15,
                     ),
                   ),
