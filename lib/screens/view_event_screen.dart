@@ -69,14 +69,17 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
                   ),
                 ),
               ),
-              );
+            );
           }
 
           return Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 980),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 24,
+                ),
                 child: SizedBox(
                   height: constraints.maxHeight,
                   child: Row(
@@ -134,7 +137,10 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
                 _sectionTitle('Organiser', fontSize: 18),
                 Card(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: const [
@@ -145,9 +151,7 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text('Student Affairs Office'), // placeholder info
-                            Text(
-                              'Contact: organiser@unisphere.edu',
-                            ), // placeholder info
+                            Text('Contact: organiser@unisphere.edu'), // placeholder info
                           ],
                         ),
                       ],
@@ -217,8 +221,9 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
               value: availability,
               minHeight: 10,
               backgroundColor: const Color(0xFFE5E7EB),
-              valueColor:
-                  const AlwaysStoppedAnimation<Color>(Color(0xFF6D28D9)),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Color(0xFF6D28D9),
+              ),
             ),
           ),
           const SizedBox(height: 8),
@@ -233,14 +238,21 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               ElevatedButton.icon(
-                onPressed: availableSlots == 0
-                    ? null
-                    : () {
-                        _handleJoinEvent();
-                      },
+                onPressed: canEdit
+                    ? () {
+                        // TODO: open the owner edit flow and wire in create_event_screen.
+                      }
+                    : availableSlots == 0
+                        ? null
+                        : () {
+                            _handleJoinEvent();
+                          },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      _hasJoined ? const Color(0xFF16A34A) : const Color(0xFF6D28D9),
+                  backgroundColor: canEdit
+                      ? const Color(0xFF6D28D9)
+                      : _hasJoined
+                      ? const Color(0xFF16A34A)
+                      : const Color(0xFF6D28D9),
                   foregroundColor: Colors.white,
                   elevation: 0,
                   minimumSize: const Size.fromHeight(48),
@@ -248,8 +260,12 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                icon: const Icon(Icons.check_circle_outline),
-                label: Text(_hasJoined ? 'Joined' : 'Join Event'),
+                icon: Icon(
+                  canEdit ? Icons.edit_outlined : Icons.check_circle_outline,
+                ),
+                label: Text(
+                  canEdit ? 'Edit' : (_hasJoined ? 'Joined' : 'Join Event'),
+                ),
               ),
               const SizedBox(height: 10),
               OutlinedButton.icon(
