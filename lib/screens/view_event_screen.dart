@@ -21,6 +21,18 @@ class ViewEventScreen extends StatefulWidget {
 // Placeholder text will be replaced with relevant backend parameters later
 class _ViewEventScreenState extends State<ViewEventScreen> {
   bool _hasJoined = false;
+  String _eventTitle = 'Event Title';
+  String _eventDescription =
+      'This is the event description section. You can replace this text with the actual event details, schedule, venue information, and other relevant content.';
+  String _eventVenue = 'Main Campus Gym';
+  String _eventCategory = 'Sports';
+  String _eventVisibility = 'Public';
+  DateTime _eventStartDate = DateTime(2026, 5, 25, 14, 0);
+  DateTime _eventEndDate = DateTime(2026, 5, 25, 17, 0);
+  int _totalSlots = 120;
+  int _availableSlots = 10;
+  String _organiserName = 'Student Affairs Office';
+  String _organiserContact = 'Contact: organiser@unisphere.edu';
 
   bool get canEdit =>
       widget.role == 'admin' ||
@@ -41,23 +53,71 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
     );
   }
 
-  void _handleEditEvent() {
-    Navigator.push(
+  String _formatDate(DateTime value) {
+    final monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${monthNames[value.month - 1]} ${value.day}, ${value.year}';
+  }
+
+  String _formatTime(DateTime value) {
+    final hour = value.hour % 12 == 0 ? 12 : value.hour % 12;
+    final minute = value.minute.toString().padLeft(2, '0');
+    final period = value.hour >= 12 ? 'PM' : 'AM';
+    return '${hour.toString().padLeft(2, '0')}:$minute $period';
+  }
+
+  Future<void> _handleEditEvent() async {
+    final result = await Navigator.push<Map<String, dynamic>>(
       context,
       MaterialPageRoute(
         builder: (_) => CreateEventScreen(
-          initialEventName: 'Event Title',
-          initialDescription:
-              'This is the event description section. You can replace this text with the actual event details, schedule, venue information, and other relevant content.',
-          initialVenue: 'Main Campus Gym',
-          initialMaxAttendees: '120',
-          initialStartDate: DateTime(2026, 5, 25, 14, 0),
-          initialEndDate: DateTime(2026, 5, 25, 17, 0),
-          initialCategory: 'Sports',
-          initialVisibility: 'Public',
+          initialEventName: _eventTitle,
+          initialDescription: _eventDescription,
+          initialVenue: _eventVenue,
+          initialMaxAttendees: _totalSlots.toString(),
+          initialStartDate: _eventStartDate,
+          initialEndDate: _eventEndDate,
+          initialCategory: _eventCategory,
+          initialVisibility: _eventVisibility,
         ),
       ),
     );
+
+    if (!mounted || result == null) return;
+
+    setState(() {
+      _eventTitle = (result['eventName'] as String?) ?? _eventTitle;
+      _eventDescription =
+          (result['description'] as String?) ?? _eventDescription;
+      _eventVenue = (result['venue'] as String?) ?? _eventVenue;
+      _eventCategory = (result['category'] as String?) ?? _eventCategory;
+      _eventVisibility =
+          (result['visibility'] as String?) ?? _eventVisibility;
+
+      final parsedMaxAttendees =
+          int.tryParse((result['maxAttendees'] as String?) ?? '');
+      if (parsedMaxAttendees != null) {
+        _totalSlots = parsedMaxAttendees;
+        _availableSlots = parsedMaxAttendees;
+      }
+
+      final startDate = result['startDate'] as DateTime?;
+      final endDate = result['endDate'] as DateTime?;
+      if (startDate != null) _eventStartDate = startDate;
+      if (endDate != null) _eventEndDate = endDate;
+    });
   }
 
   @override
@@ -148,8 +208,8 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Event Title',
+                Text(
+                  _eventTitle,
                   textAlign: TextAlign.left,
                   style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                 ),
@@ -163,15 +223,15 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: const [
+                      children: [
                         CircleAvatar(child: Icon(Icons.person_outline)),
                         SizedBox(width: 10),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text('Student Affairs Office'), // placeholder info
-                            Text('Contact: organiser@unisphere.edu'), // placeholder info
+                            Text(_organiserName),
+                            Text(_organiserContact),
                           ],
                         ),
                       ],
@@ -185,25 +245,23 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
                   children: [
                     _infoChip(
                       Icons.calendar_today_outlined,
-                      'May 25, 2026',
-                    ), // placeholder info
+                      _formatDate(_eventStartDate),
+                    ),
                     _infoChip(
                       Icons.access_time_outlined,
-                      '2:00 PM - 5:00 PM',
-                    ), // placeholder info
+                      '${_formatTime(_eventStartDate)} - ${_formatTime(_eventEndDate)}',
+                    ),
                     _infoChip(
                       Icons.location_on_outlined,
-                      'Main Campus Gym',
-                    ), // placeholder info
+                      _eventVenue,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 10),
                 _sectionTitle('Overview'),
                 const SizedBox(height: 8),
-                const Text(
-                  'This is the event description section. You can replace this text '
-                  'with the actual event details, schedule, venue information, and '
-                  'other relevant content.', // placeholder info
+                Text(
+                  _eventDescription,
                   textAlign: TextAlign.left,
                   style: TextStyle(fontSize: 16, height: 1.5),
                 ),
@@ -216,11 +274,9 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
   }
 
   Widget _buildRightPanel() {
-    const int totalSlots = 120;
-    const int availableSlots = 10; // placeholder info
-    final double availability = totalSlots == 0
+    final double availability = _totalSlots == 0
         ? 0
-        : availableSlots.clamp(0, totalSlots) / totalSlots;
+      : _availableSlots.clamp(0, _totalSlots) / _totalSlots;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -248,7 +304,7 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            '$availableSlots / $totalSlots slots Available',
+            '$_availableSlots / $_totalSlots slots Available',
             style: const TextStyle(fontSize: 14, color: Colors.black54),
           ),
           const SizedBox(height: 16),
@@ -260,7 +316,7 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
               ElevatedButton.icon(
                 onPressed: canEdit
                     ? _handleEditEvent
-                    : availableSlots == 0
+                  : _availableSlots == 0
                         ? null
                         : () {
                             _handleJoinEvent();

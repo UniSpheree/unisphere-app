@@ -7,6 +7,8 @@ import 'package:image_picker/image_picker.dart';
 import '../widgets/header.dart';
 
 class CreateEventScreen extends StatefulWidget {
+  // Optional initial values are used when this screen is opened in edit mode
+  // from the event view screen.
   final String? initialEventName;
   final String? initialDescription;
   final String? initialVenue;
@@ -27,6 +29,17 @@ class CreateEventScreen extends StatefulWidget {
     this.initialCategory,
     this.initialVisibility,
   });
+
+  // Edit mode is inferred from the presence of any initial value.
+  bool get isEditing =>
+      initialEventName != null ||
+      initialDescription != null ||
+      initialVenue != null ||
+      initialMaxAttendees != null ||
+      initialStartDate != null ||
+      initialEndDate != null ||
+      initialCategory != null ||
+      initialVisibility != null;
 
   @override
   State<CreateEventScreen> createState() => _CreateEventScreenState();
@@ -73,6 +86,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   @override
   void initState() {
     super.initState();
+    // Prefill form fields when editing an existing event.
     eventNameController.text = widget.initialEventName ?? '';
     descriptionController.text = widget.initialDescription ?? '';
     venueController.text = widget.initialVenue ?? '';
@@ -213,8 +227,28 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       ),
     );
 
+    // Build a reusable payload so this screen can return edited values to
+    // the caller (ViewEventScreen) without coupling to backend models yet.
+    final result = <String, dynamic>{
+      'eventName': eventNameController.text.trim(),
+      'description': descriptionController.text.trim(),
+      'venue': venueController.text.trim(),
+      'maxAttendees': maxAttendeesController.text.trim(),
+      'startDate': startDate,
+      'endDate': endDate,
+      'category': eventCategory ?? 'Sports',
+      'visibility': eventVisibility,
+    };
+
+    if (widget.isEditing) {
+      // In edit mode, return updated values to the previous screen.
+      Navigator.pop(context, result);
+      return;
+    }
+
     _clearForm();
 
+    // In create mode, keep the existing post-create navigation behavior.
     Navigator.pushNamed(context, '/dashboard');
   }
 
@@ -305,7 +339,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'Create New Event',
+                          widget.isEditing ? 'Edit Event' : 'Create New Event', 
                           style: TextStyle(
                             fontSize: isMobile ? 22 : 30,
                             fontWeight: FontWeight.bold,
@@ -834,8 +868,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                   : const Icon(Icons.rocket_launch),
                               label: Text(
                                 _isSubmitting
-                                    ? 'Creating Event...'
-                                    : 'Create Event',
+                                    ? (widget.isEditing
+                                        ? 'Saving Changes...'
+                                        : 'Creating Event...')
+                                    : (widget.isEditing
+                                        ? 'Save Changes'
+                                        : 'Create Event'),
                                 style: const TextStyle(fontSize: 16),
                               ),
                               style: ElevatedButton.styleFrom(
