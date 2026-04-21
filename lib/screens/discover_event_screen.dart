@@ -11,6 +11,9 @@ class DiscoverEventScreen extends StatefulWidget {
 
 class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
   String _selectedFilter = 'All';
+  late TextEditingController _searchController;
+  String _searchQuery = '';
+  String _submittedSearchQuery = '';
 
   static const List<String> _filterChips = [
     'All',
@@ -78,12 +81,35 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
     });
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   List<Map<String, dynamic>> get _filteredEvents {
-    return _selectedFilter == 'All'
+    List<Map<String, dynamic>> events = _selectedFilter == 'All'
         ? _discoverEvents
         : _discoverEvents
             .where((event) => event['category'] == _selectedFilter)
             .toList();
+
+    if (_searchQuery.isEmpty) {
+      return events;
+    }
+
+    final searchLower = _searchQuery.toLowerCase();
+    return events.where((event) {
+      final titleLower = (event['title'] as String).toLowerCase();
+      final categoryLower = (event['category'] as String).toLowerCase();
+      return titleLower.contains(searchLower) || categoryLower.contains(searchLower);
+    }).toList();
   }
 
   @override
@@ -183,8 +209,21 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                       ),
                                     ],
                                   ),
-                                  child: const TextField(
-                                    decoration: InputDecoration(
+                                  child: TextField(
+                                    controller: _searchController,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _searchQuery = value;
+                                        _submittedSearchQuery = '';
+                                      });
+                                    },
+                                    onSubmitted: (value) {
+                                      setState(() {
+                                        _searchQuery = value;
+                                        _submittedSearchQuery = value;
+                                      });
+                                    },
+                                    decoration: const InputDecoration(
                                       hintText: 'Search events...',
                                       hintStyle: TextStyle(
                                         color: Color(0xFF9CA3AF),
@@ -201,7 +240,7 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                         vertical: 14,
                                       ),
                                     ),
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 14,
                                       color: Color(0xFF1A1F36),
                                     ),
@@ -231,50 +270,71 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 20),
-                          Wrap(
-                            spacing: 10,
-                            runSpacing: 10,
-                            children: _filterChips.map((chip) {
-                              final isSelected = chip == _selectedFilter;
-                              return GestureDetector(
-                                onTap: () => _setFilter(chip),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 10,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: isSelected ? const Color(0xFF4F46E5) : Colors.white,
-                                    borderRadius: BorderRadius.circular(999),
-                                    border: Border.all(
-                                      color: isSelected ? const Color(0xFF4F46E5) : const Color(0xFFE5E7EB),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    chip,
-                                    style: TextStyle(
-                                      color: isSelected ? Colors.white : const Color(0xFF1A1F36),
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
+                          if (_submittedSearchQuery.isEmpty)
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 20),
+                                Wrap(
+                                  spacing: 10,
+                                  runSpacing: 10,
+                                  children: _filterChips.map((chip) {
+                                    final isSelected = chip == _selectedFilter;
+                                    return GestureDetector(
+                                      onTap: () => _setFilter(chip),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                          vertical: 10,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: isSelected ? const Color(0xFF4F46E5) : Colors.white,
+                                          borderRadius: BorderRadius.circular(999),
+                                          border: Border.all(
+                                            color: isSelected ? const Color(0xFF4F46E5) : const Color(0xFFE5E7EB),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          chip,
+                                          style: TextStyle(
+                                            color: isSelected ? Colors.white : const Color(0xFF1A1F36),
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
                                 ),
-                              );
-                            }).toList(),
-                          ),
-                          const SizedBox(height: 28),
-                          LayoutBuilder(
-                            builder: (context, constraints) {
-                              final availableWidth = constraints.maxWidth;
-                              final crossAxisCount = availableWidth > 800 ? 3 : (availableWidth > 400 ? 2 : 1);
+                              ],
+                            ),
+                          if (_submittedSearchQuery.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 16),
+                              child: Text(
+                                'Showing results for \'$_submittedSearchQuery\'',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF9CA3AF),
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ),
+                          if (_submittedSearchQuery.isEmpty)
+                            Column(
+                              children: [
+                                const SizedBox(height: 28),
+                                LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    final availableWidth = constraints.maxWidth;
+                                    final crossAxisCount = availableWidth > 800 ? 3 : (availableWidth > 400 ? 2 : 1);
 
-                              return GridView.count(
-                                crossAxisCount: crossAxisCount,
-                                crossAxisSpacing: 16,
-                                mainAxisSpacing: 16,
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                children: _filteredEvents.map((event) {
+                                    return GridView.count(
+                                      crossAxisCount: crossAxisCount,
+                                      crossAxisSpacing: 16,
+                                      mainAxisSpacing: 16,
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      children: _filteredEvents.map((event) {
                                   return Container(
                                     decoration: BoxDecoration(
                                       color: Colors.white,
@@ -374,11 +434,11 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                     ),
                                   );
                                 }).toList(),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
                     ),
                   ),
                 );
