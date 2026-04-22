@@ -1,6 +1,4 @@
-library;
-import 'unis.dart';
-/// Shared field validators used across the app.
+// Shared field validators used across the app.
 
 /// Blocked consumer / free-mail domains that are NOT university addresses.
 const _blockedDomains = {

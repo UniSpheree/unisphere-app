@@ -9,6 +9,8 @@ class AppHeader extends StatelessWidget {
   final VoidCallback? onAboutTap;
   final VoidCallback? onSignInTap;
   final VoidCallback? onHostEventTap;
+  final VoidCallback? onRegisterTap;
+  final bool showProfile;
 
   const AppHeader({
     super.key,
@@ -18,6 +20,8 @@ class AppHeader extends StatelessWidget {
     this.onAboutTap,
     this.onSignInTap,
     this.onHostEventTap,
+    this.onRegisterTap,
+    this.showProfile = true,
   });
 
   @override
@@ -73,7 +77,15 @@ class AppHeader extends StatelessWidget {
                             onSignInTap?.call();
                             break;
                           case 'host':
-                            onHostEventTap?.call();
+                            // If a specific register callback is provided use it,
+                            // otherwise fall back to host callback or default to '/register'.
+                            if (onRegisterTap != null) {
+                              onRegisterTap!.call();
+                            } else if (onHostEventTap != null) {
+                              onHostEventTap!.call();
+                            } else {
+                              Navigator.pushNamed(context, '/register');
+                            }
                             break;
                           case 'profile':
                             if (MockBackend().currentUser != null) {
@@ -84,32 +96,47 @@ class AppHeader extends StatelessWidget {
                             break;
                         }
                       },
-                      itemBuilder: (context) => const [
-                        PopupMenuItem(
-                          value: 'find',
-                          child: Text('Find Events'),
-                        ),
-                        PopupMenuItem(
-                          value: 'create',
-                          child: Text('Create Events'),
-                        ),
-                        PopupMenuItem(
-                          value: 'tickets',
-                          child: Text('My Tickets'),
-                        ),
-                        PopupMenuItem(value: 'about', child: Text('About us')),
-                        PopupMenuDivider(),
-                        PopupMenuItem(value: 'signin', child: Text('Sign In')),
-                        PopupMenuItem(
-                          value: 'host',
-                          child: Text('Host an Event'),
-                        ),
-                        PopupMenuDivider(),
-                        PopupMenuItem(
-                          value: 'profile',
-                          child: Text('My Profile'),
-                        ),
-                      ],
+                      itemBuilder: (context) {
+                        final items = <PopupMenuEntry<String>>[
+                          const PopupMenuItem(
+                            value: 'find',
+                            child: Text('Find Events'),
+                          ),
+                          const PopupMenuItem(
+                            value: 'create',
+                            child: Text('Create Events'),
+                          ),
+                          const PopupMenuItem(
+                            value: 'tickets',
+                            child: Text('My Tickets'),
+                          ),
+                          const PopupMenuItem(
+                            value: 'about',
+                            child: Text('About us'),
+                          ),
+                          const PopupMenuDivider(),
+                          const PopupMenuItem(
+                            value: 'signin',
+                            child: Text('Sign In'),
+                          ),
+                          const PopupMenuItem(
+                            value: 'host',
+                            child: Text('Register'),
+                          ),
+                        ];
+
+                        if (showProfile) {
+                          items.add(const PopupMenuDivider());
+                          items.add(
+                            const PopupMenuItem(
+                              value: 'profile',
+                              child: Text('My Profile'),
+                            ),
+                          );
+                        }
+
+                        return items;
+                      },
                     ),
                   ],
                 )
@@ -160,7 +187,12 @@ class AppHeader extends StatelessWidget {
                         ),
                         const SizedBox(width: 12),
                         FilledButton(
-                          onPressed: onHostEventTap,
+                          onPressed:
+                              onRegisterTap ??
+                              onHostEventTap ??
+                              () {
+                                Navigator.pushNamed(context, '/register');
+                              },
                           style: FilledButton.styleFrom(
                             backgroundColor: _HeaderColors.primary,
                             foregroundColor: Colors.white,
@@ -172,30 +204,31 @@ class AppHeader extends StatelessWidget {
                               vertical: 16,
                             ),
                           ),
-                          child: const Text('Host an Event'),
+                          child: const Text('Register'),
                         ),
                         const SizedBox(width: 12),
-                        IconButton(
-                          tooltip: MockBackend().currentUser != null
-                              ? 'Profile'
-                              : 'Register',
-                          onPressed: () {
-                            if (MockBackend().currentUser != null) {
-                              Navigator.pushNamed(context, '/profile');
-                            } else {
-                              Navigator.pushNamed(context, '/register');
-                            }
-                          },
-                          icon: CircleAvatar(
-                            radius: 16,
-                            backgroundColor: Colors.indigo.withOpacity(0.12),
-                            child: const Icon(
-                              Icons.person_outline,
-                              size: 20,
-                              color: Colors.indigo,
+                        if (showProfile)
+                          IconButton(
+                            tooltip: MockBackend().currentUser != null
+                                ? 'Profile'
+                                : 'Register',
+                            onPressed: () {
+                              if (MockBackend().currentUser != null) {
+                                Navigator.pushNamed(context, '/profile');
+                              } else {
+                                Navigator.pushNamed(context, '/register');
+                              }
+                            },
+                            icon: CircleAvatar(
+                              radius: 16,
+                              backgroundColor: Colors.indigo.withOpacity(0.12),
+                              child: const Icon(
+                                Icons.person_outline,
+                                size: 20,
+                                color: Colors.indigo,
+                              ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ],
@@ -221,43 +254,48 @@ class _Brand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        // Use the bundled asset but visually scale the image so it appears larger
-        // without increasing the header's layout height: keep the container fixed
-        // and scale the image inside it.
-        SizedBox(
-          width: 48,
-          height: 48,
-          // Allow the image to render larger than the boxed layout without
-          // clipping by using an OverflowBox. We intentionally avoid ClipRRect
-          // here so the scaled image isn't cropped by the container bounds.
-          child: DecoratedBox(
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
-            child: Center(
-              child: OverflowBox(
-                maxWidth: 80,
-                maxHeight: 80,
-                child: Image.asset(
-                  'assets/image.png',
-                  fit: BoxFit.cover,
-                  width: 64,
-                  height: 64,
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(context, '/');
+      },
+      child: Row(
+        children: [
+          // Use the bundled asset but visually scale the image so it appears larger
+          // without increasing the header's layout height: keep the container fixed
+          // and scale the image inside it.
+          SizedBox(
+            width: 48,
+            height: 48,
+            // Allow the image to render larger than the boxed layout without
+            // clipping by using an OverflowBox. We intentionally avoid ClipRRect
+            // here so the scaled image isn't cropped by the container bounds.
+            child: DecoratedBox(
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+              child: Center(
+                child: OverflowBox(
+                  maxWidth: 80,
+                  maxHeight: 80,
+                  child: Image.asset(
+                    'assets/image.png',
+                    fit: BoxFit.cover,
+                    width: 64,
+                    height: 64,
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-        const SizedBox(width: 12),
-        const Text(
-          'UniSphere',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: _HeaderColors.text,
+          const SizedBox(width: 12),
+          const Text(
+            'UniSphere',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: _HeaderColors.text,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

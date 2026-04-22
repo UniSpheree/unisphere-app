@@ -3,6 +3,8 @@ import 'package:unisphere_app/widgets/app_footer.dart';
 import 'package:unisphere_app/widgets/header.dart';
 import 'create_event_screen.dart';
 import 'discover_event_screen.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
@@ -23,6 +25,9 @@ class LandingPage extends StatelessWidget {
                   ),
                 );
               },
+              onRegisterTap: () {
+                Navigator.pushNamed(context, '/register');
+              },
               onFindEventsTap: () {
                 Navigator.push(
                   context,
@@ -41,7 +46,10 @@ class LandingPage extends StatelessWidget {
               },
               onMyTicketsTap: () {},
               onAboutTap: () {},
-              onSignInTap: () {},
+              onSignInTap: () {
+                Navigator.pushNamed(context, '/login');
+              },
+              showProfile: false,
             ),
             _HeroSection(),
             _StatsSection(),
@@ -304,6 +312,37 @@ class _HeroBullet extends StatelessWidget {
 class _HeroVisual extends StatefulWidget {
   const _HeroVisual();
 
+  static final List<_EventMarkerData> events = [
+    _EventMarkerData(
+      title: 'Tech Meetup',
+      subtitle: 'Today • 6:30 PM',
+      location: LatLng(50.8198, -1.0880), // Portsmouth
+      count: 9,
+      color: Color(0xff9bd36a),
+    ),
+    _EventMarkerData(
+      title: 'Live Music Night',
+      subtitle: 'Fri • 8:00 PM',
+      location: LatLng(51.5072, -0.1276), // London
+      count: 19,
+      color: Color(0xffe8c75f),
+    ),
+    _EventMarkerData(
+      title: 'Food Festival',
+      subtitle: 'Sat • 1:00 PM',
+      location: LatLng(52.4862, -1.8904), // Birmingham
+      count: 12,
+      color: Color(0xff9bd36a),
+    ),
+    _EventMarkerData(
+      title: 'Startup Talks',
+      subtitle: 'Sun • 5:00 PM',
+      location: LatLng(53.4808, -2.2426), // Manchester
+      count: 7,
+      color: Color(0xff9bd36a),
+    ),
+  ];
+
   @override
   State<_HeroVisual> createState() => _HeroVisualState();
 }
@@ -392,97 +431,34 @@ class _HeroVisualState extends State<_HeroVisual> {
           ),
           Positioned(
             left: 24,
-            right: 180,
+            right: 24,
             top: 120,
             bottom: 24,
-            child: Container(
-              decoration: BoxDecoration(
-                color: const Color(0xffdbeafe),
-                borderRadius: BorderRadius.circular(22),
-              ),
-              child: Stack(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(22),
+              child: FlutterMap(
+                options: MapOptions(
+                  initialCenter: LatLng(51.0, -0.8),
+                  initialZoom: 5.5,
+                ),
                 children: [
-                  const Center(
-                    child: Icon(
-                      Icons.map_rounded,
-                      size: 110,
-                      color: AppColors.primary,
-                    ),
+                  TileLayer(
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.example.unisphere_app',
                   ),
-                  ...[
-                    const Offset(0.25, 0.30),
-                    const Offset(0.62, 0.20),
-                    const Offset(0.52, 0.58),
-                    const Offset(0.30, 0.72),
-                  ].map(
-                    (offset) => Align(
-                      alignment: Alignment(
-                        offset.dx * 2 - 1,
-                        offset.dy * 2 - 1,
-                      ),
-                      child: Container(
-                        width: 18,
-                        height: 18,
-                        decoration: const BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
+                  MarkerLayer(
+                    markers: _HeroVisual.events.map((event) {
+                      return Marker(
+                        point: event.location,
+                        width: 60,
+                        height: 60,
+                        child: _EventBubble(
+                          count: event.count,
+                          color: event.color,
                         ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const Positioned(
-            top: 120,
-            right: 24,
-            child: _PreviewCard(
-              title: 'Tech Meetup',
-              subtitle: 'Today • 6:30 PM',
-              icon: Icons.bolt_rounded,
-            ),
-          ),
-          const Positioned(
-            top: 240,
-            right: 24,
-            child: _PreviewCard(
-              title: 'Music Festival',
-              subtitle: 'Sat • Outdoor Arena',
-              icon: Icons.music_note_rounded,
-            ),
-          ),
-          Positioned(
-            right: 40,
-            bottom: 34,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withOpacity(0.25),
-                    blurRadius: 16,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.trending_up_rounded,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    '2.4k event views',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
+                      );
+                    }).toList(),
                   ),
                 ],
               ),
@@ -494,60 +470,57 @@ class _HeroVisualState extends State<_HeroVisual> {
   }
 }
 
-class _PreviewCard extends StatelessWidget {
+class _EventMarkerData {
   final String title;
   final String subtitle;
-  final IconData icon;
+  final LatLng location;
+  final int count;
+  final Color color;
 
-  const _PreviewCard({
+  const _EventMarkerData({
     required this.title,
     required this.subtitle,
-    required this.icon,
+    required this.location,
+    required this.count,
+    required this.color,
   });
+}
+
+class _EventBubble extends StatelessWidget {
+  final int count;
+  final Color color;
+
+  const _EventBubble({required this.count, required this.color});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 190,
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
+        color: color.withOpacity(0.92),
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 3),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 18,
-            offset: const Offset(0, 10),
+            color: Colors.black.withOpacity(0.16),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: AppColors.accent,
-            child: Icon(icon, color: AppColors.primary, size: 18),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            title,
-            style: const TextStyle(
-              fontWeight: FontWeight.w700,
-              color: AppColors.text,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            subtitle,
-            style: const TextStyle(color: AppColors.muted, fontSize: 13),
-          ),
-        ],
+      alignment: Alignment.center,
+      child: Text(
+        '$count',
+        style: const TextStyle(
+          color: Colors.black87,
+          fontWeight: FontWeight.w700,
+          fontSize: 16,
+        ),
       ),
     );
   }
 }
+
+// ...existing code...
 
 class _StatsSection extends StatelessWidget {
   const _StatsSection();
@@ -974,7 +947,8 @@ class _CTASection extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const DiscoverEventScreen(),
+                                  builder: (context) =>
+                                      const DiscoverEventScreen(),
                                 ),
                               );
                             },
@@ -993,7 +967,15 @@ class _CTASection extends StatelessWidget {
                             child: const Text('Explore Events'),
                           ),
                           OutlinedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const CreateEventScreen(),
+                                ),
+                              );
+                            },
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.white,
                               side: const BorderSide(color: Colors.white30),
@@ -1044,7 +1026,15 @@ class _CTASection extends StatelessWidget {
                         runSpacing: 12,
                         children: [
                           ElevatedButton(
-                            onPressed: null,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const DiscoverEventScreen(),
+                                ),
+                              );
+                            },
                             style: ButtonStyle(
                               backgroundColor: MaterialStatePropertyAll(
                                 Colors.white,
@@ -1070,7 +1060,15 @@ class _CTASection extends StatelessWidget {
                             child: const Text('Explore Events'),
                           ),
                           OutlinedButton(
-                            onPressed: null,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const CreateEventScreen(),
+                                ),
+                              );
+                            },
                             style: ButtonStyle(
                               foregroundColor: MaterialStatePropertyAll(
                                 Colors.white,
