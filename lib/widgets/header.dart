@@ -254,43 +254,48 @@ class _Brand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        // Use the bundled asset but visually scale the image so it appears larger
-        // without increasing the header's layout height: keep the container fixed
-        // and scale the image inside it.
-        SizedBox(
-          width: 48,
-          height: 48,
-          // Allow the image to render larger than the boxed layout without
-          // clipping by using an OverflowBox. We intentionally avoid ClipRRect
-          // here so the scaled image isn't cropped by the container bounds.
-          child: DecoratedBox(
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
-            child: Center(
-              child: OverflowBox(
-                maxWidth: 80,
-                maxHeight: 80,
-                child: Image.asset(
-                  'assets/image.png',
-                  fit: BoxFit.cover,
-                  width: 64,
-                  height: 64,
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(context, '/');
+      },
+      child: Row(
+        children: [
+          // Use the bundled asset but visually scale the image so it appears larger
+          // without increasing the header's layout height: keep the container fixed
+          // and scale the image inside it.
+          SizedBox(
+            width: 48,
+            height: 48,
+            // Allow the image to render larger than the boxed layout without
+            // clipping by using an OverflowBox. We intentionally avoid ClipRRect
+            // here so the scaled image isn't cropped by the container bounds.
+            child: DecoratedBox(
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+              child: Center(
+                child: OverflowBox(
+                  maxWidth: 80,
+                  maxHeight: 80,
+                  child: Image.asset(
+                    'assets/image.png',
+                    fit: BoxFit.cover,
+                    width: 64,
+                    height: 64,
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-        const SizedBox(width: 12),
-        const Text(
-          'UniSphere',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: _HeaderColors.text,
+          const SizedBox(width: 12),
+          const Text(
+            'UniSphere',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: _HeaderColors.text,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
