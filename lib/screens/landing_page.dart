@@ -961,7 +961,15 @@ class _CTASection extends StatelessWidget {
                             child: const Text('Explore Events'),
                           ),
                           OutlinedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const CreateEventScreen(),
+                                ),
+                              );
+                            },
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.white,
                               side: const BorderSide(color: Colors.white30),
@@ -1012,7 +1020,15 @@ class _CTASection extends StatelessWidget {
                         runSpacing: 12,
                         children: [
                           ElevatedButton(
-                            onPressed: null,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const DiscoverEventScreen(),
+                                ),
+                              );
+                            },
                             style: ButtonStyle(
                               backgroundColor: MaterialStatePropertyAll(
                                 Colors.white,
@@ -1038,7 +1054,15 @@ class _CTASection extends StatelessWidget {
                             child: const Text('Explore Events'),
                           ),
                           OutlinedButton(
-                            onPressed: null,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const CreateEventScreen(),
+                                ),
+                              );
+                            },
                             style: ButtonStyle(
                               foregroundColor: MaterialStatePropertyAll(
                                 Colors.white,

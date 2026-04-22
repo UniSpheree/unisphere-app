@@ -141,6 +141,25 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   }
 
   Future<void> _submitForm() async {
+    // Check login first and redirect to register/sign in flow if needed.
+    final isLoggedIn = MockBackend().currentUser != null;
+
+    if (!isLoggedIn) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please register or sign in to create an event.'),
+        ),
+      );
+
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          Navigator.pushNamed(context, '/register');
+        }
+      });
+
+      return;
+    }
+
     setState(() {
       if (startDate == null || endDate == null) {
         _dateError = 'Both start and end date & time are required.';
