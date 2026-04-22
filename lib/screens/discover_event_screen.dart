@@ -13,6 +13,37 @@ class DiscoverEventScreen extends StatefulWidget {
 }
 
 class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
+  bool _showFiltersDropdown = false;
+
+  Map<String, bool> _dateFilters = {
+    'today': false,
+    'tomorrow': false,
+    'this week': false,
+    'next week': false,
+    'this month': false,
+    'next month': false,
+  };
+
+  Map<String, bool> _priceFilters = {'free': false, 'paid': false};
+
+  void _toggleFiltersDropdown() {
+    setState(() {
+      _showFiltersDropdown = !_showFiltersDropdown;
+    });
+  }
+
+  void _setDateFilter(String key, bool value) {
+    setState(() {
+      _dateFilters[key] = value;
+    });
+  }
+
+  void _setPriceFilter(String key, bool value) {
+    setState(() {
+      _priceFilters[key] = value;
+    });
+  }
+
   String _selectedFilter = 'All';
   late TextEditingController _searchController;
   String _searchQuery = '';
@@ -22,6 +53,7 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
     'All',
     'Technology',
     'Music',
+    'Entertainment',
     'Career',
     'Sports',
     'Workshops',
@@ -37,6 +69,14 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
       'icon': Icons.memory_rounded,
     },
     {
+      'title': 'Girls Night',
+      'date': 'Today • 6:30 PM',
+      'location': 'Ravelin Sports Centre',
+      'category': 'Sports',
+      'imageColor': Color(0xFFE0E7FF),
+      'icon': Icons.memory_rounded,
+    },
+    {
       'title': 'Indie Music Night',
       'date': 'Fri • 8:00 PM',
       'location': 'Student Union Hall',
@@ -45,12 +85,29 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
       'icon': Icons.music_note_rounded,
     },
     {
+      'title': 'Pub Quiz Night',
+      'date': 'Sat • 8:00 PM',
+      'location': 'Guildhall Village',
+      'category': 'Entertainment',
+      'imageColor': Color(0xFFFCE7F3),
+      'icon': Icons.music_note_rounded,
+    },
+
+    {
       'title': 'Startup Networking',
       'date': 'Sat • 3:00 PM',
       'location': 'Business School',
       'category': 'Career',
       'imageColor': Color(0xFFDCFCE7),
       'icon': Icons.handshake_rounded,
+    },
+    {
+      'title': 'Bingo Night',
+      'date': 'Sun • 8:00 PM',
+      'location': 'Guildhall Village',
+      'category': 'Entertainment',
+      'imageColor': Color(0xFFFCE7F3),
+      'icon': Icons.music_note_rounded,
     },
     {
       'title': 'Wellbeing Workshop',
@@ -109,11 +166,12 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
               .where((event) => event['category'] == _selectedFilter)
               .toList();
 
-    if (_searchQuery.isEmpty) {
+    if (_submittedSearchQuery.isEmpty) {
       return events;
     }
 
-    final searchLower = _searchQuery.toLowerCase();
+    final searchLower = _submittedSearchQuery.toLowerCase();
+
     return events.where((event) {
       final titleLower = (event['title'] as String).toLowerCase();
       final categoryLower = (event['category'] as String).toLowerCase();
@@ -244,33 +302,42 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                   child: TextField(
                                     controller: _searchController,
                                     onChanged: (value) {
-                                      setState(() {
-                                        _searchQuery = value;
-                                        _submittedSearchQuery = '';
-                                      });
+                                      setState(() {});
                                     },
                                     onSubmitted: (value) {
                                       setState(() {
-                                        _searchQuery = value;
                                         _submittedSearchQuery = value;
                                       });
                                     },
-                                    decoration: const InputDecoration(
+                                    decoration: InputDecoration(
                                       hintText: 'Search events...',
-                                      hintStyle: TextStyle(
+                                      hintStyle: const TextStyle(
                                         color: Color(0xFF9CA3AF),
                                         fontSize: 14,
                                       ),
-                                      prefixIcon: Icon(
+                                      prefixIcon: const Icon(
                                         Icons.search_rounded,
                                         color: Color(0xFF9CA3AF),
                                         size: 20,
                                       ),
-                                      border: InputBorder.none,
-                                      contentPadding: EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 14,
+                                      suffixIcon: IconButton(
+                                        icon: const Icon(
+                                          Icons.arrow_forward_rounded,
+                                          color: Color(0xFF4F46E5),
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _submittedSearchQuery =
+                                                _searchController.text;
+                                          });
+                                        },
                                       ),
+                                      border: InputBorder.none,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 14,
+                                          ),
                                     ),
                                     style: const TextStyle(
                                       fontSize: 14,
@@ -292,7 +359,7 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                 ),
                                 child: IconButton(
                                   onPressed: () {
-                                    // optional extra filter actions
+                                    _toggleFiltersDropdown();
                                   },
                                   icon: const Icon(
                                     Icons.tune_rounded,
@@ -304,6 +371,193 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                               ),
                             ],
                           ),
+                          if (_showFiltersDropdown) ...[
+                            const SizedBox(height: 16),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(
+                                  color: const Color(0xFFE5E7EB),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.03),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Date',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF1A1F36),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  Wrap(
+                                    spacing: 12,
+                                    runSpacing: 10,
+                                    children: _dateFilters.keys.map((filter) {
+                                      final isSelected = _dateFilters[filter]!;
+
+                                      return GestureDetector(
+                                        onTap: () =>
+                                            _setDateFilter(filter, !isSelected),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 10,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: isSelected
+                                                ? const Color(
+                                                    0xFF4F46E5,
+                                                  ).withOpacity(0.12)
+                                                : Colors.white,
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                            border: Border.all(
+                                              color: isSelected
+                                                  ? const Color(0xFF4F46E5)
+                                                  : const Color(0xFFE5E7EB),
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Container(
+                                                width: 18,
+                                                height: 18,
+                                                decoration: BoxDecoration(
+                                                  border: Border.all(
+                                                    color: isSelected
+                                                        ? const Color(
+                                                            0xFF4F46E5,
+                                                          )
+                                                        : const Color(
+                                                            0xFFE5E7EB,
+                                                          ),
+                                                    width: 2,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(4),
+                                                  color: isSelected
+                                                      ? const Color(0xFF4F46E5)
+                                                      : Colors.white,
+                                                ),
+                                                child: isSelected
+                                                    ? const Icon(
+                                                        Icons.check,
+                                                        size: 12,
+                                                        color: Colors.white,
+                                                      )
+                                                    : null,
+                                              ),
+                                              const SizedBox(width: 10),
+                                              Text(filter),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+
+                                  const SizedBox(height: 28),
+
+                                  const Text(
+                                    'Price',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF1A1F36),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  Wrap(
+                                    spacing: 12,
+                                    runSpacing: 10,
+                                    children: _priceFilters.keys.map((filter) {
+                                      final isSelected = _priceFilters[filter]!;
+
+                                      return GestureDetector(
+                                        onTap: () => _setPriceFilter(
+                                          filter,
+                                          !isSelected,
+                                        ),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 10,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: isSelected
+                                                ? const Color(
+                                                    0xFF4F46E5,
+                                                  ).withOpacity(0.12)
+                                                : Colors.white,
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                            border: Border.all(
+                                              color: isSelected
+                                                  ? const Color(0xFF4F46E5)
+                                                  : const Color(0xFFE5E7EB),
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Container(
+                                                width: 18,
+                                                height: 18,
+                                                decoration: BoxDecoration(
+                                                  border: Border.all(
+                                                    color: isSelected
+                                                        ? const Color(
+                                                            0xFF4F46E5,
+                                                          )
+                                                        : const Color(
+                                                            0xFFE5E7EB,
+                                                          ),
+                                                    width: 2,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(4),
+                                                  color: isSelected
+                                                      ? const Color(0xFF4F46E5)
+                                                      : Colors.white,
+                                                ),
+                                                child: isSelected
+                                                    ? const Icon(
+                                                        Icons.check,
+                                                        size: 12,
+                                                        color: Colors.white,
+                                                      )
+                                                    : null,
+                                              ),
+                                              const SizedBox(width: 10),
+                                              Text(filter),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                           if (_submittedSearchQuery.isEmpty)
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
