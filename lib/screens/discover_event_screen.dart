@@ -319,22 +319,19 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                 ),
                               ),
                             ),
-                          if (_submittedSearchQuery.isEmpty)
-                            Column(
-                              children: [
-                                const SizedBox(height: 28),
-                                LayoutBuilder(
-                                  builder: (context, constraints) {
-                                    final availableWidth = constraints.maxWidth;
-                                    final crossAxisCount = availableWidth > 800 ? 3 : (availableWidth > 400 ? 2 : 1);
+                          const SizedBox(height: 28),
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final availableWidth = constraints.maxWidth;
+                              final crossAxisCount = availableWidth > 800 ? 3 : (availableWidth > 400 ? 2 : 1);
 
-                                    return GridView.count(
-                                      crossAxisCount: crossAxisCount,
-                                      crossAxisSpacing: 16,
-                                      mainAxisSpacing: 16,
-                                      shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      children: _filteredEvents.map((event) {
+                              return GridView.count(
+                                crossAxisCount: crossAxisCount,
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                children: _filteredEvents.map((event) {
                                   return Container(
                                     decoration: BoxDecoration(
                                       color: Colors.white,
@@ -434,12 +431,12 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                     ),
                                   );
                                 }).toList(),
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                    ),
+                              );
+                            },
+                          ),
+                        ],
+                  ),
+                  ),
                   ),
                 );
               },
