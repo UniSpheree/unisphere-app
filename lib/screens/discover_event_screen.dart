@@ -14,13 +14,13 @@ class DiscoverEventScreen extends StatefulWidget {
 class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
   String _selectedFilter = 'All';
   late TextEditingController _searchController;
-  String _searchQuery = '';
   String _submittedSearchQuery = '';
 
   static const List<String> _filterChips = [
     'All',
     'Technology',
     'Music',
+    'Entertainment',
     'Career',
     'Sports',
     'Workshops',
@@ -36,6 +36,14 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
       'icon': Icons.memory_rounded,
     },
     {
+      'title': 'Girls Night',
+      'date': 'Today • 6:30 PM',
+      'location': 'Ravelin Sports Centre',
+      'category': 'Sports',
+      'imageColor': Color(0xFFE0E7FF),
+      'icon': Icons.memory_rounded,
+    },
+    {
       'title': 'Indie Music Night',
       'date': 'Fri • 8:00 PM',
       'location': 'Student Union Hall',
@@ -44,12 +52,29 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
       'icon': Icons.music_note_rounded,
     },
     {
+      'title': 'Pub Quiz Night',
+      'date': 'Sat • 8:00 PM',
+      'location': 'Guildhall Village',
+      'category': 'Entertainment',
+      'imageColor': Color(0xFFFCE7F3),
+      'icon': Icons.music_note_rounded,
+    },
+
+    {
       'title': 'Startup Networking',
       'date': 'Sat • 3:00 PM',
       'location': 'Business School',
       'category': 'Career',
       'imageColor': Color(0xFFDCFCE7),
       'icon': Icons.handshake_rounded,
+    },
+    {
+      'title': 'Bingo Night',
+      'date': 'Sun • 8:00 PM',
+      'location': 'Guildhall Village',
+      'category': 'Entertainment',
+      'imageColor': Color(0xFFFCE7F3),
+      'icon': Icons.music_note_rounded,
     },
     {
       'title': 'Wellbeing Workshop',
@@ -88,7 +113,6 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
     super.initState();
     _searchController = TextEditingController();
     if (widget.initialSearchQuery != null && widget.initialSearchQuery!.isNotEmpty) {
-      _searchQuery = widget.initialSearchQuery!;
       _submittedSearchQuery = widget.initialSearchQuery!;
       _searchController.text = widget.initialSearchQuery!;
     }
@@ -100,24 +124,26 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
     super.dispose();
   }
 
-  List<Map<String, dynamic>> get _filteredEvents {
-    List<Map<String, dynamic>> events = _selectedFilter == 'All'
-        ? _discoverEvents
-        : _discoverEvents
-            .where((event) => event['category'] == _selectedFilter)
-            .toList();
+List<Map<String, dynamic>> get _filteredEvents {
+  List<Map<String, dynamic>> events = _selectedFilter == 'All'
+      ? _discoverEvents
+      : _discoverEvents
+          .where((event) => event['category'] == _selectedFilter)
+          .toList();
 
-    if (_searchQuery.isEmpty) {
-      return events;
-    }
-
-    final searchLower = _searchQuery.toLowerCase();
-    return events.where((event) {
-      final titleLower = (event['title'] as String).toLowerCase();
-      final categoryLower = (event['category'] as String).toLowerCase();
-      return titleLower.contains(searchLower) || categoryLower.contains(searchLower);
-    }).toList();
+  if (_submittedSearchQuery.isEmpty) {
+    return events;
   }
+
+  final searchLower = _submittedSearchQuery.toLowerCase();
+
+  return events.where((event) {
+    final titleLower = (event['title'] as String).toLowerCase();
+    final categoryLower = (event['category'] as String).toLowerCase();
+    return titleLower.contains(searchLower) ||
+        categoryLower.contains(searchLower);
+  }).toList();
+}
 
   @override
   Widget build(BuildContext context) {
@@ -220,37 +246,46 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                     controller: _searchController,
                                     onChanged: (value) {
                                       setState(() {
-                                        _searchQuery = value;
-                                        _submittedSearchQuery = '';
+// only updates text, not results
                                       });
                                     },
                                     onSubmitted: (value) {
                                       setState(() {
-                                        _searchQuery = value;
                                         _submittedSearchQuery = value;
-                                      });
+                                        });
                                     },
-                                    decoration: const InputDecoration(
+                                    decoration: InputDecoration(
                                       hintText: 'Search events...',
-                                      hintStyle: TextStyle(
+                                      hintStyle: const TextStyle(
                                         color: Color(0xFF9CA3AF),
                                         fontSize: 14,
-                                      ),
-                                      prefixIcon: Icon(
-                                        Icons.search_rounded,
-                                        color: Color(0xFF9CA3AF),
-                                        size: 20,
-                                      ),
-                                      border: InputBorder.none,
-                                      contentPadding: EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 14,
-                                      ),
                                     ),
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: Color(0xFF1A1F36),
+                                    prefixIcon: const Icon(
+                                      Icons.search_rounded,
+                                      color: Color(0xFF9CA3AF),
+                                      size: 20,
                                     ),
+                                    suffixIcon: IconButton(
+                                      icon: const Icon(
+                                        Icons.arrow_forward_rounded,
+                                        color: Color(0xFF4F46E5),
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          _submittedSearchQuery = _searchController.text;
+                                        });
+                                      },
+                                    ),
+                                    border: InputBorder.none,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 14,
+                                    ),
+                                  ),
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Color(0xFF1A1F36),
+                                   ),
                                   ),
                                 ),
                               ),
@@ -327,18 +362,32 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                               ),
                             ),
                           const SizedBox(height: 28),
-                          LayoutBuilder(
-                            builder: (context, constraints) {
-                              final availableWidth = constraints.maxWidth;
-                              final crossAxisCount = availableWidth > 800 ? 3 : (availableWidth > 400 ? 2 : 1);
+                          if (_filteredEvents.isEmpty && _submittedSearchQuery.isNotEmpty)
+                            Container(
+                              height: 300,
+                              alignment: Alignment.center,
+                              child: const Text(
+                                'No results found',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Color(0xFF9CA3AF),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          if (_filteredEvents.isNotEmpty)
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                final availableWidth = constraints.maxWidth;
+                                final crossAxisCount = availableWidth > 800 ? 3 : (availableWidth > 400 ? 2 : 1);
 
-                              return GridView.count(
-                                crossAxisCount: crossAxisCount,
-                                crossAxisSpacing: 16,
-                                mainAxisSpacing: 16,
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                children: _filteredEvents.map((event) {
+                                return GridView.count(
+                                  crossAxisCount: crossAxisCount,
+                                  crossAxisSpacing: 16,
+                                  mainAxisSpacing: 16,
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  children: _filteredEvents.map((event) {
                                   return Container(
                                     decoration: BoxDecoration(
                                       color: Colors.white,
@@ -438,9 +487,9 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                     ),
                                   );
                                 }).toList(),
-                              );
-                            },
-                          ),
+                                );
+                              },
+                            ),
                         ],
                   ),
                   ),
