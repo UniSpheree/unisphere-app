@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:unisphere_app/widgets/header.dart';
 import 'create_event_screen.dart';
 
-class PersonalizedLandingPage extends StatelessWidget {
+class PersonalizedLandingPage extends StatefulWidget {
   final String userName;
   final String role;
 
@@ -100,11 +100,92 @@ class PersonalizedLandingPage extends StatelessWidget {
   ];
 
   @override
+  State<PersonalizedLandingPage> createState() => _PersonalizedLandingPageState();
+}
+
+class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
+  // State variables
+  late String _selectedFilter;
+  late String _searchQuery;
+  late TextEditingController _searchController;
+  late bool _showFiltersDropdown;
+  late Map<String, bool> _dateFilters;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedFilter = 'All';
+    _searchQuery = '';
+    _searchController = TextEditingController();
+    _showFiltersDropdown = false;
+    _dateFilters = {
+      'today': false,
+      'tomorrow': false,
+      'this week': false,
+      'next week': false,
+      'this month': false,
+      'next month': false,
+    };
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _setFilter(String filter) {
+    setState(() {
+      _selectedFilter = filter;
+    });
+  }
+
+  void _setSearchQuery(String query) {
+    setState(() {
+      _searchQuery = query;
+    });
+  }
+
+  void _toggleFiltersDropdown() {
+    setState(() {
+      _showFiltersDropdown = !_showFiltersDropdown;
+    });
+  }
+
+  void _setDateFilter(String filter, bool value) {
+    setState(() {
+      _dateFilters[filter] = value;
+    });
+  }
+
+  List<Map<String, dynamic>> get _filteredEvents {
+    final baseEvents = _selectedFilter == 'All'
+        ? PersonalizedLandingPage.discoverEvents
+        : PersonalizedLandingPage.discoverEvents
+            .where((event) => event['category'] == _selectedFilter)
+            .toList();
+
+    if (_searchQuery.isEmpty) {
+      return baseEvents;
+    }
+
+    final query = _searchQuery.toLowerCase();
+    return baseEvents.where((event) {
+      final category = (event['category'] as String).toLowerCase();
+      final title = (event['title'] as String).toLowerCase();
+      final titleWords = title.split(' ');
+
+      return category.startsWith(query) ||
+          titleWords.any((word) => word.contains(query));
+    }).toList();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final isOrganiser = role.toLowerCase() == 'organiser';
+    final isOrganiser = widget.role.toLowerCase() == 'organiser';
 
     return Scaffold(
-      backgroundColor: background,
+      backgroundColor: PersonalizedLandingPage.background,
       body: Column(
         children: [
           AppHeader(
@@ -140,12 +221,21 @@ class PersonalizedLandingPage extends StatelessWidget {
                     child: Column(
                       children: [
                         _DiscoverSection(
-                          userName: userName,
+                          userName: widget.userName,
                           isOrganiser: isOrganiser,
+                          selectedFilter: _selectedFilter,
+                          filteredEvents: _filteredEvents,
+                          onFilterChanged: _setFilter,
+                          searchController: _searchController,
+                          onSearchChanged: _setSearchQuery,
+                          showFiltersDropdown: _showFiltersDropdown,
+                          dateFilters: _dateFilters,
+                          onToggleFiltersDropdown: _toggleFiltersDropdown,
+                          onDateFilterChanged: _setDateFilter,
                         ),
                         const SizedBox(height: 20),
                         _DashboardPanel(
-                          userName: userName,
+                          userName: widget.userName,
                           isOrganiser: isOrganiser,
                         ),
                       ],
@@ -161,8 +251,17 @@ class PersonalizedLandingPage extends StatelessWidget {
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.fromLTRB(28, 28, 20, 28),
                         child: _DiscoverSection(
-                          userName: userName,
+                          userName: widget.userName,
                           isOrganiser: isOrganiser,
+                          selectedFilter: _selectedFilter,
+                          filteredEvents: _filteredEvents,
+                          onFilterChanged: _setFilter,
+                          searchController: _searchController,
+                          onSearchChanged: _setSearchQuery,
+                          showFiltersDropdown: _showFiltersDropdown,
+                          dateFilters: _dateFilters,
+                          onToggleFiltersDropdown: _toggleFiltersDropdown,
+                          onDateFilterChanged: _setDateFilter,
                         ),
                       ),
                     ),
@@ -171,13 +270,13 @@ class PersonalizedLandingPage extends StatelessWidget {
                       decoration: const BoxDecoration(
                         color: Color(0xFFF8FAFC),
                         border: Border(
-                          left: BorderSide(color: border),
+                          left: BorderSide(color: PersonalizedLandingPage.border),
                         ),
                       ),
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.all(24),
                         child: _DashboardPanel(
-                          userName: userName,
+                            userName: widget.userName,
                           isOrganiser: isOrganiser,
                         ),
                       ),
@@ -196,10 +295,28 @@ class PersonalizedLandingPage extends StatelessWidget {
 class _DiscoverSection extends StatelessWidget {
   final String userName;
   final bool isOrganiser;
+  final String selectedFilter;
+  final List<Map<String, dynamic>> filteredEvents;
+  final Function(String) onFilterChanged;
+  final TextEditingController searchController;
+  final ValueChanged<String> onSearchChanged;
+  final bool showFiltersDropdown;
+  final Map<String, bool> dateFilters;
+  final VoidCallback onToggleFiltersDropdown;
+  final Function(String, bool) onDateFilterChanged;
 
   const _DiscoverSection({
     required this.userName,
     required this.isOrganiser,
+    required this.selectedFilter,
+    required this.filteredEvents,
+    required this.onFilterChanged,
+    required this.searchController,
+    required this.onSearchChanged,
+    required this.showFiltersDropdown,
+    required this.dateFilters,
+    required this.onToggleFiltersDropdown,
+    required this.onDateFilterChanged,
   });
 
   @override
@@ -212,7 +329,14 @@ class _DiscoverSection extends StatelessWidget {
           isOrganiser: isOrganiser,
         ),
         const SizedBox(height: 24),
-        const _SearchAndFilters(),
+        _SearchAndFilters(
+          searchController: searchController,
+          onSearchChanged: onSearchChanged,
+          showFiltersDropdown: showFiltersDropdown,
+          dateFilters: dateFilters,
+          onToggleFiltersDropdown: onToggleFiltersDropdown,
+          onDateFilterChanged: onDateFilterChanged,
+        ),
         const SizedBox(height: 28),
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -243,27 +367,13 @@ class _DiscoverSection extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 16),
-            OutlinedButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.tune_rounded, size: 18),
-              label: const Text('Advanced filters'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: PersonalizedLandingPage.primary,
-                side: const BorderSide(color: PersonalizedLandingPage.border),
-                backgroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-            ),
           ],
         ),
         const SizedBox(height: 24),
-        const _CategoryChips(),
+        _CategoryChips(
+          selectedFilter: selectedFilter,
+          onFilterChanged: onFilterChanged,
+        ),
         const SizedBox(height: 24),
         LayoutBuilder(
           builder: (context, constraints) {
@@ -271,7 +381,7 @@ class _DiscoverSection extends StatelessWidget {
             final crossAxisCount = isSmall ? 1 : 2;
 
             return GridView.builder(
-              itemCount: PersonalizedLandingPage.discoverEvents.length,
+              itemCount: filteredEvents.length,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -281,7 +391,7 @@ class _DiscoverSection extends StatelessWidget {
                 childAspectRatio: isSmall ? 2.2 : 1.45,
               ),
               itemBuilder: (context, index) {
-                final event = PersonalizedLandingPage.discoverEvents[index];
+                final event = filteredEvents[index];
                 return _DiscoverEventCard(event: event);
               },
             );
@@ -386,16 +496,92 @@ class _TopWelcomeStrip extends StatelessWidget {
 }
 
 class _SearchAndFilters extends StatelessWidget {
-  const _SearchAndFilters();
+  final TextEditingController searchController;
+  final ValueChanged<String> onSearchChanged;
+  final bool showFiltersDropdown;
+  final Map<String, bool> dateFilters;
+  final VoidCallback onToggleFiltersDropdown;
+  final Function(String, bool) onDateFilterChanged;
+
+  const _SearchAndFilters({
+    required this.searchController,
+    required this.onSearchChanged,
+    required this.showFiltersDropdown,
+    required this.dateFilters,
+    required this.onToggleFiltersDropdown,
+    required this.onDateFilterChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: Container(
-            height: 62,
-            padding: const EdgeInsets.symmetric(horizontal: 18),
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                height: 62,
+                padding: const EdgeInsets.symmetric(horizontal: 18),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: PersonalizedLandingPage.border),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.search_rounded, color: PersonalizedLandingPage.muted),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextField(
+                        controller: searchController,
+                        onChanged: onSearchChanged,
+                        decoration: const InputDecoration(
+                          hintText: 'Search events, societies, categories, places...',
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        style: TextStyle(
+                          color: PersonalizedLandingPage.text,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            GestureDetector(
+              onTap: onToggleFiltersDropdown,
+              child: Container(
+                height: 62,
+                width: 62,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: PersonalizedLandingPage.border),
+                ),
+                child: Icon(
+                  Icons.tune_rounded,
+                  color: PersonalizedLandingPage.primary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (showFiltersDropdown) ...[
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(18),
@@ -408,44 +594,108 @@ class _SearchAndFilters extends StatelessWidget {
                 ),
               ],
             ),
-            child: const Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.search_rounded, color: PersonalizedLandingPage.muted),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Search events, societies, categories, places...',
-                    style: TextStyle(
-                      color: PersonalizedLandingPage.muted,
-                      fontSize: 15,
-                    ),
+                const Text(
+                  'Date',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: PersonalizedLandingPage.text,
                   ),
+                ),
+                const SizedBox(height: 16),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isWide = constraints.maxWidth > 440;
+                    final itemWidth = (constraints.maxWidth - (isWide ? 32 : 24)) / (isWide ? 3 : 2);
+
+                    return Wrap(
+                      spacing: 12,
+                      runSpacing: 10,
+                      children: ['today', 'tomorrow', 'this week', 'next week', 'this month', 'next month']
+                          .map(
+                        (filter) {
+                          return SizedBox(
+                            width: itemWidth,
+                            child: GestureDetector(
+                              onTap: () => onDateFilterChanged(filter, !dateFilters[filter]!),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: dateFilters[filter]!
+                                      ? PersonalizedLandingPage.primary.withOpacity(0.12)
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: dateFilters[filter]!
+                                        ? PersonalizedLandingPage.primary
+                                        : PersonalizedLandingPage.border,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 18,
+                                      height: 18,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: dateFilters[filter]!
+                                              ? PersonalizedLandingPage.primary
+                                              : PersonalizedLandingPage.border,
+                                          width: 2,
+                                        ),
+                                        borderRadius: BorderRadius.circular(4),
+                                        color: dateFilters[filter]!
+                                            ? PersonalizedLandingPage.primary
+                                            : Colors.white,
+                                      ),
+                                      child: dateFilters[filter]!
+                                          ? const Icon(
+                                              Icons.check,
+                                              size: 12,
+                                              color: Colors.white,
+                                            )
+                                          : null,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        filter,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: PersonalizedLandingPage.text,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ).toList(),
+                    );
+                  },
                 ),
               ],
             ),
           ),
-        ),
-        const SizedBox(width: 14),
-        Container(
-          height: 62,
-          width: 62,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: PersonalizedLandingPage.border),
-          ),
-          child: const Icon(
-            Icons.tune_rounded,
-            color: PersonalizedLandingPage.primary,
-          ),
-        ),
+        ],
       ],
     );
   }
 }
 
 class _CategoryChips extends StatelessWidget {
-  const _CategoryChips();
+  final String selectedFilter;
+  final Function(String) onFilterChanged;
+
+  const _CategoryChips({
+    required this.selectedFilter,
+    required this.onFilterChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -453,6 +703,7 @@ class _CategoryChips extends StatelessWidget {
       'All',
       'Technology',
       'Music',
+      'Entertainment',
       'Career',
       'Sports',
       'Workshops',
@@ -462,23 +713,26 @@ class _CategoryChips extends StatelessWidget {
       spacing: 10,
       runSpacing: 10,
       children: chips.map((chip) {
-        final selected = chip == 'All';
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: selected ? PersonalizedLandingPage.primary : Colors.white,
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(
-              color: selected
-                  ? PersonalizedLandingPage.primary
-                  : PersonalizedLandingPage.border,
+        final isSelected = chip == selectedFilter;
+        return GestureDetector(
+          onTap: () => onFilterChanged(chip),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: isSelected ? PersonalizedLandingPage.primary : Colors.white,
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: isSelected
+                    ? PersonalizedLandingPage.primary
+                    : PersonalizedLandingPage.border,
+              ),
             ),
-          ),
-          child: Text(
-            chip,
-            style: TextStyle(
-              color: selected ? Colors.white : PersonalizedLandingPage.text,
-              fontWeight: FontWeight.w600,
+            child: Text(
+              chip,
+              style: TextStyle(
+                color: isSelected ? Colors.white : PersonalizedLandingPage.text,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         );
@@ -538,7 +792,7 @@ class _DiscoverEventCard extends StatelessWidget {
               children: [
                 Text(
                   event['title'] as String,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: PersonalizedLandingPage.text,
@@ -547,7 +801,7 @@ class _DiscoverEventCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   event['date'] as String,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     color: PersonalizedLandingPage.muted,
                   ),
@@ -555,7 +809,7 @@ class _DiscoverEventCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   event['location'] as String,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     color: PersonalizedLandingPage.muted,
                   ),
@@ -574,7 +828,7 @@ class _DiscoverEventCard extends StatelessWidget {
                       ),
                       child: Text(
                         event['category'] as String,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: PersonalizedLandingPage.primary,
@@ -624,7 +878,7 @@ class _DashboardPanel extends StatelessWidget {
           isOrganiser
               ? 'Your event activity at a glance.'
               : 'Your activity and upcoming plans in one place.',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 15,
             color: PersonalizedLandingPage.muted,
           ),
@@ -663,7 +917,7 @@ class _DashboardPanel extends StatelessWidget {
                   children: [
                     Text(
                       userName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
                         color: PersonalizedLandingPage.text,
@@ -672,7 +926,7 @@ class _DashboardPanel extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       isOrganiser ? 'Organiser account' : 'Attendee account',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         color: PersonalizedLandingPage.muted,
                       ),
@@ -844,7 +1098,7 @@ class _DashboardMetricCard extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   color: PersonalizedLandingPage.muted,
                 ),
@@ -895,7 +1149,7 @@ class _UpcomingEventCard extends StatelessWidget {
               children: [
                 Text(
                   event['title'] as String,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: PersonalizedLandingPage.text,
@@ -904,7 +1158,7 @@ class _UpcomingEventCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   event['date'] as String,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     color: PersonalizedLandingPage.muted,
                   ),
@@ -912,7 +1166,7 @@ class _UpcomingEventCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   event['location'] as String,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     color: PersonalizedLandingPage.muted,
                   ),

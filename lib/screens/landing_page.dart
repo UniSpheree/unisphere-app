@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:unisphere_app/widgets/app_footer.dart';
 import 'package:unisphere_app/widgets/header.dart';
 import 'create_event_screen.dart';
+import 'discover_event_screen.dart';
 
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
@@ -22,7 +23,14 @@ class LandingPage extends StatelessWidget {
                   ),
                 );
               },
-              onFindEventsTap: () {},
+              onFindEventsTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DiscoverEventScreen(),
+                  ),
+                );
+              },
               onCreateEventsTap: () {
                 Navigator.push(
                   context,
@@ -210,7 +218,14 @@ class _HeroText extends StatelessWidget {
           runSpacing: 14,
           children: [
             ElevatedButton(
-              onPressed: null,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DiscoverEventScreen(),
+                  ),
+                );
+              },
               style: ButtonStyle(
                 backgroundColor: MaterialStatePropertyAll(AppColors.primary),
                 foregroundColor: MaterialStatePropertyAll(Colors.white),
@@ -286,8 +301,27 @@ class _HeroBullet extends StatelessWidget {
   }
 }
 
-class _HeroVisual extends StatelessWidget {
+class _HeroVisual extends StatefulWidget {
   const _HeroVisual();
+
+  @override
+  State<_HeroVisual> createState() => _HeroVisualState();
+}
+
+class _HeroVisualState extends State<_HeroVisual> {
+  late TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -323,17 +357,35 @@ class _HeroVisual extends StatelessWidget {
                 borderRadius: BorderRadius.circular(18),
                 border: Border.all(color: AppColors.border),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.search_rounded, color: AppColors.muted),
-                  SizedBox(width: 12),
+                  const Icon(Icons.search_rounded, color: AppColors.muted),
+                  const SizedBox(width: 12),
                   Expanded(
-                    child: Text(
-                      'Search events, categories, places...',
-                      style: TextStyle(color: AppColors.muted),
+                    child: TextField(
+                      controller: _searchController,
+                      onSubmitted: (value) {
+                        if (value.isNotEmpty) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DiscoverEventScreen(
+                                initialSearchQuery: value,
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      decoration: const InputDecoration(
+                        hintText: 'Search events, categories, places...',
+                        hintStyle: TextStyle(color: AppColors.muted),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      style: const TextStyle(color: AppColors.text),
                     ),
                   ),
-                  Icon(Icons.tune_rounded, color: AppColors.primary),
+                  const Icon(Icons.tune_rounded, color: AppColors.primary),
                 ],
               ),
             ),
@@ -918,7 +970,14 @@ class _CTASection extends StatelessWidget {
                         runSpacing: 12,
                         children: [
                           ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const DiscoverEventScreen(),
+                                ),
+                              );
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
                               foregroundColor: AppColors.primary,
