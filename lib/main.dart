@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/create_event_screen.dart';
+import 'screens/profile_page.dart';
 import 'screens/landing_page.dart';
 import 'screens/landing_page_logged_in.dart';
 import 'screens/dashboard_screen.dart';
@@ -34,7 +35,7 @@ class MyApp extends StatelessWidget {
         '/login': (_) => const LoginScreen(),
         '/register': (_) => const RegisterScreen(),
         '/forgot-password': (_) => const ForgotPasswordScreen(),
-        '/profile': (_) => const ProfileScreen(),
+        '/profile': (_) => const ProfilePage(),
         '/create-event': (_) => const CreateEventScreen(),
       },
       onGenerateRoute: (settings) {
