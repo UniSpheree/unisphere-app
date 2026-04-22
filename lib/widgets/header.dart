@@ -9,6 +9,7 @@ class AppHeader extends StatelessWidget {
   final VoidCallback? onAboutTap;
   final VoidCallback? onSignInTap;
   final VoidCallback? onHostEventTap;
+  final bool showProfile;
 
   const AppHeader({
     super.key,
@@ -18,6 +19,7 @@ class AppHeader extends StatelessWidget {
     this.onAboutTap,
     this.onSignInTap,
     this.onHostEventTap,
+    this.showProfile = true,
   });
 
   @override
@@ -84,32 +86,47 @@ class AppHeader extends StatelessWidget {
                             break;
                         }
                       },
-                      itemBuilder: (context) => const [
-                        PopupMenuItem(
-                          value: 'find',
-                          child: Text('Find Events'),
-                        ),
-                        PopupMenuItem(
-                          value: 'create',
-                          child: Text('Create Events'),
-                        ),
-                        PopupMenuItem(
-                          value: 'tickets',
-                          child: Text('My Tickets'),
-                        ),
-                        PopupMenuItem(value: 'about', child: Text('About us')),
-                        PopupMenuDivider(),
-                        PopupMenuItem(value: 'signin', child: Text('Sign In')),
-                        PopupMenuItem(
-                          value: 'host',
-                          child: Text('Host an Event'),
-                        ),
-                        PopupMenuDivider(),
-                        PopupMenuItem(
-                          value: 'profile',
-                          child: Text('My Profile'),
-                        ),
-                      ],
+                      itemBuilder: (context) {
+                        final items = <PopupMenuEntry<String>>[
+                          const PopupMenuItem(
+                            value: 'find',
+                            child: Text('Find Events'),
+                          ),
+                          const PopupMenuItem(
+                            value: 'create',
+                            child: Text('Create Events'),
+                          ),
+                          const PopupMenuItem(
+                            value: 'tickets',
+                            child: Text('My Tickets'),
+                          ),
+                          const PopupMenuItem(
+                            value: 'about',
+                            child: Text('About us'),
+                          ),
+                          const PopupMenuDivider(),
+                          const PopupMenuItem(
+                            value: 'signin',
+                            child: Text('Sign In'),
+                          ),
+                          const PopupMenuItem(
+                            value: 'host',
+                            child: Text('Host an Event'),
+                          ),
+                        ];
+
+                        if (showProfile) {
+                          items.add(const PopupMenuDivider());
+                          items.add(
+                            const PopupMenuItem(
+                              value: 'profile',
+                              child: Text('My Profile'),
+                            ),
+                          );
+                        }
+
+                        return items;
+                      },
                     ),
                   ],
                 )
@@ -175,27 +192,28 @@ class AppHeader extends StatelessWidget {
                           child: const Text('Host an Event'),
                         ),
                         const SizedBox(width: 12),
-                        IconButton(
-                          tooltip: MockBackend().currentUser != null
-                              ? 'Profile'
-                              : 'Register',
-                          onPressed: () {
-                            if (MockBackend().currentUser != null) {
-                              Navigator.pushNamed(context, '/profile');
-                            } else {
-                              Navigator.pushNamed(context, '/register');
-                            }
-                          },
-                          icon: CircleAvatar(
-                            radius: 16,
-                            backgroundColor: Colors.indigo.withOpacity(0.12),
-                            child: const Icon(
-                              Icons.person_outline,
-                              size: 20,
-                              color: Colors.indigo,
+                        if (showProfile)
+                          IconButton(
+                            tooltip: MockBackend().currentUser != null
+                                ? 'Profile'
+                                : 'Register',
+                            onPressed: () {
+                              if (MockBackend().currentUser != null) {
+                                Navigator.pushNamed(context, '/profile');
+                              } else {
+                                Navigator.pushNamed(context, '/register');
+                              }
+                            },
+                            icon: CircleAvatar(
+                              radius: 16,
+                              backgroundColor: Colors.indigo.withOpacity(0.12),
+                              child: const Icon(
+                                Icons.person_outline,
+                                size: 20,
+                                color: Colors.indigo,
+                              ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ],
