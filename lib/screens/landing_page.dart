@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:unisphere_app/widgets/app_footer.dart';
 import 'package:unisphere_app/widgets/header.dart';
 import 'create_event_screen.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
+import 'discover_event_screen.dart';
 
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
@@ -24,7 +23,14 @@ class LandingPage extends StatelessWidget {
                   ),
                 );
               },
-              onFindEventsTap: () {},
+              onFindEventsTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DiscoverEventScreen(),
+                  ),
+                );
+              },
               onCreateEventsTap: () {
                 Navigator.push(
                   context,
@@ -212,7 +218,14 @@ class _HeroText extends StatelessWidget {
           runSpacing: 14,
           children: [
             ElevatedButton(
-              onPressed: null,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DiscoverEventScreen(),
+                  ),
+                );
+              },
               style: ButtonStyle(
                 backgroundColor: MaterialStatePropertyAll(AppColors.primary),
                 foregroundColor: MaterialStatePropertyAll(Colors.white),
@@ -288,39 +301,27 @@ class _HeroBullet extends StatelessWidget {
   }
 }
 
-class _HeroVisual extends StatelessWidget {
+class _HeroVisual extends StatefulWidget {
   const _HeroVisual();
 
-  static final List<_EventMarkerData> events = [
-    _EventMarkerData(
-      title: 'Tech Meetup',
-      subtitle: 'Today • 6:30 PM',
-      location: LatLng(50.8198, -1.0880), // Portsmouth
-      count: 9,
-      color: Color(0xff9bd36a),
-    ),
-    _EventMarkerData(
-      title: 'Live Music Night',
-      subtitle: 'Fri • 8:00 PM',
-      location: LatLng(51.5072, -0.1276), // London
-      count: 19,
-      color: Color(0xffe8c75f),
-    ),
-    _EventMarkerData(
-      title: 'Food Festival',
-      subtitle: 'Sat • 1:00 PM',
-      location: LatLng(52.4862, -1.8904), // Birmingham
-      count: 12,
-      color: Color(0xff9bd36a),
-    ),
-    _EventMarkerData(
-      title: 'Startup Talks',
-      subtitle: 'Sun • 5:00 PM',
-      location: LatLng(53.4808, -2.2426), // Manchester
-      count: 7,
-      color: Color(0xff9bd36a),
-    ),
-  ];
+  @override
+  State<_HeroVisual> createState() => _HeroVisualState();
+}
+
+class _HeroVisualState extends State<_HeroVisual> {
+  late TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -342,170 +343,149 @@ class _HeroVisual extends StatelessWidget {
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
-        child: Stack(
-          children: [
-            Positioned(
-              top: 24,
-              left: 24,
-              right: 24,
-              child: Container(
-                height: 72,
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: AppColors.border),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+      child: Stack(
+        children: [
+          Positioned(
+            top: 24,
+            left: 24,
+            right: 24,
+            child: Container(
+              height: 72,
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.search_rounded, color: AppColors.muted),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      onSubmitted: (value) {
+                        if (value.isNotEmpty) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DiscoverEventScreen(
+                                initialSearchQuery: value,
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      decoration: const InputDecoration(
+                        hintText: 'Search events, categories, places...',
+                        hintStyle: TextStyle(color: AppColors.muted),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      style: const TextStyle(color: AppColors.text),
                     ),
-                  ],
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.search_rounded, color: AppColors.muted),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Search events, categories, places...',
-                        style: TextStyle(color: AppColors.muted),
+                  ),
+                  const Icon(Icons.tune_rounded, color: AppColors.primary),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            left: 24,
+            right: 180,
+            top: 120,
+            bottom: 24,
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xffdbeafe),
+                borderRadius: BorderRadius.circular(22),
+              ),
+              child: Stack(
+                children: [
+                  const Center(
+                    child: Icon(
+                      Icons.map_rounded,
+                      size: 110,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  ...[
+                    const Offset(0.25, 0.30),
+                    const Offset(0.62, 0.20),
+                    const Offset(0.52, 0.58),
+                    const Offset(0.30, 0.72),
+                  ].map(
+                    (offset) => Align(
+                      alignment: Alignment(
+                        offset.dx * 2 - 1,
+                        offset.dy * 2 - 1,
+                      ),
+                      child: Container(
+                        width: 18,
+                        height: 18,
+                        decoration: const BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
+                        ),
                       ),
                     ),
-                    Icon(Icons.tune_rounded, color: AppColors.primary),
-                  ],
-                ),
-              ),
-            ),
-
-            Positioned(
-              left: 24,
-              right: 24,
-              top: 110,
-              bottom: 24,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(22),
-                child: FlutterMap(
-                  options: MapOptions(
-                    // flutter_map v7 uses initialCenter/initialZoom
-                    initialCenter: LatLng(51.0, -0.8),
-                    initialZoom: 5.5,
                   ),
-                  children: [
-                    TileLayer(
-                      urlTemplate:
-                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                      userAgentPackageName: 'com.example.unisphere_app',
-                    ),
-                    MarkerLayer(
-                      markers: events.map((event) {
-                        return Marker(
-                          point: event.location,
-                          width: 60,
-                          height: 60,
-                          // in some flutter_map versions Marker expects a `child` widget
-                          child: _EventBubble(
-                            count: event.count,
-                            color: event.color,
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
+                ],
               ),
             ),
-
-            const Positioned(right: 38, bottom: 38, child: _MiniMapLegend()),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EventMarkerData {
-  final String title;
-  final String subtitle;
-  final LatLng location;
-  final int count;
-  final Color color;
-
-  const _EventMarkerData({
-    required this.title,
-    required this.subtitle,
-    required this.location,
-    required this.count,
-    required this.color,
-  });
-}
-
-class _EventBubble extends StatelessWidget {
-  final int count;
-  final Color color;
-
-  const _EventBubble({required this.count, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.92),
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 3),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.16),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
           ),
-        ],
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        '$count',
-        style: const TextStyle(
-          color: Colors.black87,
-          fontWeight: FontWeight.w700,
-          fontSize: 16,
-        ),
-      ),
-    );
-  }
-}
-
-class _MiniMapLegend extends StatelessWidget {
-  const _MiniMapLegend();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.96),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
+          const Positioned(
+            top: 120,
+            right: 24,
+            child: _PreviewCard(
+              title: 'Tech Meetup',
+              subtitle: 'Today • 6:30 PM',
+              icon: Icons.bolt_rounded,
+            ),
           ),
-        ],
-      ),
-      child: const Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.location_on_rounded, color: AppColors.primary, size: 18),
-          SizedBox(width: 8),
-          Text(
-            'Live events near you',
-            style: TextStyle(
-              color: AppColors.text,
-              fontWeight: FontWeight.w600,
+          const Positioned(
+            top: 240,
+            right: 24,
+            child: _PreviewCard(
+              title: 'Music Festival',
+              subtitle: 'Sat • Outdoor Arena',
+              icon: Icons.music_note_rounded,
+            ),
+          ),
+          Positioned(
+            right: 40,
+            bottom: 34,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.25),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.trending_up_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    '2.4k event views',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -990,7 +970,14 @@ class _CTASection extends StatelessWidget {
                         runSpacing: 12,
                         children: [
                           ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const DiscoverEventScreen(),
+                                ),
+                              );
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
                               foregroundColor: AppColors.primary,
