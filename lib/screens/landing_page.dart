@@ -25,6 +25,9 @@ class LandingPage extends StatelessWidget {
                   ),
                 );
               },
+              onRegisterTap: () {
+                Navigator.pushNamed(context, '/register');
+              },
               onFindEventsTap: () {
                 Navigator.push(
                   context,

@@ -9,6 +9,7 @@ class AppHeader extends StatelessWidget {
   final VoidCallback? onAboutTap;
   final VoidCallback? onSignInTap;
   final VoidCallback? onHostEventTap;
+  final VoidCallback? onRegisterTap;
   final bool showProfile;
 
   const AppHeader({
@@ -19,6 +20,7 @@ class AppHeader extends StatelessWidget {
     this.onAboutTap,
     this.onSignInTap,
     this.onHostEventTap,
+    this.onRegisterTap,
     this.showProfile = true,
   });
 
@@ -75,7 +77,15 @@ class AppHeader extends StatelessWidget {
                             onSignInTap?.call();
                             break;
                           case 'host':
-                            onHostEventTap?.call();
+                            // If a specific register callback is provided use it,
+                            // otherwise fall back to host callback or default to '/register'.
+                            if (onRegisterTap != null) {
+                              onRegisterTap!.call();
+                            } else if (onHostEventTap != null) {
+                              onHostEventTap!.call();
+                            } else {
+                              Navigator.pushNamed(context, '/register');
+                            }
                             break;
                           case 'profile':
                             if (MockBackend().currentUser != null) {
@@ -111,7 +121,7 @@ class AppHeader extends StatelessWidget {
                           ),
                           const PopupMenuItem(
                             value: 'host',
-                            child: Text('Host an Event'),
+                            child: Text('Register'),
                           ),
                         ];
 
@@ -177,7 +187,12 @@ class AppHeader extends StatelessWidget {
                         ),
                         const SizedBox(width: 12),
                         FilledButton(
-                          onPressed: onHostEventTap,
+                          onPressed:
+                              onRegisterTap ??
+                              onHostEventTap ??
+                              () {
+                                Navigator.pushNamed(context, '/register');
+                              },
                           style: FilledButton.styleFrom(
                             backgroundColor: _HeaderColors.primary,
                             foregroundColor: Colors.white,
@@ -189,7 +204,7 @@ class AppHeader extends StatelessWidget {
                               vertical: 16,
                             ),
                           ),
-                          child: const Text('Host an Event'),
+                          child: const Text('Register'),
                         ),
                         const SizedBox(width: 12),
                         if (showProfile)
