@@ -367,23 +367,6 @@ class _DiscoverSection extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 16),
-            OutlinedButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.tune_rounded, size: 18),
-              label: const Text('Advanced filters'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: PersonalizedLandingPage.primary,
-                side: const BorderSide(color: PersonalizedLandingPage.border),
-                backgroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-            ),
           ],
         ),
         const SizedBox(height: 24),
@@ -720,6 +703,7 @@ class _CategoryChips extends StatelessWidget {
       'All',
       'Technology',
       'Music',
+      'Entertainment',
       'Career',
       'Sports',
       'Workshops',
