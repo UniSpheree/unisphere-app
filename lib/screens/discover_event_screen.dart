@@ -3,7 +3,9 @@ import 'package:unisphere_app/widgets/app_footer.dart';
 import 'package:unisphere_app/widgets/header.dart';
 
 class DiscoverEventScreen extends StatefulWidget {
-  const DiscoverEventScreen({super.key});
+  final String? initialSearchQuery;
+
+  const DiscoverEventScreen({super.key, this.initialSearchQuery});
 
   @override
   State<DiscoverEventScreen> createState() => _DiscoverEventScreenState();
@@ -85,6 +87,11 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
   void initState() {
     super.initState();
     _searchController = TextEditingController();
+    if (widget.initialSearchQuery != null && widget.initialSearchQuery!.isNotEmpty) {
+      _searchQuery = widget.initialSearchQuery!;
+      _submittedSearchQuery = widget.initialSearchQuery!;
+      _searchController.text = widget.initialSearchQuery!;
+    }
   }
 
   @override
