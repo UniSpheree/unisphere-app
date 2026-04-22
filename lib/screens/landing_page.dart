@@ -43,7 +43,9 @@ class LandingPage extends StatelessWidget {
               },
               onMyTicketsTap: () {},
               onAboutTap: () {},
-              onSignInTap: () {},
+              onSignInTap: () {
+                Navigator.pushNamed(context, '/login');
+              },
             ),
             _HeroSection(),
             _StatsSection(),

@@ -278,14 +278,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text(
-                          "Don't have access yet? ",
+                          "Don't have an account yet? ",
                           style: TextStyle(fontSize: 13, color: Colors.grey),
                         ),
                         GestureDetector(
                           onTap: () =>
                               Navigator.pushNamed(context, '/register'),
                           child: const Text(
-                            'Request Access',
+                            'Register here',
                             style: TextStyle(
                               fontSize: 13,
                               color: Color(0xFF2D3A8C),
