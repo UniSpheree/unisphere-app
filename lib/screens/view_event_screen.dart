@@ -7,6 +7,20 @@ class ViewEventScreen extends StatefulWidget {
   final String currentUserId;
   final String organiserId;
 
+  // Backend-friendly event payload fields
+  final String? eventId;
+  final String eventName;
+  final String eventDescription;
+  final String eventVenue;
+  final String eventCategory;
+  final String eventVisibility;
+  final DateTime? eventStartDate;
+  final DateTime? eventEndDate;
+  final int maxAttendees;
+  final int? availableSlots;
+  final String organiserName;
+  final String organiserContact;
+
   // Breadcrumb config for reusable navigation hierarchy.
   final String dashboardLabel;
   final String dashboardRoute;
@@ -18,6 +32,19 @@ class ViewEventScreen extends StatefulWidget {
     required this.role,
     required this.currentUserId,
     required this.organiserId,
+    this.eventId,
+    this.eventName = 'Event Title',
+    this.eventDescription =
+        'This is the event description section. You can replace this text with the actual event details, schedule, venue information, and other relevant content.',
+    this.eventVenue = 'Main Campus Gym',
+    this.eventCategory = 'Sports',
+    this.eventVisibility = 'Public',
+    this.eventStartDate,
+    this.eventEndDate,
+    this.maxAttendees = 120,
+    this.availableSlots,
+    this.organiserName = 'Student Affairs Office',
+    this.organiserContact = 'Contact: organiser@unisphere.edu',
     this.dashboardLabel = 'Dashboard',
     this.dashboardRoute = '/dashboard',
     this.middleCrumbLabel,
@@ -38,18 +65,17 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
   double _heroHeight = 0;
   double _rightPanelHeight = 0;
   double _rightPanelTranslateY = 0;
-  String _eventTitle = 'Event Title';
-  String _eventDescription =
-      'This is the event description section. You can replace this text with the actual event details, schedule, venue information, and other relevant content.';
-  String _eventVenue = 'Main Campus Gym';
-  String _eventCategory = 'Sports';
-  String _eventVisibility = 'Public';
-  DateTime _eventStartDate = DateTime(2026, 5, 25, 14, 0);
-  DateTime _eventEndDate = DateTime(2026, 5, 25, 17, 0);
-  int _totalSlots = 120;
-  int _availableSlots = 10;
-  final String _organiserName = 'Student Affairs Office';
-  final String _organiserContact = 'Contact: organiser@unisphere.edu';
+  late String _eventTitle;
+  late String _eventDescription;
+  late String _eventVenue;
+  late String _eventCategory;
+  late String _eventVisibility;
+  late DateTime _eventStartDate;
+  late DateTime _eventEndDate;
+  late int _totalSlots;
+  late int _availableSlots;
+  late String _organiserName;
+  late String _organiserContact;
 
   bool get canEdit =>
       widget.role == 'admin' ||
@@ -59,6 +85,21 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
   @override
   void initState() {
     super.initState();
+
+    // Seed local mutable state from constructor payload so callers can pass
+    // event data directly from list/discovery screens or backend responses.
+    _eventTitle = widget.eventName;
+    _eventDescription = widget.eventDescription;
+    _eventVenue = widget.eventVenue;
+    _eventCategory = widget.eventCategory;
+    _eventVisibility = widget.eventVisibility;
+    _eventStartDate = widget.eventStartDate ?? DateTime(2026, 5, 25, 14, 0);
+    _eventEndDate = widget.eventEndDate ?? DateTime(2026, 5, 25, 17, 0);
+    _totalSlots = widget.maxAttendees;
+    _availableSlots = widget.availableSlots ?? widget.maxAttendees;
+    _organiserName = widget.organiserName;
+    _organiserContact = widget.organiserContact;
+
     _scrollController.addListener(_handleScrollForStickyPanel);
   }
 
