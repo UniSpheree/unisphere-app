@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:unisphere_app/widgets/app_footer.dart';
 import 'package:unisphere_app/widgets/header.dart';
+import 'create_event_screen.dart';
 
 class DiscoverEventScreen extends StatefulWidget {
   final String? initialSearchQuery;
@@ -87,7 +88,8 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
   void initState() {
     super.initState();
     _searchController = TextEditingController();
-    if (widget.initialSearchQuery != null && widget.initialSearchQuery!.isNotEmpty) {
+    if (widget.initialSearchQuery != null &&
+        widget.initialSearchQuery!.isNotEmpty) {
       _searchQuery = widget.initialSearchQuery!;
       _submittedSearchQuery = widget.initialSearchQuery!;
       _searchController.text = widget.initialSearchQuery!;
@@ -104,8 +106,8 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
     List<Map<String, dynamic>> events = _selectedFilter == 'All'
         ? _discoverEvents
         : _discoverEvents
-            .where((event) => event['category'] == _selectedFilter)
-            .toList();
+              .where((event) => event['category'] == _selectedFilter)
+              .toList();
 
     if (_searchQuery.isEmpty) {
       return events;
@@ -115,7 +117,8 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
     return events.where((event) {
       final titleLower = (event['title'] as String).toLowerCase();
       final categoryLower = (event['category'] as String).toLowerCase();
-      return titleLower.contains(searchLower) || categoryLower.contains(searchLower);
+      return titleLower.contains(searchLower) ||
+          categoryLower.contains(searchLower);
     }).toList();
   }
 
@@ -123,17 +126,39 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(72),
-        child: AppHeader(
-          onFindEventsTap: () {
-            // Already on discover events page
-          },
-        ),
-      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
+            AppHeader(
+              onHostEventTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CreateEventScreen(),
+                  ),
+                );
+              },
+              onRegisterTap: () {
+                Navigator.pushNamed(context, '/register');
+              },
+              onFindEventsTap: () {
+                // already on this page
+              },
+              onCreateEventsTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CreateEventScreen(),
+                  ),
+                );
+              },
+              onMyTicketsTap: () {},
+              onAboutTap: () {},
+              onSignInTap: () {
+                Navigator.pushNamed(context, '/login');
+              },
+              showProfile: false,
+            ),
             LayoutBuilder(
               builder: (context, constraints) {
                 final isMobile = constraints.maxWidth < 600;
@@ -261,7 +286,9 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(18),
-                                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                                  border: Border.all(
+                                    color: const Color(0xFFE5E7EB),
+                                  ),
                                 ),
                                 child: IconButton(
                                   onPressed: () {
@@ -295,16 +322,24 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                           vertical: 10,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: isSelected ? const Color(0xFF4F46E5) : Colors.white,
-                                          borderRadius: BorderRadius.circular(999),
+                                          color: isSelected
+                                              ? const Color(0xFF4F46E5)
+                                              : Colors.white,
+                                          borderRadius: BorderRadius.circular(
+                                            999,
+                                          ),
                                           border: Border.all(
-                                            color: isSelected ? const Color(0xFF4F46E5) : const Color(0xFFE5E7EB),
+                                            color: isSelected
+                                                ? const Color(0xFF4F46E5)
+                                                : const Color(0xFFE5E7EB),
                                           ),
                                         ),
                                         child: Text(
                                           chip,
                                           style: TextStyle(
-                                            color: isSelected ? Colors.white : const Color(0xFF1A1F36),
+                                            color: isSelected
+                                                ? Colors.white
+                                                : const Color(0xFF1A1F36),
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
@@ -330,7 +365,9 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                           LayoutBuilder(
                             builder: (context, constraints) {
                               final availableWidth = constraints.maxWidth;
-                              final crossAxisCount = availableWidth > 800 ? 3 : (availableWidth > 400 ? 2 : 1);
+                              final crossAxisCount = availableWidth > 800
+                                  ? 3
+                                  : (availableWidth > 400 ? 2 : 1);
 
                               return GridView.count(
                                 crossAxisCount: crossAxisCount,
@@ -343,7 +380,9 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                     decoration: BoxDecoration(
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(22),
-                                      border: Border.all(color: const Color(0xFFE5E7EB)),
+                                      border: Border.all(
+                                        color: const Color(0xFFE5E7EB),
+                                      ),
                                       boxShadow: [
                                         BoxShadow(
                                           color: Colors.black.withOpacity(0.04),
@@ -353,17 +392,20 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                       ],
                                     ),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Expanded(
                                           flex: 2,
                                           child: Container(
                                             width: double.infinity,
                                             decoration: BoxDecoration(
-                                              color: event['imageColor'] as Color,
-                                              borderRadius: const BorderRadius.vertical(
-                                                top: Radius.circular(22),
-                                              ),
+                                              color:
+                                                  event['imageColor'] as Color,
+                                              borderRadius:
+                                                  const BorderRadius.vertical(
+                                                    top: Radius.circular(22),
+                                                  ),
                                             ),
                                             child: Center(
                                               child: Icon(
@@ -377,7 +419,8 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                         Padding(
                                           padding: const EdgeInsets.all(18),
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 event['title'] as String,
@@ -407,27 +450,39 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                               Row(
                                                 children: [
                                                   Container(
-                                                    padding: const EdgeInsets.symmetric(
-                                                      horizontal: 10,
-                                                      vertical: 6,
-                                                    ),
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 10,
+                                                          vertical: 6,
+                                                        ),
                                                     decoration: BoxDecoration(
-                                                      color: const Color(0xFFEEF2FF),
-                                                      borderRadius: BorderRadius.circular(999),
+                                                      color: const Color(
+                                                        0xFFEEF2FF,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            999,
+                                                          ),
                                                     ),
                                                     child: Text(
-                                                      event['category'] as String,
+                                                      event['category']
+                                                          as String,
                                                       style: const TextStyle(
                                                         fontSize: 12,
-                                                        fontWeight: FontWeight.w600,
-                                                        color: Color(0xFF4F46E5),
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color: Color(
+                                                          0xFF4F46E5,
+                                                        ),
                                                       ),
                                                     ),
                                                   ),
                                                   const Spacer(),
                                                   TextButton(
                                                     onPressed: () {},
-                                                    child: const Text('View details'),
+                                                    child: const Text(
+                                                      'View details',
+                                                    ),
                                                   ),
                                                 ],
                                               ),
@@ -442,8 +497,8 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                             },
                           ),
                         ],
-                  ),
-                  ),
+                      ),
+                    ),
                   ),
                 );
               },
