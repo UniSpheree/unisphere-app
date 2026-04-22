@@ -85,7 +85,8 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
     final nextHeroHeight = heroBox.size.height;
     final nextRightPanelHeight = panelBox.size.height;
 
-    if (_heroHeight != nextHeroHeight || _rightPanelHeight != nextRightPanelHeight) {
+    if (_heroHeight != nextHeroHeight ||
+        _rightPanelHeight != nextRightPanelHeight) {
       setState(() {
         _heroHeight = nextHeroHeight;
         _rightPanelHeight = nextRightPanelHeight;
@@ -96,7 +97,10 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
   // Keeps the right panel "sticky" on desktop by translating it with page
   // scroll, clamped so it never moves above the top or past the hero bottom.
   void _handleScrollForStickyPanel() {
-    final maxTranslate = (_heroHeight - _rightPanelHeight).clamp(0.0, double.infinity);
+    final maxTranslate = (_heroHeight - _rightPanelHeight).clamp(
+      0.0,
+      double.infinity,
+    );
     final nextTranslate = _scrollController.offset.clamp(0.0, maxTranslate);
 
     if ((_rightPanelTranslateY - nextTranslate).abs() > 0.5) {
@@ -170,11 +174,11 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
           (result['description'] as String?) ?? _eventDescription;
       _eventVenue = (result['venue'] as String?) ?? _eventVenue;
       _eventCategory = (result['category'] as String?) ?? _eventCategory;
-      _eventVisibility =
-          (result['visibility'] as String?) ?? _eventVisibility;
+      _eventVisibility = (result['visibility'] as String?) ?? _eventVisibility;
 
-      final parsedMaxAttendees =
-          int.tryParse((result['maxAttendees'] as String?) ?? '');
+      final parsedMaxAttendees = int.tryParse(
+        (result['maxAttendees'] as String?) ?? '',
+      );
       if (parsedMaxAttendees != null) {
         _totalSlots = parsedMaxAttendees;
         _availableSlots = parsedMaxAttendees;
@@ -262,10 +266,7 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 980),
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 24,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -332,7 +333,7 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -343,30 +344,40 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
                 ),
                 const SizedBox(height: 10),
                 _sectionTitle('Organiser', fontSize: 18),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    child: Row(
+              ],
+            ),
+          ),
+          // Organiser card
+          Card(
+            margin: EdgeInsets.symmetric(horizontal: 18.0),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+              child: Row(
+                children: [
+                  CircleAvatar(child: Icon(Icons.person_outline)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        CircleAvatar(child: Icon(Icons.person_outline)),
-                        SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(_organiserName),
-                            Text(_organiserContact),
-                          ],
+                        Text(_organiserName, overflow: TextOverflow.ellipsis),
+                        Text(
+                          _organiserContact,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
                   ),
-                ),
-                const SizedBox(height: 10),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -379,10 +390,7 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
                       Icons.access_time_outlined,
                       '${_formatTime(_eventStartDate)} - ${_formatTime(_eventEndDate)}',
                     ),
-                    _infoChip(
-                      Icons.location_on_outlined,
-                      _eventVenue,
-                    ),
+                    _infoChip(Icons.location_on_outlined, _eventVenue),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -404,7 +412,7 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
   Widget _buildRightPanel() {
     final double availability = _totalSlots == 0
         ? 0
-      : _availableSlots.clamp(0, _totalSlots) / _totalSlots;
+        : _availableSlots.clamp(0, _totalSlots) / _totalSlots;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -444,11 +452,11 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
               ElevatedButton.icon(
                 onPressed: canEdit
                     ? _handleEditEvent
-                  : _availableSlots == 0
-                        ? null
-                        : () {
-                            _handleJoinEvent();
-                          },
+                    : _availableSlots == 0
+                    ? null
+                    : () {
+                        _handleJoinEvent();
+                      },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: canEdit
                       ? const Color.fromARGB(255, 40, 58, 217)
@@ -472,7 +480,7 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
               const SizedBox(height: 10),
               OutlinedButton.icon(
                 onPressed: () {
-                  // TODO: connect share flow
+                  // TODO: Unvisited share button, may implement later
                 },
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF6D28D9),
