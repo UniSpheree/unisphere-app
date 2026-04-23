@@ -9,39 +9,7 @@ import 'discover_event_screen.dart';
 import '../utils/mock_backend.dart';
 
 class CreateEventScreen extends StatefulWidget {
-  // Optional initial values are used when this screen is opened in edit mode
-  // from the event view screen.
-  final String? initialEventName;
-  final String? initialDescription;
-  final String? initialVenue;
-  final String? initialMaxAttendees;
-  final DateTime? initialStartDate;
-  final DateTime? initialEndDate;
-  final String? initialCategory;
-  final String? initialVisibility;
-
-  const CreateEventScreen({
-    super.key,
-    this.initialEventName,
-    this.initialDescription,
-    this.initialVenue,
-    this.initialMaxAttendees,
-    this.initialStartDate,
-    this.initialEndDate,
-    this.initialCategory,
-    this.initialVisibility,
-  });
-
-  // Edit mode is inferred from the presence of any initial value.
-  bool get isEditing =>
-      initialEventName != null ||
-      initialDescription != null ||
-      initialVenue != null ||
-      initialMaxAttendees != null ||
-      initialStartDate != null ||
-      initialEndDate != null ||
-      initialCategory != null ||
-      initialVisibility != null;
+  const CreateEventScreen({super.key});
 
   @override
   State<CreateEventScreen> createState() => _CreateEventScreenState();
@@ -84,20 +52,6 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       'desc': 'Society / course',
     },
   ];
-
-  @override
-  void initState() {
-    super.initState();
-    // Prefill form fields when editing an existing event.
-    eventNameController.text = widget.initialEventName ?? '';
-    descriptionController.text = widget.initialDescription ?? '';
-    venueController.text = widget.initialVenue ?? '';
-    maxAttendeesController.text = widget.initialMaxAttendees ?? '';
-    startDate = widget.initialStartDate;
-    endDate = widget.initialEndDate;
-    eventCategory = widget.initialCategory;
-    eventVisibility = widget.initialVisibility ?? 'Public';
-  }
 
   Future<void> _pickBannerImage() async {
     try {
@@ -245,29 +199,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       ),
     );
 
-    // Build a reusable payload so this screen can return edited values to
-    // the caller (ViewEventScreen) without coupling to backend models yet.
-    final result = <String, dynamic>{
-      'eventName': eventNameController.text.trim(),
-      'description': descriptionController.text.trim(),
-      'venue': venueController.text.trim(),
-      'maxAttendees': maxAttendeesController.text.trim(),
-      'startDate': startDate,
-      'endDate': endDate,
-      'category': eventCategory ?? 'Sports',
-      'visibility': eventVisibility,
-    };
-
-    if (widget.isEditing) {
-      // In edit mode, return updated values to the previous screen.
-      Navigator.pop(context, result);
-      return;
-    }
-
     _clearForm();
-
-    // In create mode, keep the existing post-create navigation behavior.
-    Navigator.pushNamed(context, '/dashboard');
+    Navigator.pop(context);
   }
 
   void _clearForm() {
@@ -301,287 +234,362 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       body: LayoutBuilder(
         builder: (context, constraints) {
           final isMobile = constraints.maxWidth < 600;
-          return Center(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    width: isMobile ? double.infinity : 720,
-                    margin: EdgeInsets.fromLTRB(
-                      isMobile ? 12 : 16,
-                      isMobile ? 20 : 32,
-                      isMobile ? 12 : 16,
-                      0,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                AppHeader(
+                  showProfile: false,
+                  onFindEventsTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const DiscoverEventScreen(),
+                      ),
+                    );
+                  },
+                  onCreateEventsTap: () {},
+                  onMyTicketsTap: () {},
+                  onAboutTap: () {},
+                  onSignInTap: () {
+                    Navigator.pushNamed(context, '/login');
+                  },
+                  onHostEventTap: () {},
+                ),
+
+                Center(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      if (showApprovalBanner)
+                        Container(
+                          width: double.infinity,
+                          color: Colors.orange.shade100,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 16,
+                          ),
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.info_outline,
+                                color: Colors.orange,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  'Organizer approval pending',
+                                  style: TextStyle(
+                                    color: Colors.orange.shade900,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                      Container(
+                        width: isMobile ? double.infinity : 720,
+                        margin: EdgeInsets.fromLTRB(
+                          isMobile ? 12 : 16,
+                          isMobile ? 20 : 32,
+                          isMobile ? 12 : 16,
+                          0,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            InkWell(
-                              onTap: () =>
-                                  Navigator.pushNamed(context, '/dashboard'),
-                              borderRadius: BorderRadius.circular(8),
-                              child: const Icon(
-                                Icons.arrow_back,
-                                size: 20,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            GestureDetector(
-                              onTap: () =>
-                                  Navigator.pushNamed(context, '/dashboard'),
-                              child: const Text(
-                                'Dashboard',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 14,
+                            Row(
+                              children: [
+                                InkWell(
+                                  onTap: () => Navigator.pop(context),
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: const Icon(
+                                    Icons.arrow_back,
+                                    size: 20,
+                                    color: Colors.grey,
+                                  ),
                                 ),
-                              ),
+                                const SizedBox(width: 8),
+                                GestureDetector(
+                                  onTap: () => Navigator.pop(context),
+                                  child: const Text(
+                                    'Landing Page',
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                                const Text(
+                                  '  /  ',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const Flexible(
+                                  child: Text(
+                                    'Create New Event',
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: Colors.indigo,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            const Text(
-                              '  /  ',
+                            const SizedBox(height: 12),
+                            Text(
+                              'Create New Event',
                               style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 14,
+                                fontSize: isMobile ? 22 : 30,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const Flexible(
-                              child: Text(
-                                'Create New Event',
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: Colors.indigo,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Fill in the details below to launch your event and start inviting attendees.',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Create New Event',
-                          style: TextStyle(
-                            fontSize: isMobile ? 22 : 30,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      ),
+
+                      Container(
+                        width: isMobile ? double.infinity : 720,
+                        margin: EdgeInsets.all(isMobile ? 12 : 16),
+                        padding: EdgeInsets.all(isMobile ? 20 : 32),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 20,
+                              offset: Offset(0, 10),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Fill in the details below to launch your event and start inviting attendees.',
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    width: isMobile ? double.infinity : 720,
-                    margin: EdgeInsets.all(isMobile ? 12 : 16),
-                    padding: EdgeInsets.all(isMobile ? 20 : 32),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 20,
-                          offset: Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _label('Event Banner'),
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 24),
-                            child: MouseRegion(
-                              onEnter: (_) =>
-                                  setState(() => _bannerHovered = true),
-                              onExit: (_) =>
-                                  setState(() => _bannerHovered = false),
-                              child: GestureDetector(
-                                onTap: _bannerImage == null
-                                    ? _pickBannerImage
-                                    : null,
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  width: double.infinity,
-                                  height: 180,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(
-                                      color: _bannerHovered
-                                          ? Colors.indigo
-                                          : Colors.indigo.withOpacity(0.35),
-                                      width: 2,
-                                    ),
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: _bannerImage == null
-                                        ? Container(
-                                            color: _bannerHovered
-                                                ? Colors.indigo.withOpacity(
-                                                    0.06,
-                                                  )
-                                                : Colors.indigo.withOpacity(
-                                                    0.02,
-                                                  ),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Container(
-                                                  padding: const EdgeInsets.all(
-                                                    14,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: _bannerHovered
-                                                        ? Colors.indigo
-                                                              .withOpacity(0.12)
-                                                        : Colors.indigo
-                                                              .withOpacity(
-                                                                0.07,
-                                                              ),
-                                                    shape: BoxShape.circle,
-                                                  ),
-                                                  child: Icon(
-                                                    Icons
-                                                        .add_photo_alternate_outlined,
-                                                    size: 36,
-                                                    color: _bannerHovered
-                                                        ? Colors.indigo
-                                                        : Colors.indigo
-                                                              .withOpacity(0.6),
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 12),
-                                                Text(
-                                                  'Upload Event Banner',
-                                                  style: TextStyle(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: _bannerHovered
-                                                        ? Colors.indigo
-                                                        : Colors.indigo
-                                                              .withOpacity(0.7),
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  'Recommended size: 1200 × 630px (PNG, JPG)',
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.grey.shade500,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          )
-                                        : Stack(
-                                            fit: StackFit.expand,
-                                            children: [
-                                              kIsWeb
-                                                  ? Image.network(
-                                                      _bannerImage!.path,
-                                                      fit: BoxFit.cover,
-                                                    )
-                                                  : Image.file(
-                                                      File(_bannerImage!.path),
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  gradient: LinearGradient(
-                                                    begin: Alignment.topCenter,
-                                                    end: Alignment.bottomCenter,
-                                                    colors: [
-                                                      Colors.black.withOpacity(
-                                                        0.3,
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _label('Event Banner'),
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 24),
+                                child: MouseRegion(
+                                  onEnter: (_) =>
+                                      setState(() => _bannerHovered = true),
+                                  onExit: (_) =>
+                                      setState(() => _bannerHovered = false),
+                                  child: GestureDetector(
+                                    onTap: _bannerImage == null
+                                        ? _pickBannerImage
+                                        : null,
+                                    child: AnimatedContainer(
+                                      duration: const Duration(
+                                        milliseconds: 200,
+                                      ),
+                                      width: double.infinity,
+                                      height: 180,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(14),
+                                        border: Border.all(
+                                          color: _bannerHovered
+                                              ? Colors.indigo
+                                              : Colors.indigo.withOpacity(0.35),
+                                          width: 2,
+                                        ),
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: _bannerImage == null
+                                            ? Container(
+                                                color: _bannerHovered
+                                                    ? Colors.indigo.withOpacity(
+                                                        0.06,
+                                                      )
+                                                    : Colors.indigo.withOpacity(
+                                                        0.02,
                                                       ),
-                                                      Colors.transparent,
-                                                      Colors.transparent,
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                              Positioned(
-                                                top: 8,
-                                                right: 8,
-                                                child: Row(
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
                                                   children: [
                                                     Container(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                            14,
+                                                          ),
                                                       decoration: BoxDecoration(
-                                                        color: Colors.black87,
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              8,
-                                                            ),
+                                                        color: _bannerHovered
+                                                            ? Colors.indigo
+                                                                  .withOpacity(
+                                                                    0.12,
+                                                                  )
+                                                            : Colors.indigo
+                                                                  .withOpacity(
+                                                                    0.07,
+                                                                  ),
+                                                        shape: BoxShape.circle,
                                                       ),
-                                                      child: IconButton(
-                                                        padding:
-                                                            const EdgeInsets.all(
-                                                              8,
-                                                            ),
-                                                        constraints:
-                                                            const BoxConstraints(),
-                                                        icon: const Icon(
-                                                          Icons.close,
-                                                          color: Colors.white,
-                                                          size: 20,
-                                                        ),
-                                                        onPressed: () {
-                                                          setState(() {
-                                                            _bannerImage = null;
-                                                          });
-                                                        },
-                                                        tooltip:
-                                                            'Remove banner',
+                                                      child: Icon(
+                                                        Icons
+                                                            .add_photo_alternate_outlined,
+                                                        size: 36,
+                                                        color: _bannerHovered
+                                                            ? Colors.indigo
+                                                            : Colors.indigo
+                                                                  .withOpacity(
+                                                                    0.6,
+                                                                  ),
                                                       ),
                                                     ),
-                                                    const SizedBox(width: 8),
-                                                    Container(
-                                                      decoration: BoxDecoration(
-                                                        color: Colors.black87,
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              8,
-                                                            ),
+                                                    const SizedBox(height: 12),
+                                                    Text(
+                                                      'Upload Event Banner',
+                                                      style: TextStyle(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color: _bannerHovered
+                                                            ? Colors.indigo
+                                                            : Colors.indigo
+                                                                  .withOpacity(
+                                                                    0.7,
+                                                                  ),
                                                       ),
-                                                      child: IconButton(
-                                                        padding:
-                                                            const EdgeInsets.all(
-                                                              8,
-                                                            ),
-                                                        constraints:
-                                                            const BoxConstraints(),
-                                                        icon: const Icon(
-                                                          Icons.edit,
-                                                          color: Colors.white,
-                                                          size: 20,
-                                                        ),
-                                                        onPressed:
-                                                            _pickBannerImage,
-                                                        tooltip:
-                                                            'Change banner',
+                                                    ),
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      'Recommended size: 1200 × 630px (PNG, JPG)',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: Colors
+                                                            .grey
+                                                            .shade500,
                                                       ),
                                                     ),
                                                   ],
                                                 ),
+                                              )
+                                            : Stack(
+                                                fit: StackFit.expand,
+                                                children: [
+                                                  kIsWeb
+                                                      ? Image.network(
+                                                          _bannerImage!.path,
+                                                          fit: BoxFit.cover,
+                                                        )
+                                                      : Image.file(
+                                                          File(
+                                                            _bannerImage!.path,
+                                                          ),
+                                                          fit: BoxFit.cover,
+                                                        ),
+                                                  Container(
+                                                    decoration: BoxDecoration(
+                                                      gradient: LinearGradient(
+                                                        begin:
+                                                            Alignment.topCenter,
+                                                        end: Alignment
+                                                            .bottomCenter,
+                                                        colors: [
+                                                          Colors.black
+                                                              .withOpacity(0.3),
+                                                          Colors.transparent,
+                                                          Colors.transparent,
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Positioned(
+                                                    top: 8,
+                                                    right: 8,
+                                                    child: Row(
+                                                      children: [
+                                                        Container(
+                                                          decoration: BoxDecoration(
+                                                            color:
+                                                                Colors.black87,
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  8,
+                                                                ),
+                                                          ),
+                                                          child: IconButton(
+                                                            padding:
+                                                                const EdgeInsets.all(
+                                                                  8,
+                                                                ),
+                                                            constraints:
+                                                                const BoxConstraints(),
+                                                            icon: const Icon(
+                                                              Icons.close,
+                                                              color:
+                                                                  Colors.white,
+                                                              size: 20,
+                                                            ),
+                                                            onPressed: () {
+                                                              setState(() {
+                                                                _bannerImage =
+                                                                    null;
+                                                              });
+                                                            },
+                                                            tooltip:
+                                                                'Remove banner',
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 8,
+                                                        ),
+                                                        Container(
+                                                          decoration: BoxDecoration(
+                                                            color:
+                                                                Colors.black87,
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  8,
+                                                                ),
+                                                          ),
+                                                          child: IconButton(
+                                                            padding:
+                                                                const EdgeInsets.all(
+                                                                  8,
+                                                                ),
+                                                            constraints:
+                                                                const BoxConstraints(),
+                                                            icon: const Icon(
+                                                              Icons.edit,
+                                                              color:
+                                                                  Colors.white,
+                                                              size: 20,
+                                                            ),
+                                                            onPressed:
+                                                                _pickBannerImage,
+                                                            tooltip:
+                                                                'Change banner',
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                            ],
-                                          ),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ),
 
                               _label('Event Name'),
                               _textField(
@@ -875,43 +883,39 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
                               const SizedBox(height: 32),
 
-                          SizedBox(
-                            width: double.infinity,
-                            height: 52,
-                            child: ElevatedButton.icon(
-                              onPressed: _isSubmitting ? null : _submitForm,
-                              icon: _isSubmitting
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : const Icon(Icons.rocket_launch),
-                              label: Text(
-                                _isSubmitting
-                                    ? (widget.isEditing
-                                        ? 'Saving Changes...'
-                                        : 'Creating Event...')
-                                    : (widget.isEditing
-                                        ? 'Save Changes'
-                                        : 'Create Event'),
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.indigo,
-                                foregroundColor: Colors.white,
-                                disabledBackgroundColor: Colors.indigo
-                                    .withOpacity(0.6),
-                                disabledForegroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                              SizedBox(
+                                width: double.infinity,
+                                height: 52,
+                                child: ElevatedButton.icon(
+                                  onPressed: _isSubmitting ? null : _submitForm,
+                                  icon: _isSubmitting
+                                      ? const SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : const Icon(Icons.rocket_launch),
+                                  label: Text(
+                                    _isSubmitting
+                                        ? 'Creating Event...'
+                                        : 'Create Event',
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.indigo,
+                                    foregroundColor: Colors.white,
+                                    disabledBackgroundColor: Colors.indigo
+                                        .withOpacity(0.6),
+                                    disabledForegroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
 
                               const SizedBox(height: 12),
                               const Center(
@@ -931,7 +935,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     ],
                   ),
                 ),
-              );
+              ],
+            ),
+          );
         },
       ),
     );
