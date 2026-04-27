@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import '../utils/mock_backend.dart';
 import '../widgets/header.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -46,6 +47,9 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = MockBackend().currentUser;
+    final displayName = currentUser?.fullName ?? 'Guest';
+
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
       appBar: const PreferredSize(
@@ -123,9 +127,9 @@ class DashboardScreen extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  'Welcome back, Alex! 👋',
-                                  style: TextStyle(
+                                Text(
+                                  'Welcome back, $displayName 👋',
+                                  style: const TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
