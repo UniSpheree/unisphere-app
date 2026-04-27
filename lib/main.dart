@@ -8,6 +8,7 @@ import 'screens/forgot_password_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/register_screen.dart';
+import 'utils/mock_backend.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,7 +32,13 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (_) => const LandingPage(),
-        '/logged-in': (_) => const PersonalizedLandingPage(),
+        '/logged-in': (_) {
+          final user = MockBackend().currentUser;
+          return PersonalizedLandingPage(
+            userName: user?.fullName ?? 'Guest',
+            role: user?.role ?? 'Attendee',
+          );
+        },
         '/login': (_) => const LoginScreen(),
         '/register': (_) => const RegisterScreen(),
         '/forgot-password': (_) => const ForgotPasswordScreen(),
