@@ -22,6 +22,8 @@ class MockUser {
   });
 
   String get fullName => '$firstName $lastName'.trim();
+
+  bool get isOrganiser => role.toLowerCase() == 'organiser';
 }
 
 class MockBackend {
@@ -56,6 +58,32 @@ class MockBackend {
       isApproved: current.isApproved,
     );
     _currentUser = updatedUser;
+    return updatedUser;
+  }
+
+  Future<MockUser?> updateCurrentUserRole(String role) async {
+    await Future.delayed(const Duration(milliseconds: 180));
+    final current = _currentUser;
+    if (current == null) return null;
+
+    final normalizedRole = role.trim().isEmpty ? current.role : role.trim();
+    final updatedUser = MockUser(
+      email: current.email,
+      password: current.password,
+      firstName: current.firstName,
+      lastName: current.lastName,
+      role: normalizedRole,
+      university: current.university,
+      description: current.description,
+      isApproved: current.isApproved,
+    );
+    _currentUser = updatedUser;
+
+    final index = _users.indexWhere((u) => u.email == current.email);
+    if (index != -1) {
+      _users[index] = updatedUser;
+    }
+
     return updatedUser;
   }
 
