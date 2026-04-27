@@ -49,6 +49,7 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentUser = MockBackend().currentUser;
     final displayName = currentUser?.fullName ?? 'Guest';
+    final isOrganiser = currentUser?.isOrganiser ?? false;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
@@ -147,7 +148,7 @@ class DashboardScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 16),
-                          const Icon(
+                          Icon(
                             Icons.celebration_outlined,
                             color: Colors.white,
                             size: 48,
@@ -156,17 +157,33 @@ class DashboardScreen extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 28),
-
                     // ── Create Event button ─────────────────────────────
                     Padding(
                       padding: const EdgeInsets.only(bottom: 28),
                       child: SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
-                          onPressed: () =>
-                              Navigator.pushNamed(context, '/create-event'),
-                          icon: const Icon(Icons.add_circle_outline, size: 20),
+                          onPressed: isOrganiser
+                              ? () => Navigator.pushNamed(
+                                  context,
+                                  '/create-event',
+                                )
+                              : () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Switch to Organiser in your profile to create events.',
+                                      ),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                },
+                          icon: Icon(
+                            isOrganiser
+                                ? Icons.add_circle_outline
+                                : Icons.explore_outlined,
+                            size: 20,
+                          ),
                           label: const Text(
                             'Create Event',
                             style: TextStyle(
@@ -188,7 +205,7 @@ class DashboardScreen extends StatelessWidget {
                     ),
 
                     // ── Stats row ───────────────────────────────────────
-                    Row(
+                    const Row(
                       children: [
                         _StatCard(
                           label: 'Events Joined',
