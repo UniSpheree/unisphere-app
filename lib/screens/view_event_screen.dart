@@ -300,7 +300,10 @@ class _ViewEventScreenState extends State<ViewEventScreen> {
     });
 
     return Scaffold(
-      appBar: AppHeader(),
+      appBar: const PreferredSize(
+        preferredSize: Size.fromHeight(72),
+        child: AppHeader(),
+      ),
       body: SingleChildScrollView(
         controller: _scrollController,
         child: Center(
