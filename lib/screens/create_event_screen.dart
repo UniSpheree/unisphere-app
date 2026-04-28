@@ -295,13 +295,113 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     });
   }
 
+  Widget _buildLockedPage(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xfff5f7fb),
+      body: Column(
+        children: [
+          AppHeader(
+            showProfile: false,
+            onFindEventsTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const DiscoverEventScreen(),
+                ),
+              );
+            },
+            onSignInTap: () => Navigator.pushNamed(context, '/login'),
+          ),
+          Expanded(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 700),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Container(
+                    padding: const EdgeInsets.all(28),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: const Color(0xFFE5E7EB)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.06),
+                          blurRadius: 24,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEEF2FF),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Icon(
+                            Icons.lock_outline,
+                            color: Color(0xFF4F46E5),
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        const Text(
+                          'Create events is locked',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF111827),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Your account is currently set to Attendee. Switch your profile role to Organiser to create events and access organiser calendars.',
+                          style: TextStyle(
+                            fontSize: 14,
+                            height: 1.5,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                        const SizedBox(height: 22),
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          children: [
+                            FilledButton(
+                              onPressed: () => Navigator.pushNamed(context, '/profile'),
+                              child: const Text('Open profile'),
+                            ),
+                            OutlinedButton(
+                              onPressed: () => Navigator.pushNamed(context, '/logged-in'),
+                              child: const Text('Back to dashboard'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentUser =
         (ModalRoute.of(context)?.settings.arguments as Map?)?['user'];
     final user = currentUser ?? MockBackend().currentUser;
+    if (user != null && !user.isOrganiser) {
+      return _buildLockedPage(context);
+    }
     final showApprovalBanner =
-        user != null && user.role == 'organiser' && user.isApproved == false;
+        user != null && user.role.toLowerCase() == 'organiser' && user.isApproved == false;
 
     return Scaffold(
       backgroundColor: const Color(0xfff5f7fb),
@@ -313,6 +413,24 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  AppHeader(
+                    showProfile: false,
+                    onFindEventsTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const DiscoverEventScreen(),
+                        ),
+                      );
+                    },
+                    onCreateEventsTap: () {},
+                    onMyTicketsTap: () {},
+                    onAboutTap: () {},
+                    onSignInTap: () {
+                      Navigator.pushNamed(context, '/login');
+                    },
+                    onHostEventTap: () {},
+                  ),
                   Container(
                     width: isMobile ? double.infinity : 720,
                     margin: EdgeInsets.fromLTRB(
