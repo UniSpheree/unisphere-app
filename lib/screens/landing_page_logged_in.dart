@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:unisphere_app/widgets/header.dart';
+import 'event_details_screen.dart';
+import 'package:unisphere_app/utils/mock_backend.dart';
 import 'create_event_screen.dart';
+import 'my_tickets_screen.dart';
 
 class PersonalizedLandingPage extends StatefulWidget {
   final String userName;
@@ -100,7 +103,8 @@ class PersonalizedLandingPage extends StatefulWidget {
   ];
 
   @override
-  State<PersonalizedLandingPage> createState() => _PersonalizedLandingPageState();
+  State<PersonalizedLandingPage> createState() =>
+      _PersonalizedLandingPageState();
 }
 
 class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
@@ -162,8 +166,8 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
     final baseEvents = _selectedFilter == 'All'
         ? PersonalizedLandingPage.discoverEvents
         : PersonalizedLandingPage.discoverEvents
-            .where((event) => event['category'] == _selectedFilter)
-            .toList();
+              .where((event) => event['category'] == _selectedFilter)
+              .toList();
 
     if (_searchQuery.isEmpty) {
       return baseEvents;
@@ -192,18 +196,14 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
             onHostEventTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const CreateEventScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const CreateEventScreen()),
               );
             },
             onFindEventsTap: () {},
             onCreateEventsTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const CreateEventScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const CreateEventScreen()),
               );
             },
             onMyTicketsTap: () {},
@@ -270,13 +270,15 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
                       decoration: const BoxDecoration(
                         color: Color(0xFFF8FAFC),
                         border: Border(
-                          left: BorderSide(color: PersonalizedLandingPage.border),
+                          left: BorderSide(
+                            color: PersonalizedLandingPage.border,
+                          ),
                         ),
                       ),
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.all(24),
                         child: _DashboardPanel(
-                            userName: widget.userName,
+                          userName: widget.userName,
                           isOrganiser: isOrganiser,
                         ),
                       ),
@@ -324,10 +326,7 @@ class _DiscoverSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _TopWelcomeStrip(
-          userName: userName,
-          isOrganiser: isOrganiser,
-        ),
+        _TopWelcomeStrip(userName: userName, isOrganiser: isOrganiser),
         const SizedBox(height: 24),
         _SearchAndFilters(
           searchController: searchController,
@@ -406,10 +405,7 @@ class _TopWelcomeStrip extends StatelessWidget {
   final String userName;
   final bool isOrganiser;
 
-  const _TopWelcomeStrip({
-    required this.userName,
-    required this.isOrganiser,
-  });
+  const _TopWelcomeStrip({required this.userName, required this.isOrganiser});
 
   @override
   Widget build(BuildContext context) {
@@ -470,24 +466,19 @@ class _TopWelcomeStrip extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const CreateEventScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const CreateEventScreen()),
               );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: PersonalizedLandingPage.primary,
               foregroundColor: Colors.white,
               elevation: 0,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 18,
-                vertical: 14,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
             ),
-            child: Text(isOrganiser ? 'Create Event' : 'Explore Events'),
+            child: const Text('Create Events'),
           ),
         ],
       ),
@@ -536,14 +527,18 @@ class _SearchAndFilters extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.search_rounded, color: PersonalizedLandingPage.muted),
+                    const Icon(
+                      Icons.search_rounded,
+                      color: PersonalizedLandingPage.muted,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: TextField(
                         controller: searchController,
                         onChanged: onSearchChanged,
                         decoration: const InputDecoration(
-                          hintText: 'Search events, societies, categories, places...',
+                          hintText:
+                              'Search events, societies, categories, places...',
                           border: InputBorder.none,
                           isDense: true,
                           contentPadding: EdgeInsets.zero,
@@ -609,73 +604,91 @@ class _SearchAndFilters extends StatelessWidget {
                 LayoutBuilder(
                   builder: (context, constraints) {
                     final isWide = constraints.maxWidth > 440;
-                    final itemWidth = (constraints.maxWidth - (isWide ? 32 : 24)) / (isWide ? 3 : 2);
+                    final itemWidth =
+                        (constraints.maxWidth - (isWide ? 32 : 24)) /
+                        (isWide ? 3 : 2);
 
                     return Wrap(
                       spacing: 12,
                       runSpacing: 10,
-                      children: ['today', 'tomorrow', 'this week', 'next week', 'this month', 'next month']
-                          .map(
-                        (filter) {
-                          return SizedBox(
-                            width: itemWidth,
-                            child: GestureDetector(
-                              onTap: () => onDateFilterChanged(filter, !dateFilters[filter]!),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: dateFilters[filter]!
-                                      ? PersonalizedLandingPage.primary.withOpacity(0.12)
-                                      : Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
+                      children:
+                          [
+                            'today',
+                            'tomorrow',
+                            'this week',
+                            'next week',
+                            'this month',
+                            'next month',
+                          ].map((filter) {
+                            return SizedBox(
+                              width: itemWidth,
+                              child: GestureDetector(
+                                onTap: () => onDateFilterChanged(
+                                  filter,
+                                  !dateFilters[filter]!,
+                                ),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 10,
+                                  ),
+                                  decoration: BoxDecoration(
                                     color: dateFilters[filter]!
                                         ? PersonalizedLandingPage.primary
-                                        : PersonalizedLandingPage.border,
+                                              .withOpacity(0.12)
+                                        : Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: dateFilters[filter]!
+                                          ? PersonalizedLandingPage.primary
+                                          : PersonalizedLandingPage.border,
+                                    ),
                                   ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 18,
-                                      height: 18,
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 18,
+                                        height: 18,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: dateFilters[filter]!
+                                                ? PersonalizedLandingPage
+                                                      .primary
+                                                : PersonalizedLandingPage
+                                                      .border,
+                                            width: 2,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
                                           color: dateFilters[filter]!
                                               ? PersonalizedLandingPage.primary
-                                              : PersonalizedLandingPage.border,
-                                          width: 2,
+                                              : Colors.white,
                                         ),
-                                        borderRadius: BorderRadius.circular(4),
-                                        color: dateFilters[filter]!
-                                            ? PersonalizedLandingPage.primary
-                                            : Colors.white,
+                                        child: dateFilters[filter]!
+                                            ? const Icon(
+                                                Icons.check,
+                                                size: 12,
+                                                color: Colors.white,
+                                              )
+                                            : null,
                                       ),
-                                      child: dateFilters[filter]!
-                                          ? const Icon(
-                                              Icons.check,
-                                              size: 12,
-                                              color: Colors.white,
-                                            )
-                                          : null,
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text(
-                                        filter,
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: PersonalizedLandingPage.text,
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Text(
+                                          filter,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: PersonalizedLandingPage.text,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        },
-                      ).toList(),
+                            );
+                          }).toList(),
                     );
                   },
                 ),
@@ -719,7 +732,9 @@ class _CategoryChips extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: isSelected ? PersonalizedLandingPage.primary : Colors.white,
+              color: isSelected
+                  ? PersonalizedLandingPage.primary
+                  : Colors.white,
               borderRadius: BorderRadius.circular(999),
               border: Border.all(
                 color: isSelected
@@ -837,7 +852,14 @@ class _DiscoverEventCard extends StatelessWidget {
                     ),
                     const Spacer(),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => EventDetailsScreen(event: event),
+                          ),
+                        );
+                      },
                       child: const Text('View details'),
                     ),
                   ],
@@ -855,10 +877,7 @@ class _DashboardPanel extends StatelessWidget {
   final String userName;
   final bool isOrganiser;
 
-  const _DashboardPanel({
-    required this.userName,
-    required this.isOrganiser,
-  });
+  const _DashboardPanel({required this.userName, required this.isOrganiser});
 
   @override
   Widget build(BuildContext context) {
@@ -878,10 +897,7 @@ class _DashboardPanel extends StatelessWidget {
           isOrganiser
               ? 'Your event activity at a glance.'
               : 'Your activity and upcoming plans in one place.',
-          style: TextStyle(
-            fontSize: 15,
-            color: PersonalizedLandingPage.muted,
-          ),
+          style: TextStyle(fontSize: 15, color: PersonalizedLandingPage.muted),
         ),
         const SizedBox(height: 24),
 
@@ -935,7 +951,13 @@ class _DashboardPanel extends StatelessWidget {
                 ),
               ),
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  if (MockBackend().currentUser != null) {
+                    Navigator.pushNamed(context, '/profile');
+                  } else {
+                    Navigator.pushNamed(context, '/register');
+                  }
+                },
                 icon: const Icon(Icons.settings_outlined),
                 color: PersonalizedLandingPage.muted,
               ),
@@ -987,33 +1009,28 @@ class _DashboardPanel extends StatelessWidget {
           children: [
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  if (!isOrganiser) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const MyTicketsScreen(),
+                      ),
+                    );
+                    return;
+                  }
+                },
                 icon: Icon(
-                  isOrganiser ? Icons.add_rounded : Icons.explore_rounded,
+                  isOrganiser
+                      ? Icons.add_rounded
+                      : Icons.confirmation_number_outlined,
                   size: 18,
                 ),
-                label: Text(isOrganiser ? 'Create' : 'Browse'),
+                label: Text(isOrganiser ? 'Create' : 'My Tickets'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: PersonalizedLandingPage.primary,
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.confirmation_number_outlined, size: 18),
-                label: const Text('Tickets'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: PersonalizedLandingPage.primary,
-                  side: const BorderSide(color: PersonalizedLandingPage.border),
-                  backgroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -1136,11 +1153,7 @@ class _UpcomingEventCard extends StatelessWidget {
               color: color.withOpacity(0.12),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              event['icon'] as IconData,
-              color: color,
-              size: 22,
-            ),
+            child: Icon(event['icon'] as IconData, color: color, size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(
