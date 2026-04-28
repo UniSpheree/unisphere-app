@@ -8,6 +8,7 @@ import 'screens/forgot_password_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/register_screen.dart';
+import 'screens/view_event_screen.dart';
 import 'utils/mock_backend.dart';
 
 void main() {
