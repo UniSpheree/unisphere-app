@@ -26,10 +26,34 @@ class MockUser {
   bool get isOrganiser => role.toLowerCase() == 'organiser';
 }
 
+class PurchasedTicket {
+  final String title;
+  final String date;
+  final String location;
+  final String category;
+  final String price;
+
+  PurchasedTicket({
+    required this.title,
+    required this.date,
+    required this.location,
+    required this.category,
+    required this.price,
+  });
+}
+
 class MockBackend {
   MockUser? _currentUser;
+  final List<PurchasedTicket> _purchasedTickets = [];
 
   MockUser? get currentUser => _currentUser;
+
+  List<PurchasedTicket> get purchasedTickets =>
+      List.unmodifiable(_purchasedTickets);
+
+  void purchaseTicket(PurchasedTicket ticket) {
+    _purchasedTickets.add(ticket);
+  }
 
   Future<MockUser?> updateCurrentUserProfile({
     required String name,
