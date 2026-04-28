@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:unisphere_app/widgets/app_footer.dart';
 import 'package:unisphere_app/widgets/header.dart';
+import 'event_details_screen.dart';
 import 'create_event_screen.dart';
 
 class DiscoverEventScreen extends StatefulWidget {
@@ -733,7 +734,17 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                                   ),
                                                   const Spacer(),
                                                   TextButton(
-                                                    onPressed: () {},
+                                                    onPressed: () {
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (_) =>
+                                                              EventDetailsScreen(
+                                                                event: event,
+                                                              ),
+                                                        ),
+                                                      );
+                                                    },
                                                     child: const Text(
                                                       'View details',
                                                     ),
