@@ -1057,7 +1057,7 @@ class _CTASection extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            child: const Text('Explore Events'),
+                            child: const Text('Create Events'),
                           ),
                           OutlinedButton(
                             onPressed: () {
