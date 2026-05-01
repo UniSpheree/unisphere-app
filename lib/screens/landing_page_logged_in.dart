@@ -5,6 +5,7 @@ import 'event_details_screen.dart';
 import 'package:unisphere_app/utils/mock_backend.dart';
 import 'create_event_screen.dart';
 import 'my_tickets_screen.dart';
+import 'my_events_page.dart';
 
 class PersonalizedLandingPage extends StatefulWidget {
   final String userName;
@@ -1030,18 +1031,40 @@ class _DashboardPanel extends StatelessWidget {
 
         const SizedBox(height: 18),
 
-        Row(
-          children: [
-            Expanded(
-              child: _DashboardMetricCard(
-                title: isOrganiser ? 'Live Events' : 'Events Joined',
-                value: isOrganiser ? '5' : '8',
-                icon: isOrganiser
-                    ? Icons.event_note_rounded
-                    : Icons.event_available_outlined,
-                color: const Color(0xFF4F46E5),
-              ),
-            ),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: isOrganiser
+                        ? () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const MyEventsPage(),
+                              ),
+                            );
+                          }
+                        : null,
+                    child: Builder(builder: (context) {
+                      final liveCount = isOrganiser
+                          ? MockBackend()
+                              .events
+                              .where((e) =>
+                                  e['organizerEmail']?.toString() ==
+                                  MockBackend().currentUser?.email)
+                              .length
+                          : MockBackend().purchasedTickets.length;
+                      return _DashboardMetricCard(
+                        title: isOrganiser ? 'Live Events' : 'Events Joined',
+                        value: '$liveCount',
+                        icon: isOrganiser
+                            ? Icons.event_note_rounded
+                            : Icons.event_available_outlined,
+                        color: const Color(0xFF4F46E5),
+                      );
+                    }),
+                  ),
+                ),
             const SizedBox(width: 12),
             Expanded(
               child: _DashboardMetricCard(
