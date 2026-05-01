@@ -48,6 +48,7 @@ class _Event {
   final String id;
   final String title;
   final String date;
+  final String? endDate;
   final String location;
   final String category;
   final String description;
@@ -57,6 +58,7 @@ class _Event {
     required this.id,
     required this.title,
     required this.date,
+    this.endDate,
     required this.location,
     required this.category,
     required this.description,
@@ -68,6 +70,7 @@ class _Event {
       id: m['id']?.toString() ?? '',
       title: m['title']?.toString() ?? '',
       date: m['date']?.toString() ?? '',
+      endDate: m['endDate']?.toString(),
       location: m['location']?.toString() ?? '',
       category: m['category']?.toString() ?? '',
       description: m['description']?.toString() ?? '',
@@ -79,6 +82,7 @@ class _Event {
     'id': id,
     'title': title,
     'date': date,
+    'endDate': endDate,
     'location': location,
     'category': category,
     'description': description,
