@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:unisphere_app/utils/mock_backend.dart';
 
 class AppFooter extends StatelessWidget {
   final String brandName;
@@ -195,7 +196,14 @@ class _FooterColumn extends StatelessWidget {
                 final route = linkData['route'];
                 if (route != null) {
                   Future.microtask(() {
-                    if (context.mounted) Navigator.pushNamed(context, route);
+                    if (context.mounted) {
+                      final requiresAuth = ['/create-event', '/profile', '/calendar', '/my-events'].contains(route);
+                      if (requiresAuth && MockBackend().currentUser == null) {
+                        Navigator.pushNamed(context, '/register');
+                      } else {
+                        Navigator.pushNamed(context, route);
+                      }
+                    }
                   });
                 }
               },
