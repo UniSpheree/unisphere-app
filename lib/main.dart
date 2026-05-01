@@ -3,7 +3,6 @@ import 'screens/create_event_screen.dart';
 import 'screens/profile_page.dart';
 import 'screens/landing_page.dart';
 import 'screens/landing_page_logged_in.dart';
-import 'screens/dashboard_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
@@ -43,16 +42,6 @@ class MyApp extends StatelessWidget {
         '/forgot-password': (_) => const ForgotPasswordScreen(),
         '/profile': (_) => const ProfilePage(),
         '/create-event': (_) => const CreateEventScreen(),
-      },
-      onGenerateRoute: (settings) {
-        if (settings.name == '/dashboard') {
-          final role = (settings.arguments as String?) ?? 'Attendee';
-          return MaterialPageRoute(
-            settings: settings,
-            builder: (_) => DashboardScreen(role: role),
-          );
-        }
-        return null;
       },
     );
   }
