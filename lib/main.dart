@@ -6,6 +6,10 @@ import 'screens/landing_page_logged_in.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
+import 'screens/discover_event_screen.dart';
+import 'screens/about_us_page.dart';
+import 'screens/terms_page.dart';
+import 'screens/privacy_page.dart';
 import 'utils/mock_backend.dart';
 
 void main() {
@@ -42,6 +46,10 @@ class MyApp extends StatelessWidget {
         '/forgot-password': (_) => const ForgotPasswordScreen(),
         '/profile': (_) => const ProfilePage(),
         '/create-event': (_) => const CreateEventScreen(),
+        '/discover': (_) => const DiscoverEventScreen(),
+        '/about': (_) => const AboutUsPage(),
+        '/terms': (_) => const TermsPage(),
+        '/privacy': (_) => const PrivacyPage(),
       },
     );
   }
