@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:unisphere_app/screens/create_event_screen.dart';
-import 'package:unisphere_app/utils/mock_backend.dart';
+import 'package:unisphere_app/services/sqlite_backend.dart';
 
 class AppHeader extends StatelessWidget {
   final VoidCallback? onFindEventsTap;
@@ -73,7 +73,8 @@ class AppHeader extends StatelessWidget {
                               onFindEventsTap!.call();
                             } else {
                               Future.microtask(() {
-                                if (context.mounted) Navigator.pushNamed(context, '/discover');
+                                if (context.mounted)
+                                  Navigator.pushNamed(context, '/discover');
                               });
                             }
                             break;
@@ -91,7 +92,7 @@ class AppHeader extends StatelessWidget {
                             }
                             break;
                           case 'dashboard':
-                            final user = MockBackend().currentUser;
+                            final user = SqliteBackend().currentUser;
                             if (user != null) {
                               Navigator.pushNamed(context, '/logged-in');
                             } else {
@@ -103,7 +104,8 @@ class AppHeader extends StatelessWidget {
                               onAboutTap!.call();
                             } else {
                               Future.microtask(() {
-                                if (context.mounted) Navigator.pushNamed(context, '/about');
+                                if (context.mounted)
+                                  Navigator.pushNamed(context, '/about');
                               });
                             }
                             break;
@@ -122,7 +124,7 @@ class AppHeader extends StatelessWidget {
                             }
                             break;
                           case 'profile':
-                            if (MockBackend().currentUser != null) {
+                            if (SqliteBackend().currentUser != null) {
                               Navigator.pushNamed(context, '/profile');
                             } else {
                               Navigator.pushNamed(context, '/register');
@@ -131,7 +133,7 @@ class AppHeader extends StatelessWidget {
                         }
                       },
                       itemBuilder: (context) {
-                        final isLoggedIn = MockBackend().currentUser != null;
+                        final isLoggedIn = SqliteBackend().currentUser != null;
                         final items = <PopupMenuEntry<String>>[
                           const PopupMenuItem(
                             value: 'find',
@@ -201,9 +203,11 @@ class AppHeader extends StatelessWidget {
                       children: [
                         _NavItem(
                           label: 'Find Events',
-                          onTap: onFindEventsTap ?? () {
-                            Navigator.pushNamed(context, '/discover');
-                          },
+                          onTap:
+                              onFindEventsTap ??
+                              () {
+                                Navigator.pushNamed(context, '/discover');
+                              },
                         ),
                         _NavItem(
                           label: 'Create Events',
@@ -222,7 +226,7 @@ class AppHeader extends StatelessWidget {
                         _NavItem(
                           label: 'Dashboard',
                           onTap: () {
-                            final user = MockBackend().currentUser;
+                            final user = SqliteBackend().currentUser;
                             if (user != null) {
                               Navigator.pushNamed(context, '/logged-in');
                             } else {
@@ -231,14 +235,16 @@ class AppHeader extends StatelessWidget {
                           },
                         ),
                         _NavItem(
-                          label: 'About us', 
-                          onTap: onAboutTap ?? () {
-                            Navigator.pushNamed(context, '/about');
-                          }
+                          label: 'About us',
+                          onTap:
+                              onAboutTap ??
+                              () {
+                                Navigator.pushNamed(context, '/about');
+                              },
                         ),
                         const SizedBox(width: 12),
                         // Only show Sign In button if not logged in
-                        if (MockBackend().currentUser == null)
+                        if (SqliteBackend().currentUser == null)
                           OutlinedButton(
                             onPressed: onSignInTap,
                             style: OutlinedButton.styleFrom(
@@ -258,7 +264,7 @@ class AppHeader extends StatelessWidget {
                           ),
                         const SizedBox(width: 12),
                         // Only show Register button if not logged in
-                        if (MockBackend().currentUser == null)
+                        if (SqliteBackend().currentUser == null)
                           FilledButton(
                             onPressed:
                                 onRegisterTap ??
@@ -282,11 +288,11 @@ class AppHeader extends StatelessWidget {
                         const SizedBox(width: 12),
                         if (showProfile)
                           IconButton(
-                            tooltip: MockBackend().currentUser != null
+                            tooltip: SqliteBackend().currentUser != null
                                 ? 'Profile'
                                 : 'Register',
                             onPressed: () {
-                              if (MockBackend().currentUser != null) {
+                              if (SqliteBackend().currentUser != null) {
                                 Navigator.pushNamed(context, '/profile');
                               } else {
                                 Navigator.pushNamed(context, '/register');
@@ -331,7 +337,8 @@ class _Brand extends StatelessWidget {
       onTap: () {
         // Always navigate to the initial welcome page
         Future.microtask(() {
-          if (context.mounted) Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+          if (context.mounted)
+            Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
         });
       },
       child: Row(
