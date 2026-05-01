@@ -19,7 +19,14 @@ class AboutUsPage extends StatelessWidget {
                 children: [
                   Column(
                     children: [
-                      const AppHeader(),
+                      AppHeader(
+                        onHostEventTap: () => Navigator.pushNamed(context, '/create-event'),
+                        onFindEventsTap: () => Navigator.pushNamed(context, '/discover'),
+                        onCreateEventsTap: () => Navigator.pushNamed(context, '/create-event'),
+                        onMyTicketsTap: () => Navigator.pushNamed(context, '/my-tickets'),
+                        onAboutTap: () {},
+                        onSignInTap: () => Navigator.pushNamed(context, '/login'),
+                      ),
                       Center(
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 800),
