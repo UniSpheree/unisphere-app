@@ -4,6 +4,7 @@ import 'package:unisphere_app/widgets/header.dart';
 import 'event_details_screen.dart';
 import 'package:unisphere_app/utils/mock_backend.dart';
 import 'create_event_screen.dart';
+import 'discover_event_screen.dart';
 import 'my_tickets_screen.dart';
 import 'my_events_page.dart';
 
@@ -309,78 +310,46 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
 
     return Scaffold(
       backgroundColor: PersonalizedLandingPage.background,
-      body: Column(
-        children: [
-          AppHeader(
-            onHostEventTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const CreateEventScreen()),
-              );
-            },
-            onFindEventsTap: () {},
-            onCreateEventsTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const CreateEventScreen()),
-              );
-            },
-            onMyTicketsTap: () {},
-            onAboutTap: () {},
-            onSignInTap: () {},
-          ),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final isMobile = constraints.maxWidth < 1100;
-
-                return SingleChildScrollView(
-                  child: Column(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
                     children: [
-                      if (isMobile)
-                        Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            children: [
-                              _DiscoverSection(
-                                userName: widget.userName,
-                                isOrganiser: isOrganiser,
-                                selectedFilter: _selectedFilter,
-                                filteredEvents: _filteredEvents,
-                                onFilterChanged: _setFilter,
-                                searchController: _searchController,
-                                onSearchChanged: _setSearchQuery,
-                                showFiltersDropdown: _showFiltersDropdown,
-                                dateFilters: _dateFilters,
-                                onToggleFiltersDropdown:
-                                    _toggleFiltersDropdown,
-                                onDateFilterChanged: _setDateFilter,
-                              ),
-                              const SizedBox(height: 20),
-                              _DashboardPanel(
-                                userName: widget.userName,
-                                isOrganiser: isOrganiser,
-                                upcomingEvents: upcomingEvents,
-                              ),
-                            ],
-                          ),
-                        )
-                      else
-                        SizedBox(
-                          height: constraints.maxHeight,
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                flex: 7,
-                                child: SingleChildScrollView(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    28,
-                                    28,
-                                    20,
-                                    28,
-                                  ),
-                                  child: _DiscoverSection(
+                      AppHeader(
+                        onHostEventTap: () {
+                          Navigator.pushNamed(context, '/create-event');
+                        },
+                        onFindEventsTap: () {
+                          Navigator.pushNamed(context, '/discover');
+                        },
+                        onCreateEventsTap: () {
+                          Navigator.pushNamed(context, '/create-event');
+                        },
+                        onMyTicketsTap: () {
+                          Navigator.pushNamed(context, '/my-tickets');
+                        },
+                        onAboutTap: () {
+                          Navigator.pushNamed(context, '/about');
+                        },
+                        onSignInTap: () {
+                          Navigator.pushNamed(context, '/login');
+                        },
+                      ),
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isMobile = constraints.maxWidth < 1100;
+
+                          if (isMobile) {
+                            return Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                children: [
+                                  _DiscoverSection(
                                     userName: widget.userName,
                                     isOrganiser: isOrganiser,
                                     selectedFilter: _selectedFilter,
@@ -390,42 +359,78 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
                                     onSearchChanged: _setSearchQuery,
                                     showFiltersDropdown: _showFiltersDropdown,
                                     dateFilters: _dateFilters,
-                                    onToggleFiltersDropdown:
-                                        _toggleFiltersDropdown,
+                                    onToggleFiltersDropdown: _toggleFiltersDropdown,
                                     onDateFilterChanged: _setDateFilter,
                                   ),
-                                ),
-                              ),
-                              Container(
-                                width: 430,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFFF8FAFC),
-                                  border: Border(
-                                    left: BorderSide(
-                                      color: PersonalizedLandingPage.border,
-                                    ),
-                                  ),
-                                ),
-                                child: SingleChildScrollView(
-                                  padding: const EdgeInsets.all(24),
-                                  child: _DashboardPanel(
+                                  const SizedBox(height: 20),
+                                  _DashboardPanel(
                                     userName: widget.userName,
                                     isOrganiser: isOrganiser,
                                     upcomingEvents: upcomingEvents,
                                   ),
+                                ],
+                              ),
+                            );
+                          } else {
+                            return Center(
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 1400),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      flex: 7,
+                                      child: Padding(
+                                        padding: const EdgeInsets.fromLTRB(28, 28, 20, 28),
+                                        child: _DiscoverSection(
+                                          userName: widget.userName,
+                                          isOrganiser: isOrganiser,
+                                          selectedFilter: _selectedFilter,
+                                          filteredEvents: _filteredEvents,
+                                          onFilterChanged: _setFilter,
+                                          searchController: _searchController,
+                                          onSearchChanged: _setSearchQuery,
+                                          showFiltersDropdown: _showFiltersDropdown,
+                                          dateFilters: _dateFilters,
+                                          onToggleFiltersDropdown: _toggleFiltersDropdown,
+                                          onDateFilterChanged: _setDateFilter,
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      width: 430,
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFFF8FAFC),
+                                        border: Border(
+                                          left: BorderSide(
+                                            color: PersonalizedLandingPage.border,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(24),
+                                        child: _DashboardPanel(
+                                          userName: widget.userName,
+                                          isOrganiser: isOrganiser,
+                                          upcomingEvents: upcomingEvents,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                      const AppFooter(),
+                            );
+                          }
+                        },
+                      ),
                     ],
                   ),
-                );
-              },
+                  const AppFooter(),
+                ],
+              ),
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
