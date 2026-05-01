@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../utils/validators.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/auth_text_field.dart';
-import '../utils/mock_backend.dart';
+import '../services/sqlite_backend.dart';
 
 /// Forgot-password flow – 3 steps:
 ///   1. Enter university email
@@ -51,7 +51,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     if (!_emailFormKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
     final email = _emailController.text.trim().toLowerCase();
-    final exists = await MockBackend().forgotPassword(email);
+    final exists = await SqliteBackend().forgotPassword(email);
     setState(() => _isLoading = false);
     if (!mounted) return;
     if (exists) {
@@ -100,7 +100,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     setState(() => _isLoading = true);
     final email = _emailController.text.trim().toLowerCase();
     final newPassword = _newPasswordController.text;
-    final success = await MockBackend().resetPassword(email, newPassword);
+    final success = await SqliteBackend().resetPassword(email, newPassword);
     setState(() => _isLoading = false);
 
     if (!mounted) return;
@@ -168,44 +168,43 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         onSubmit: _submitEmail,
                       )
                     : _step == 2
-                        ? _StepCode(
-                            key: const ValueKey(2),
-                            formKey: _codeFormKey,
-                            controller: _codeController,
-                            email: _emailController.text.trim(),
-                            isLoading: _isLoading,
-                            onSubmit: _submitCode,
-                            onResend: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: const Text(
-                                    'Code resent! (hint: 123456)',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  backgroundColor: const Color(0xFF2D3A8C),
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                              );
-                            },
-                          )
-                        : _StepNewPassword(
-                            key: const ValueKey(3),
-                            formKey: _pwFormKey,
-                            newPasswordController: _newPasswordController,
-                            confirmPasswordController:
-                                _confirmPasswordController,
-                            obscureNew: _obscureNew,
-                            obscureConfirm: _obscureConfirm,
-                            onToggleNew: () =>
-                                setState(() => _obscureNew = !_obscureNew),
-                            onToggleConfirm: () => setState(
-                                () => _obscureConfirm = !_obscureConfirm),
-                            isLoading: _isLoading,
-                            onSubmit: _submitNewPassword,
-                          ),
+                    ? _StepCode(
+                        key: const ValueKey(2),
+                        formKey: _codeFormKey,
+                        controller: _codeController,
+                        email: _emailController.text.trim(),
+                        isLoading: _isLoading,
+                        onSubmit: _submitCode,
+                        onResend: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text(
+                                'Code resent! (hint: 123456)',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              backgroundColor: const Color(0xFF2D3A8C),
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          );
+                        },
+                      )
+                    : _StepNewPassword(
+                        key: const ValueKey(3),
+                        formKey: _pwFormKey,
+                        newPasswordController: _newPasswordController,
+                        confirmPasswordController: _confirmPasswordController,
+                        obscureNew: _obscureNew,
+                        obscureConfirm: _obscureConfirm,
+                        onToggleNew: () =>
+                            setState(() => _obscureNew = !_obscureNew),
+                        onToggleConfirm: () =>
+                            setState(() => _obscureConfirm = !_obscureConfirm),
+                        isLoading: _isLoading,
+                        onSubmit: _submitNewPassword,
+                      ),
               ),
             ),
           ),
@@ -389,8 +388,7 @@ class _StepCode extends StatelessWidget {
           const SizedBox(height: 6),
           // Fake hint
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: const Color(0xFFFFF8E1),
               borderRadius: BorderRadius.circular(8),
@@ -400,8 +398,7 @@ class _StepCode extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.info_outline,
-                    size: 14, color: Color(0xFFF9A825)),
+                Icon(Icons.info_outline, size: 14, color: Color(0xFFF9A825)),
                 SizedBox(width: 6),
                 Text(
                   'Demo hint: use code 123456',
