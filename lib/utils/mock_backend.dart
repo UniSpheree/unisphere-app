@@ -100,6 +100,7 @@ class _Event {
 class MockBackend extends ChangeNotifier {
   MockUser? _currentUser;
   final List<PurchasedTicket> _purchasedTickets = [];
+  PurchasedTicket? _pendingPurchase;
   final List<_Event> _events = [
     _Event(
       id: 'e1',
@@ -141,6 +142,18 @@ class MockBackend extends ChangeNotifier {
   void purchaseTicket(PurchasedTicket ticket) {
     _purchasedTickets.add(ticket);
     notifyListeners();
+  }
+
+  void setPendingPurchase(PurchasedTicket ticket) {
+    _pendingPurchase = ticket;
+  }
+
+  void _completePendingPurchaseInternal() {
+    if (_currentUser != null && _pendingPurchase != null) {
+      _purchasedTickets.add(_pendingPurchase!);
+      _pendingPurchase = null;
+      notifyListeners();
+    }
   }
 
   Future<String> createEvent(Map<String, dynamic> eventData) async {
@@ -282,6 +295,7 @@ class MockBackend extends ChangeNotifier {
     );
     _users.add(user);
     _currentUser = user;
+    _completePendingPurchaseInternal();
     return true;
   }
 
@@ -292,6 +306,7 @@ class MockBackend extends ChangeNotifier {
         .toList();
     if (user.isNotEmpty) {
       _currentUser = user.first;
+      _completePendingPurchaseInternal();
       notifyListeners();
       return true;
     }
