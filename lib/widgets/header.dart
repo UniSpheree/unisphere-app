@@ -11,6 +11,7 @@ class AppHeader extends StatelessWidget {
   final VoidCallback? onHostEventTap;
   final VoidCallback? onRegisterTap;
   final bool showProfile;
+  final bool showBackButton;
 
   const AppHeader({
     super.key,
@@ -22,6 +23,7 @@ class AppHeader extends StatelessWidget {
     this.onHostEventTap,
     this.onRegisterTap,
     this.showProfile = true,
+    this.showBackButton = false,
   });
 
   @override
@@ -40,7 +42,22 @@ class AppHeader extends StatelessWidget {
               ? Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const _Brand(),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (showBackButton) ...[
+                          IconButton(
+                            onPressed: () => Navigator.maybePop(context),
+                            icon: const Icon(
+                              Icons.arrow_back_rounded,
+                              color: _HeaderColors.text,
+                            ),
+                            tooltip: 'Back',
+                          ),
+                        ],
+                        const _Brand(),
+                      ],
+                    ),
                     PopupMenuButton<String>(
                       icon: const Icon(
                         Icons.menu_rounded,
@@ -152,7 +169,22 @@ class AppHeader extends StatelessWidget {
               : Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const _Brand(),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (showBackButton) ...[
+                          IconButton(
+                            onPressed: () => Navigator.maybePop(context),
+                            icon: const Icon(
+                              Icons.arrow_back_rounded,
+                              color: _HeaderColors.text,
+                            ),
+                            tooltip: 'Back',
+                          ),
+                        ],
+                        const _Brand(),
+                      ],
+                    ),
                     Row(
                       children: [
                         _NavItem(
