@@ -802,8 +802,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                   onChanged: (value) =>
                                       setState(() => eventCategory = value),
                                   validator: (value) {
-                                    if (value == null || value.isEmpty)
+                                    if (value == null || value.isEmpty) {
                                       return 'Event category is required';
+                                    }
                                     return null;
                                   },
                                 ),
@@ -965,8 +966,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                           hint: 'Physical address or URL',
                                           validator: (value) {
                                             if (value == null ||
-                                                value.trim().isEmpty)
+                                                value.trim().isEmpty) {
                                               return 'Venue or Link is required';
+                                            }
                                             return null;
                                           },
                                         ),
@@ -977,13 +979,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                           keyboardType: TextInputType.number,
                                           validator: (value) {
                                             if (value == null ||
-                                                value.trim().isEmpty)
+                                                value.trim().isEmpty) {
                                               return 'Max Attendees is required';
+                                            }
                                             if (int.tryParse(value.trim()) ==
-                                                null)
+                                                null) {
                                               return 'Max Attendees must be a number';
-                                            if (int.parse(value.trim()) < 1)
+                                            }
+                                            if (int.parse(value.trim()) < 1) {
                                               return 'Max Attendees must be at least 1';
+                                            }
                                             return null;
                                           },
                                         ),
@@ -998,8 +1003,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                             hint: 'Physical address or URL',
                                             validator: (value) {
                                               if (value == null ||
-                                                  value.trim().isEmpty)
+                                                  value.trim().isEmpty) {
                                                 return 'Venue or Link is required';
+                                              }
                                               return null;
                                             },
                                           ),
@@ -1013,13 +1019,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                             keyboardType: TextInputType.number,
                                             validator: (value) {
                                               if (value == null ||
-                                                  value.trim().isEmpty)
+                                                  value.trim().isEmpty) {
                                                 return 'Max Attendees is required';
+                                              }
                                               if (int.tryParse(value.trim()) ==
-                                                  null)
+                                                  null) {
                                                 return 'Max Attendees must be a number';
-                                              if (int.parse(value.trim()) < 1)
+                                              }
+                                              if (int.parse(value.trim()) < 1) {
                                                 return 'Max Attendees must be at least 1';
+                                              }
                                               return null;
                                             },
                                           ),
