@@ -177,14 +177,22 @@ class _ProfilePageState extends State<ProfilePage> {
         preferredSize: Size.fromHeight(88),
         child: AppHeader(),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1120),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1120),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                 Row(
                   children: [
                     InkWell(
@@ -581,15 +589,20 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 22),
-                const AppFooter(),
               ],
             ),
           ),
         ),
       ),
-    );
-  }
+      const AppFooter(),
+    ],
+  ),
+),
+);
+},
+),
+);
+}
 }
 
 class _SectionCard extends StatelessWidget {
