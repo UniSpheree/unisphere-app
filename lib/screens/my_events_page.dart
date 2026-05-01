@@ -5,7 +5,7 @@ import 'create_event_screen.dart';
 import 'event_details_screen.dart';
 
 class MyEventsPage extends StatelessWidget {
-  const MyEventsPage({Key? key}) : super(key: key);
+  const MyEventsPage({super.key});
 
   @override
   Widget build(BuildContext context) {

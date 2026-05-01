@@ -6,7 +6,6 @@ import 'screens/landing_page_logged_in.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/login_screen.dart';
-import 'screens/profile_screen.dart';
 import 'screens/register_screen.dart';
 import 'utils/mock_backend.dart';
 

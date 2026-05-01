@@ -17,7 +17,7 @@ class DiscoverEventScreen extends StatefulWidget {
 class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
   bool _showFiltersDropdown = false;
 
-  Map<String, bool> _dateFilters = {
+  final Map<String, bool> _dateFilters = {
     'today': false,
     'tomorrow': false,
     'this week': false,
@@ -26,7 +26,7 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
     'next month': false,
   };
 
-  Map<String, bool> _priceFilters = {'free': false, 'paid': false};
+  final Map<String, bool> _priceFilters = {'free': false, 'paid': false};
 
   void _toggleFiltersDropdown() {
     setState(() {
@@ -48,7 +48,6 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
 
   String _selectedFilter = 'All';
   late TextEditingController _searchController;
-  String _searchQuery = '';
   String _submittedSearchQuery = '';
 
   static const List<String> _filterChips = [
@@ -89,7 +88,6 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
     MockBackend().addListener(_onBackendChanged);
     if (widget.initialSearchQuery != null &&
         widget.initialSearchQuery!.isNotEmpty) {
-      _searchQuery = widget.initialSearchQuery!;
       _submittedSearchQuery = widget.initialSearchQuery!;
       _searchController.text = widget.initialSearchQuery!;
     }

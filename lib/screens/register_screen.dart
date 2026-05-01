@@ -19,7 +19,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
-  String? _selectedUniversity;
   final TextEditingController _universityFieldController =
       TextEditingController();
   final TextEditingController _universitySearchController =
@@ -387,7 +386,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     },
                                 onSelected: (String selection) {
                                   setState(() {
-                                    _selectedUniversity = selection;
                                     _universityFieldController.text = selection;
                                   });
                                 },

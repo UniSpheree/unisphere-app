@@ -3,9 +3,7 @@ import '../utils/validators.dart';
 import 'package:unisphere_app/widgets/header.dart';
 import 'create_event_screen.dart';
 import 'discover_event_screen.dart';
-import '../widgets/auth_header.dart';
 import '../widgets/auth_text_field.dart';
-import '../widgets/role_toggle.dart';
 import '../utils/mock_backend.dart';
 
 class LoginScreen extends StatefulWidget {
