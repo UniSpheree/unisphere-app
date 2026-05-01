@@ -80,10 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: const Color(0xFFF0F2F8),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 32,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
             child: Container(
@@ -183,10 +180,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: () => Navigator.pushNamed(
-                          context,
-                          '/forgot-password',
-                        ),
+                        onPressed: () =>
+                            Navigator.pushNamed(context, '/forgot-password'),
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.zero,
                           minimumSize: Size.zero,
@@ -213,9 +208,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           height: 20,
                           child: Checkbox(
                             value: _keepLoggedIn,
-                            onChanged: (v) => setState(
-                              () => _keepLoggedIn = v ?? false,
-                            ),
+                            onChanged: (v) =>
+                                setState(() => _keepLoggedIn = v ?? false),
                             activeColor: const Color(0xFF2D3A8C),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(4),
@@ -226,10 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(width: 8),
                         const Text(
                           'Keep me logged in',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey,
-                          ),
+                          style: TextStyle(fontSize: 13, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -259,8 +250,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               )
                             : const Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
                                     'Login to Dashboard',
@@ -284,10 +274,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         const Text(
                           "Don't have an account yet? ",
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey,
-                          ),
+                          style: TextStyle(fontSize: 13, color: Colors.grey),
                         ),
                         GestureDetector(
                           onTap: () =>
