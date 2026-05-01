@@ -197,7 +197,9 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
 
   List<Map<String, dynamic>> get _filteredEvents {
     final backendEvents = SqliteBackend().events
-        .where((e) => e['title']?.toString().toLowerCase() != 'demo event')
+        .where((e) =>
+            e['title']?.toString().toLowerCase() != 'demo event' &&
+            e['visibility']?.toString() != 'Private')
         .map(
           (event) => {
             'id': event['id'],
