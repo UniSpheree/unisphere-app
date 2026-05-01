@@ -178,9 +178,24 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     final isLoggedIn = MockBackend().currentUser != null;
 
     if (!isLoggedIn) {
+      if (widget.existingEvent == null) {
+        final pendingPayload = <String, dynamic>{
+          'title': eventNameController.text.trim(),
+          'description': descriptionController.text.trim(),
+          'location': venueController.text.trim(),
+          'category': eventCategory ?? 'Other',
+          'date': startDate?.toIso8601String() ?? '',
+          'maxAttendees':
+              int.tryParse(maxAttendeesController.text.trim()) ?? 0,
+        };
+        MockBackend().setPendingEvent(pendingPayload);
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please register or sign in to create an event.'),
+          content: Text(
+            'Please register or sign in to create an event. Your event draft was saved.',
+          ),
         ),
       );
 
