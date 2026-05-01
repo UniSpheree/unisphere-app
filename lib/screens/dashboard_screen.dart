@@ -205,27 +205,34 @@ class DashboardScreen extends StatelessWidget {
                     ),
 
                     // ── Stats row ───────────────────────────────────────
-                    const Row(
+                    Row(
                       children: [
-                        _StatCard(
+                        const _StatCard(
                           label: 'Events Joined',
                           value: '8',
                           icon: Icons.event_available_outlined,
                           color: const Color(0xFF2D3A8C),
                         ),
                         const SizedBox(width: 12),
-                        _StatCard(
+                        const _StatCard(
                           label: 'Upcoming',
                           value: '4',
                           icon: Icons.upcoming_outlined,
                           color: const Color(0xFF00897B),
                         ),
                         const SizedBox(width: 12),
-                        _StatCard(
-                          label: 'My Tickets',
-                          value: '3',
-                          icon: Icons.confirmation_number_outlined,
-                          color: const Color(0xFFE65100),
+                        AnimatedBuilder(
+                          animation: MockBackend(),
+                          builder: (context, _) {
+                            final ticketCount =
+                                MockBackend().purchasedTickets.length;
+                            return _StatCard(
+                              label: 'My Tickets',
+                              value: '$ticketCount',
+                              icon: Icons.confirmation_number_outlined,
+                              color: const Color(0xFFE65100),
+                            );
+                          },
                         ),
                       ],
                     ),
