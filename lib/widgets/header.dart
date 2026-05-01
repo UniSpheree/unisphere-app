@@ -202,9 +202,7 @@ class AppHeader extends StatelessWidget {
                         _NavItem(
                           label: 'Find Events',
                           onTap: onFindEventsTap ?? () {
-                            Future.microtask(() {
-                              if (context.mounted) Navigator.pushNamed(context, '/discover');
-                            });
+                            Navigator.pushNamed(context, '/discover');
                           },
                         ),
                         _NavItem(
@@ -235,9 +233,7 @@ class AppHeader extends StatelessWidget {
                         _NavItem(
                           label: 'About us', 
                           onTap: onAboutTap ?? () {
-                            Future.microtask(() {
-                              if (context.mounted) Navigator.pushNamed(context, '/about');
-                            });
+                            Navigator.pushNamed(context, '/about');
                           }
                         ),
                         const SizedBox(width: 12),
