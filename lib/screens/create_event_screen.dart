@@ -9,7 +9,8 @@ import 'discover_event_screen.dart';
 import '../utils/mock_backend.dart';
 
 class CreateEventScreen extends StatefulWidget {
-  const CreateEventScreen({super.key});
+  final Map<String, dynamic>? existingEvent;
+  const CreateEventScreen({super.key, this.existingEvent});
 
   @override
   State<CreateEventScreen> createState() => _CreateEventScreenState();
@@ -33,6 +34,26 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   int _formResetVersion = 0;
   XFile? _bannerImage;
   final ImagePicker _imagePicker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    final ev = widget.existingEvent;
+    if (ev != null) {
+      eventNameController.text = ev['title']?.toString() ?? '';
+      descriptionController.text = ev['description']?.toString() ?? '';
+      venueController.text = ev['location']?.toString() ?? '';
+      maxAttendeesController.text = (ev['maxAttendees'] ?? '').toString();
+      eventCategory = ev['category']?.toString();
+      final dateStr = ev['date']?.toString();
+      if (dateStr != null && dateStr.isNotEmpty) {
+        try {
+          startDate = DateTime.parse(dateStr);
+          endDate = startDate?.add(const Duration(hours: 1));
+        } catch (_) {}
+      }
+    }
+  }
 
   final List<String> eventCategories = [
     'Academic',
@@ -173,26 +194,47 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     if (!_formKey.currentState!.validate() || _dateError != null) return;
 
     setState(() => _isSubmitting = true);
-    await Future.delayed(const Duration(seconds: 2));
+
+    final payload = <String, dynamic>{
+      'title': eventNameController.text.trim(),
+      'description': descriptionController.text.trim(),
+      'location': venueController.text.trim(),
+      'category': eventCategory ?? 'Other',
+      'date': startDate?.toIso8601String() ?? '',
+      'maxAttendees': int.tryParse(maxAttendeesController.text.trim()) ?? 0,
+      'organizerEmail': MockBackend().currentUser?.email,
+    };
+
+    if (widget.existingEvent != null) {
+      await MockBackend().updateEvent(
+        widget.existingEvent!['id'].toString(),
+        payload,
+      );
+    } else {
+      await MockBackend().createEvent(payload);
+    }
+
+    await Future.delayed(const Duration(milliseconds: 600));
     setState(() => _isSubmitting = false);
 
     if (!mounted) return;
-
-    String bannerPath = _bannerImage?.path ?? 'No banner uploaded';
-    debugPrint('Event Banner Path: $bannerPath');
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: Colors.green.shade600,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        content: const Row(
+        content: Row(
           children: [
-            Icon(Icons.check_circle_outline, color: Colors.white),
-            SizedBox(width: 10),
-            Text(
-              'Event created successfully!',
-              style: TextStyle(color: Colors.white),
+            const Icon(Icons.check_circle_outline, color: Colors.white),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                widget.existingEvent != null
+                    ? 'Event updated successfully!'
+                    : 'Event created successfully!',
+                style: const TextStyle(color: Colors.white),
+              ),
             ),
           ],
         ),
@@ -1004,8 +1046,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                       : const Icon(Icons.rocket_launch),
                                   label: Text(
                                     _isSubmitting
-                                        ? 'Creating Event...'
-                                        : 'Create Event',
+                                        ? (widget.existingEvent != null
+                                              ? 'Updating...'
+                                              : 'Creating Event...')
+                                        : (widget.existingEvent != null
+                                              ? 'Update Event'
+                                              : 'Create Event'),
                                     style: const TextStyle(fontSize: 16),
                                   ),
                                   style: ElevatedButton.styleFrom(
