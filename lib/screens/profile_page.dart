@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../utils/mock_backend.dart';
+import '../services/sqlite_backend.dart';
+import '../models/database_models.dart';
 import '../widgets/app_footer.dart';
 import '../widgets/header.dart';
 import 'calendar_page.dart';
@@ -18,14 +19,14 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  MockUser? _user;
+  DbUser? _user;
   late final TextEditingController _nameController;
   late final TextEditingController _descriptionController;
 
   @override
   void initState() {
     super.initState();
-    _user = MockBackend().currentUser;
+    _user = SqliteBackend().currentUser;
     _nameController = TextEditingController(text: _displayName);
     _descriptionController = TextEditingController(text: _displayDescription);
   }
@@ -56,7 +57,7 @@ class _ProfilePageState extends State<ProfilePage> {
   bool get _isOrganiser => _role.toLowerCase() == 'organiser';
 
   Future<void> _saveProfile() async {
-    final updatedUser = await MockBackend().updateCurrentUserProfile(
+    final updatedUser = await SqliteBackend().updateCurrentUserProfile(
       name: _nameController.text,
       description: _descriptionController.text,
     );
@@ -78,7 +79,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _setRole(bool organiser) async {
     final nextRole = organiser ? 'Organiser' : 'Attendee';
-    final updatedUser = await MockBackend().updateCurrentUserRole(nextRole);
+    final updatedUser = await SqliteBackend().updateCurrentUserRole(nextRole);
     if (!mounted || updatedUser == null) return;
 
     setState(() => _user = updatedUser);
@@ -184,429 +185,500 @@ class _ProfilePageState extends State<ProfilePage> {
                   Column(
                     children: [
                       AppHeader(
-                        onHostEventTap: () => Navigator.pushNamed(context, '/create-event'),
-                        onFindEventsTap: () => Navigator.pushNamed(context, '/discover'),
-                        onCreateEventsTap: () => Navigator.pushNamed(context, '/create-event'),
-                        onMyTicketsTap: () => Navigator.pushNamed(context, '/my-tickets'),
-                        onAboutTap: () => Navigator.pushNamed(context, '/about'),
-                        onSignInTap: () => Navigator.pushNamed(context, '/login'),
+                        onHostEventTap: () =>
+                            Navigator.pushNamed(context, '/create-event'),
+                        onFindEventsTap: () =>
+                            Navigator.pushNamed(context, '/discover'),
+                        onCreateEventsTap: () =>
+                            Navigator.pushNamed(context, '/create-event'),
+                        onMyTicketsTap: () =>
+                            Navigator.pushNamed(context, '/my-tickets'),
+                        onAboutTap: () =>
+                            Navigator.pushNamed(context, '/about'),
+                        onSignInTap: () =>
+                            Navigator.pushNamed(context, '/login'),
                       ),
                       Padding(
                         padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 1120),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                Row(
-                  children: [
-                    InkWell(
-                      onTap: () =>
-                          Navigator.pushReplacementNamed(context, '/logged-in'),
-                      borderRadius: BorderRadius.circular(8),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        size: 20,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: () =>
-                          Navigator.pushReplacementNamed(context, '/logged-in'),
-                      child: const Text(
-                        'Home',
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
-                      ),
-                    ),
-                    const Text(
-                      '  /  ',
-                      style: TextStyle(color: Colors.grey, fontSize: 14),
-                    ),
-                    const Text(
-                      'Profile',
-                      style: TextStyle(
-                        color: Color(0xFF111827),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF111827), Color(0xFF4F46E5)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(28),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.12),
-                        blurRadius: 28,
-                        offset: const Offset(0, 14),
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 1120),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    InkWell(
+                                      onTap: () =>
+                                          Navigator.pushReplacementNamed(
+                                            context,
+                                            '/logged-in',
+                                          ),
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: const Icon(
+                                        Icons.arrow_back,
+                                        size: 20,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    GestureDetector(
+                                      onTap: () =>
+                                          Navigator.pushReplacementNamed(
+                                            context,
+                                            '/logged-in',
+                                          ),
+                                      child: const Text(
+                                        'Home',
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                    const Text(
+                                      '  /  ',
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    const Text(
+                                      'Profile',
+                                      style: TextStyle(
+                                        color: Color(0xFF111827),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(24),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xFF111827),
+                                        Color(0xFF4F46E5),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(28),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.12),
+                                        blurRadius: 28,
+                                        offset: const Offset(0, 14),
+                                      ),
+                                    ],
+                                  ),
+                                  child: LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      final stacked =
+                                          constraints.maxWidth < 820;
+                                      final avatar = CircleAvatar(
+                                        radius: 46,
+                                        backgroundColor: Colors.white
+                                            .withOpacity(0.14),
+                                        backgroundImage: widget.image,
+                                        child: widget.image == null
+                                            ? const Icon(
+                                                Icons.person_rounded,
+                                                size: 42,
+                                                color: Colors.white,
+                                              )
+                                            : null,
+                                      );
+
+                                      final heroText = Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Wrap(
+                                              spacing: 10,
+                                              runSpacing: 10,
+                                              crossAxisAlignment:
+                                                  WrapCrossAlignment.center,
+                                              children: [
+                                                Text(
+                                                  _displayName,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 30,
+                                                    fontWeight: FontWeight.w800,
+                                                    letterSpacing: -0.3,
+                                                  ),
+                                                ),
+                                                _Pill(
+                                                  label: _role,
+                                                  color: Colors.white
+                                                      .withOpacity(0.18),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 10),
+                                            Text(
+                                              _displayDescription,
+                                              style: TextStyle(
+                                                color: Colors.white.withOpacity(
+                                                  0.88,
+                                                ),
+                                                fontSize: 15,
+                                                height: 1.55,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 16),
+                                            Wrap(
+                                              spacing: 10,
+                                              runSpacing: 10,
+                                              children: [
+                                                _MetaChip(
+                                                  icon: Icons.email_outlined,
+                                                  label: _email,
+                                                ),
+                                                _MetaChip(
+                                                  icon: Icons.school_outlined,
+                                                  label: _university,
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 18),
+                                            Wrap(
+                                              spacing: 12,
+                                              runSpacing: 12,
+                                              children: [
+                                                FilledButton.icon(
+                                                  onPressed: _openEditDialog,
+                                                  icon: const Icon(
+                                                    Icons.edit_outlined,
+                                                    size: 18,
+                                                  ),
+                                                  label: const Text(
+                                                    'Edit profile',
+                                                  ),
+                                                  style: FilledButton.styleFrom(
+                                                    backgroundColor:
+                                                        Colors.white,
+                                                    foregroundColor:
+                                                        const Color(0xFF111827),
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 18,
+                                                          vertical: 14,
+                                                        ),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            16,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                OutlinedButton.icon(
+                                                  onPressed: () {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            const DiscoverEventScreen(),
+                                                      ),
+                                                    );
+                                                  },
+                                                  icon: const Icon(
+                                                    Icons.explore_outlined,
+                                                    size: 18,
+                                                  ),
+                                                  label: const Text(
+                                                    'Browse events',
+                                                  ),
+                                                  style: OutlinedButton.styleFrom(
+                                                    foregroundColor:
+                                                        Colors.white,
+                                                    side: BorderSide(
+                                                      color: Colors.white
+                                                          .withOpacity(0.34),
+                                                    ),
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 18,
+                                                          vertical: 14,
+                                                        ),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            16,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      );
+
+                                      if (stacked) {
+                                        return Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            avatar,
+                                            const SizedBox(height: 18),
+                                            heroText,
+                                          ],
+                                        );
+                                      }
+
+                                      return Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          avatar,
+                                          const SizedBox(width: 22),
+                                          heroText,
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(height: 22),
+                                LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    final narrow = constraints.maxWidth < 860;
+
+                                    final accountCard = _SectionCard(
+                                      title: 'Account details',
+                                      subtitle:
+                                          'Email and university stay fixed to the account.',
+                                      child: Column(
+                                        children: [
+                                          _InfoRow(
+                                            icon: Icons.email_outlined,
+                                            label: 'Email',
+                                            value: _email,
+                                          ),
+                                          const SizedBox(height: 12),
+                                          _InfoRow(
+                                            icon: Icons.school_outlined,
+                                            label: 'University',
+                                            value: _university,
+                                          ),
+                                          const SizedBox(height: 12),
+                                          _InfoRow(
+                                            icon: Icons.badge_outlined,
+                                            label: 'Role',
+                                            value: _role,
+                                          ),
+                                        ],
+                                      ),
+                                    );
+
+                                    final roleCard = _SectionCard(
+                                      title: 'Role & permissions',
+                                      subtitle:
+                                          'Switch access level and update what this profile can do.',
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              ChoiceChip(
+                                                label: const Text('Attendee'),
+                                                selected: !_isOrganiser,
+                                                onSelected: (_) =>
+                                                    _setRole(false),
+                                              ),
+                                              const SizedBox(width: 10),
+                                              ChoiceChip(
+                                                label: const Text('Organiser'),
+                                                selected: _isOrganiser,
+                                                onSelected: (_) =>
+                                                    _setRole(true),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 14),
+                                          Text(
+                                            _isOrganiser
+                                                ? 'Organiser mode is active. Event creation, organiser calendar, and event management are available.'
+                                                : 'Attendee mode is active. Event creation, organiser calendar, and my events are locked.',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color: Colors.grey.shade700,
+                                              height: 1.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+
+                                    final toolsCard = _SectionCard(
+                                      title: 'Useful pages',
+                                      subtitle:
+                                          'Keep the profile focused on relevant navigation.',
+                                      child: Column(
+                                        children: [
+                                          _ActionTile(
+                                            icon: Icons.explore_outlined,
+                                            title: 'Discover events',
+                                            subtitle:
+                                                'Browse the public event feed and find something to join.',
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      const DiscoverEventScreen(),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                          const SizedBox(height: 12),
+                                          _ActionTile(
+                                            icon: Icons.add_circle_outline,
+                                            title: 'Create event',
+                                            subtitle: _isOrganiser
+                                                ? 'Open the organiser form to launch a new event.'
+                                                : 'Locked for attendees until you switch to organiser.',
+                                            enabled: _isOrganiser,
+                                            onTap: _isOrganiser
+                                                ? () {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            const CreateEventScreen(),
+                                                      ),
+                                                    );
+                                                  }
+                                                : () => _showLockedMessage(
+                                                    'Create event',
+                                                  ),
+                                          ),
+                                          const SizedBox(height: 12),
+                                          _ActionTile(
+                                            icon: Icons.calendar_month_outlined,
+                                            title: 'Organiser calendar',
+                                            subtitle: _isOrganiser
+                                                ? 'View your event calendar and schedule.'
+                                                : 'Locked for attendees until organiser mode is enabled.',
+                                            enabled: _isOrganiser,
+                                            onTap: _isOrganiser
+                                                ? () {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            const CalendarPage(),
+                                                      ),
+                                                    );
+                                                  }
+                                                : () => _showLockedMessage(
+                                                    'Organiser calendar',
+                                                  ),
+                                          ),
+                                          const SizedBox(height: 12),
+                                          _ActionTile(
+                                            icon: Icons.event_note_outlined,
+                                            title: 'My events',
+                                            subtitle: _isOrganiser
+                                                ? 'Manage the events you created.'
+                                                : 'Locked for attendees until role is changed.',
+                                            enabled: _isOrganiser,
+                                            onTap: _isOrganiser
+                                                ? () {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            const MyEventsPage(),
+                                                      ),
+                                                    );
+                                                  }
+                                                : () => _showLockedMessage(
+                                                    'My events',
+                                                  ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+
+                                    return narrow
+                                        ? Column(
+                                            children: [
+                                              accountCard,
+                                              const SizedBox(height: 18),
+                                              roleCard,
+                                              const SizedBox(height: 18),
+                                              toolsCard,
+                                            ],
+                                          )
+                                        : Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Expanded(child: accountCard),
+                                              const SizedBox(width: 18),
+                                              Expanded(child: roleCard),
+                                              const SizedBox(width: 18),
+                                              Expanded(child: toolsCard),
+                                            ],
+                                          );
+                                  },
+                                ),
+                                const SizedBox(height: 22),
+                                _SectionCard(
+                                  title: 'Session',
+                                  subtitle:
+                                      'Sign out when you are finished using UniSphere.',
+                                  child: SizedBox(
+                                    width: double.infinity,
+                                    child: OutlinedButton.icon(
+                                      onPressed: () {
+                                        SqliteBackend().logout();
+                                        Navigator.pushReplacementNamed(
+                                          context,
+                                          '/',
+                                        );
+                                      },
+                                      icon: const Icon(Icons.logout, size: 18),
+                                      label: const Text('Log out'),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: const Color(
+                                          0xFFDC2626,
+                                        ),
+                                        side: const BorderSide(
+                                          color: Color(0xFFFCA5A5),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 14,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final stacked = constraints.maxWidth < 820;
-                      final avatar = CircleAvatar(
-                        radius: 46,
-                        backgroundColor: Colors.white.withOpacity(0.14),
-                        backgroundImage: widget.image,
-                        child: widget.image == null
-                            ? const Icon(
-                                Icons.person_rounded,
-                                size: 42,
-                                color: Colors.white,
-                              )
-                            : null,
-                      );
-
-                      final heroText = Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Wrap(
-                              spacing: 10,
-                              runSpacing: 10,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              children: [
-                                Text(
-                                  _displayName,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: -0.3,
-                                  ),
-                                ),
-                                _Pill(
-                                  label: _role,
-                                  color: Colors.white.withOpacity(0.18),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              _displayDescription,
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.88),
-                                fontSize: 15,
-                                height: 1.55,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Wrap(
-                              spacing: 10,
-                              runSpacing: 10,
-                              children: [
-                                _MetaChip(
-                                  icon: Icons.email_outlined,
-                                  label: _email,
-                                ),
-                                _MetaChip(
-                                  icon: Icons.school_outlined,
-                                  label: _university,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 18),
-                            Wrap(
-                              spacing: 12,
-                              runSpacing: 12,
-                              children: [
-                                FilledButton.icon(
-                                  onPressed: _openEditDialog,
-                                  icon: const Icon(
-                                    Icons.edit_outlined,
-                                    size: 18,
-                                  ),
-                                  label: const Text('Edit profile'),
-                                  style: FilledButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: const Color(0xFF111827),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 18,
-                                      vertical: 14,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                  ),
-                                ),
-                                OutlinedButton.icon(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const DiscoverEventScreen(),
-                                      ),
-                                    );
-                                  },
-                                  icon: const Icon(
-                                    Icons.explore_outlined,
-                                    size: 18,
-                                  ),
-                                  label: const Text('Browse events'),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: Colors.white,
-                                    side: BorderSide(
-                                      color: Colors.white.withOpacity(0.34),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 18,
-                                      vertical: 14,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      );
-
-                      if (stacked) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            avatar,
-                            const SizedBox(height: 18),
-                            heroText,
-                          ],
-                        );
-                      }
-
-                      return Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [avatar, const SizedBox(width: 22), heroText],
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 22),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final narrow = constraints.maxWidth < 860;
-
-                    final accountCard = _SectionCard(
-                      title: 'Account details',
-                      subtitle:
-                          'Email and university stay fixed to the account.',
-                      child: Column(
-                        children: [
-                          _InfoRow(
-                            icon: Icons.email_outlined,
-                            label: 'Email',
-                            value: _email,
-                          ),
-                          const SizedBox(height: 12),
-                          _InfoRow(
-                            icon: Icons.school_outlined,
-                            label: 'University',
-                            value: _university,
-                          ),
-                          const SizedBox(height: 12),
-                          _InfoRow(
-                            icon: Icons.badge_outlined,
-                            label: 'Role',
-                            value: _role,
-                          ),
-                        ],
-                      ),
-                    );
-
-                    final roleCard = _SectionCard(
-                      title: 'Role & permissions',
-                      subtitle:
-                          'Switch access level and update what this profile can do.',
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              ChoiceChip(
-                                label: const Text('Attendee'),
-                                selected: !_isOrganiser,
-                                onSelected: (_) => _setRole(false),
-                              ),
-                              const SizedBox(width: 10),
-                              ChoiceChip(
-                                label: const Text('Organiser'),
-                                selected: _isOrganiser,
-                                onSelected: (_) => _setRole(true),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 14),
-                          Text(
-                            _isOrganiser
-                                ? 'Organiser mode is active. Event creation, organiser calendar, and event management are available.'
-                                : 'Attendee mode is active. Event creation, organiser calendar, and my events are locked.',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey.shade700,
-                              height: 1.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-
-                    final toolsCard = _SectionCard(
-                      title: 'Useful pages',
-                      subtitle:
-                          'Keep the profile focused on relevant navigation.',
-                      child: Column(
-                        children: [
-                          _ActionTile(
-                            icon: Icons.explore_outlined,
-                            title: 'Discover events',
-                            subtitle:
-                                'Browse the public event feed and find something to join.',
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const DiscoverEventScreen(),
-                                ),
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          _ActionTile(
-                            icon: Icons.add_circle_outline,
-                            title: 'Create event',
-                            subtitle: _isOrganiser
-                                ? 'Open the organiser form to launch a new event.'
-                                : 'Locked for attendees until you switch to organiser.',
-                            enabled: _isOrganiser,
-                            onTap: _isOrganiser
-                                ? () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const CreateEventScreen(),
-                                      ),
-                                    );
-                                  }
-                                : () => _showLockedMessage('Create event'),
-                          ),
-                          const SizedBox(height: 12),
-                          _ActionTile(
-                            icon: Icons.calendar_month_outlined,
-                            title: 'Organiser calendar',
-                            subtitle: _isOrganiser
-                                ? 'View your event calendar and schedule.'
-                                : 'Locked for attendees until organiser mode is enabled.',
-                            enabled: _isOrganiser,
-                            onTap: _isOrganiser
-                                ? () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const CalendarPage(),
-                                      ),
-                                    );
-                                  }
-                                : () =>
-                                      _showLockedMessage('Organiser calendar'),
-                          ),
-                          const SizedBox(height: 12),
-                          _ActionTile(
-                            icon: Icons.event_note_outlined,
-                            title: 'My events',
-                            subtitle: _isOrganiser
-                                ? 'Manage the events you created.'
-                                : 'Locked for attendees until role is changed.',
-                            enabled: _isOrganiser,
-                            onTap: _isOrganiser
-                                ? () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const MyEventsPage(),
-                                      ),
-                                    );
-                                  }
-                                : () => _showLockedMessage('My events'),
-                          ),
-                        ],
-                      ),
-                    );
-
-                    return narrow
-                        ? Column(
-                            children: [
-                              accountCard,
-                              const SizedBox(height: 18),
-                              roleCard,
-                              const SizedBox(height: 18),
-                              toolsCard,
-                            ],
-                          )
-                        : Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(child: accountCard),
-                              const SizedBox(width: 18),
-                              Expanded(child: roleCard),
-                              const SizedBox(width: 18),
-                              Expanded(child: toolsCard),
-                            ],
-                          );
-                  },
-                ),
-                const SizedBox(height: 22),
-                _SectionCard(
-                  title: 'Session',
-                  subtitle: 'Sign out when you are finished using UniSphere.',
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        MockBackend().logout();
-                        Navigator.pushReplacementNamed(context, '/');
-                      },
-                      icon: const Icon(Icons.logout, size: 18),
-                      label: const Text('Log out'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFFDC2626),
-                        side: const BorderSide(color: Color(0xFFFCA5A5)),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const AppFooter(),
-              ],
+                  const AppFooter(),
+                ],
+              ),
             ),
-          ),
-        );
+          );
         },
       ),
     );
