@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../utils/validators.dart';
 import '../widgets/auth_text_field.dart';
-import '../utils/mock_backend.dart';
+import '../services/sqlite_backend.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -33,7 +33,10 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
     final email = _emailController.text.trim().toLowerCase();
     final password = _passwordController.text;
-    final success = await MockBackend().login(email: email, password: password);
+    final success = await SqliteBackend().login(
+      email: email,
+      password: password,
+    );
     setState(() => _isLoading = false);
 
     if (!mounted) return;
