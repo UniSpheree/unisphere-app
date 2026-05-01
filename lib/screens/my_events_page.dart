@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../utils/mock_backend.dart';
+import '../services/sqlite_backend.dart';
 import 'create_event_screen.dart';
 import 'event_details_screen.dart';
 import '../widgets/header.dart';
@@ -10,7 +10,7 @@ class MyEventsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = MockBackend().currentUser;
+    final user = SqliteBackend().currentUser;
     final isOrganiser = user?.isOrganiser ?? false;
 
     return Scaffold(
@@ -26,12 +26,18 @@ class MyEventsPage extends StatelessWidget {
                   Column(
                     children: [
                       AppHeader(
-                        onHostEventTap: () => Navigator.pushNamed(context, '/create-event'),
-                        onFindEventsTap: () => Navigator.pushNamed(context, '/discover'),
-                        onCreateEventsTap: () => Navigator.pushNamed(context, '/create-event'),
-                        onMyTicketsTap: () => Navigator.pushNamed(context, '/my-tickets'),
-                        onAboutTap: () => Navigator.pushNamed(context, '/about'),
-                        onSignInTap: () => Navigator.pushNamed(context, '/login'),
+                        onHostEventTap: () =>
+                            Navigator.pushNamed(context, '/create-event'),
+                        onFindEventsTap: () =>
+                            Navigator.pushNamed(context, '/discover'),
+                        onCreateEventsTap: () =>
+                            Navigator.pushNamed(context, '/create-event'),
+                        onMyTicketsTap: () =>
+                            Navigator.pushNamed(context, '/my-tickets'),
+                        onAboutTap: () =>
+                            Navigator.pushNamed(context, '/about'),
+                        onSignInTap: () =>
+                            Navigator.pushNamed(context, '/login'),
                       ),
                       if (!isOrganiser)
                         _buildLockedState(context)
@@ -136,10 +142,10 @@ class MyEventsPage extends StatelessWidget {
     final isMobile = constraints.maxWidth < 800;
 
     return AnimatedBuilder(
-      animation: MockBackend(),
+      animation: SqliteBackend(),
       builder: (context, _) {
-        final email = MockBackend().currentUser?.email;
-        final myEvents = MockBackend().events
+        final email = SqliteBackend().currentUser?.email;
+        final myEvents = SqliteBackend().events
             .where((event) => event['organizerEmail']?.toString() == email)
             .toList();
 
@@ -171,18 +177,12 @@ class MyEventsPage extends StatelessWidget {
                         onTap: () => Navigator.pop(context),
                         child: const Text(
                           'Back',
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14,
-                          ),
+                          style: TextStyle(color: Colors.grey, fontSize: 14),
                         ),
                       ),
                       const Text(
                         '  /  ',
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: Colors.grey, fontSize: 14),
                       ),
                       const Flexible(
                         child: Text(
@@ -213,14 +213,21 @@ class MyEventsPage extends StatelessWidget {
                         FilledButton.icon(
                           onPressed: () => Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const CreateEventScreen()),
+                            MaterialPageRoute(
+                              builder: (_) => const CreateEventScreen(),
+                            ),
                           ),
                           icon: const Icon(Icons.add, size: 20),
                           label: const Text('Create Event'),
                           style: FilledButton.styleFrom(
                             backgroundColor: const Color(0xFF4F46E5),
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 16,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                         ),
                     ],
@@ -233,7 +240,8 @@ class MyEventsPage extends StatelessWidget {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: myEvents.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 20),
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 20),
                       itemBuilder: (context, index) {
                         return _buildEventCard(context, myEvents[index]);
                       },
@@ -252,11 +260,19 @@ class MyEventsPage extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 60),
-          Icon(Icons.event_note_outlined, size: 80, color: Colors.grey.shade300),
+          Icon(
+            Icons.event_note_outlined,
+            size: 80,
+            color: Colors.grey.shade300,
+          ),
           const SizedBox(height: 24),
           const Text(
             'No events created yet',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey,
+            ),
           ),
           const SizedBox(height: 12),
           Text(
@@ -273,7 +289,9 @@ class MyEventsPage extends StatelessWidget {
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFF4F46E5),
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             child: const Text('Create your first event'),
           ),
@@ -309,10 +327,8 @@ class MyEventsPage extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => EventDetailsScreen(
-                  event: event,
-                  allowPurchase: false,
-                ),
+                builder: (context) =>
+                    EventDetailsScreen(event: event, allowPurchase: false),
               ),
             );
           },
@@ -343,7 +359,10 @@ class MyEventsPage extends StatelessWidget {
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFFEEF2FF),
                               borderRadius: BorderRadius.circular(6),
@@ -380,7 +399,11 @@ class MyEventsPage extends StatelessWidget {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(Icons.location_on_outlined, size: 14, color: Colors.grey.shade500),
+                          Icon(
+                            Icons.location_on_outlined,
+                            size: 14,
+                            color: Colors.grey.shade500,
+                          ),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
@@ -408,9 +431,8 @@ class MyEventsPage extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => CreateEventScreen(
-                              existingEvent: event,
-                            ),
+                            builder: (context) =>
+                                CreateEventScreen(existingEvent: event),
                           ),
                         );
                       },
@@ -419,7 +441,9 @@ class MyEventsPage extends StatelessWidget {
                       tooltip: 'Edit Event',
                       style: IconButton.styleFrom(
                         backgroundColor: const Color(0xFFEEF2FF),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -432,7 +456,9 @@ class MyEventsPage extends StatelessWidget {
                       tooltip: 'Delete Event',
                       style: IconButton.styleFrom(
                         backgroundColor: const Color(0xFFFEF2F2),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
                   ],
@@ -445,13 +471,18 @@ class MyEventsPage extends StatelessWidget {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, Map<String, dynamic> event) {
+  void _showDeleteConfirmation(
+    BuildContext context,
+    Map<String, dynamic> event,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Delete Event'),
-        content: Text('Are you sure you want to delete "${event['title']}"? This action cannot be undone.'),
+        content: Text(
+          'Are you sure you want to delete "${event['title']}"? This action cannot be undone.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -459,7 +490,7 @@ class MyEventsPage extends StatelessWidget {
           ),
           FilledButton(
             onPressed: () {
-              MockBackend().deleteEvent(event['id'].toString());
+              SqliteBackend().deleteEvent(event['id'].toString());
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -480,12 +511,18 @@ class MyEventsPage extends StatelessWidget {
 
   IconData _getCategoryIcon(String category) {
     switch (category.toLowerCase()) {
-      case 'academic': return Icons.school_outlined;
-      case 'social': return Icons.people_outline;
-      case 'sports': return Icons.sports_basketball_outlined;
-      case 'career': return Icons.work_outline;
-      case 'workshop': return Icons.build_outlined;
-      default: return Icons.event_available_outlined;
+      case 'academic':
+        return Icons.school_outlined;
+      case 'social':
+        return Icons.people_outline;
+      case 'sports':
+        return Icons.sports_basketball_outlined;
+      case 'career':
+        return Icons.work_outline;
+      case 'workshop':
+        return Icons.build_outlined;
+      default:
+        return Icons.event_available_outlined;
     }
   }
 
@@ -493,13 +530,29 @@ class MyEventsPage extends StatelessWidget {
     if (isoString.isEmpty) return '';
     try {
       final dt = DateTime.parse(isoString);
-      final months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      String result = '${dt.day} ${months[dt.month]}, ${dt.year} • ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-      
+      final months = [
+        '',
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
+      String result =
+          '${dt.day} ${months[dt.month]}, ${dt.year} • ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+
       if (endIsoString.isNotEmpty) {
         try {
           final edt = DateTime.parse(endIsoString);
-          result += ' - ${edt.hour.toString().padLeft(2, '0')}:${edt.minute.toString().padLeft(2, '0')}';
+          result +=
+              ' - ${edt.hour.toString().padLeft(2, '0')}:${edt.minute.toString().padLeft(2, '0')}';
         } catch (_) {}
       }
       return result;
