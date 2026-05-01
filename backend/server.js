@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS events (
   description TEXT NOT NULL,
   organizer_email TEXT NOT NULL,
   banner_image_path TEXT,
+  visibility TEXT NOT NULL DEFAULT 'Public',
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT
 );
@@ -102,6 +103,7 @@ function toEventOut(req, row) {
     description: row.description,
     organizerEmail: row.organizer_email,
     bannerImageUrl: eventBannerUrl(req, row.banner_image_path),
+    visibility: row.visibility || 'Public',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -264,8 +266,8 @@ app.post("/events", (req, res) => {
   }
 
   const stmt = db.prepare(`
-    INSERT INTO events (title, date, end_date, location, category, description, organizer_email)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO events (title, date, end_date, location, category, description, organizer_email, visibility)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `);
   const info = stmt.run(
     String(body.title || "").trim(),
@@ -274,7 +276,8 @@ app.post("/events", (req, res) => {
     String(body.location || "").trim(),
     String(body.category || "").trim(),
     String(body.description || "").trim(),
-    organizerEmail
+    organizerEmail,
+    String(body.visibility || "Public").trim()
   );
 
   const bannerImageBase64 = body.bannerImageBase64
@@ -315,6 +318,8 @@ app.put("/events/:id", (req, res) => {
       body.location !== undefined ? String(body.location).trim() : row.location,
     category:
       body.category !== undefined ? String(body.category).trim() : row.category,
+    visibility:
+      body.visibility !== undefined ? String(body.visibility).trim() : row.visibility,
     description:
       body.description !== undefined
         ? String(body.description).trim()
@@ -329,7 +334,7 @@ app.put("/events/:id", (req, res) => {
   db.prepare(
     `
     UPDATE events
-    SET title = ?, date = ?, end_date = ?, location = ?, category = ?, description = ?, organizer_email = ?, updated_at = ?
+    SET title = ?, date = ?, end_date = ?, location = ?, category = ?, visibility = ?, description = ?, organizer_email = ?, updated_at = ?
     WHERE id = ?
   `
   ).run(
@@ -338,6 +343,7 @@ app.put("/events/:id", (req, res) => {
     next.end_date,
     next.location,
     next.category,
+    next.visibility,
     next.description,
     next.organizer_email,
     next.updated_at,
