@@ -10,6 +10,9 @@ import 'screens/discover_event_screen.dart';
 import 'screens/about_us_page.dart';
 import 'screens/terms_page.dart';
 import 'screens/privacy_page.dart';
+import 'screens/my_tickets_screen.dart';
+import 'screens/my_events_page.dart';
+import 'screens/calendar_page.dart';
 import 'utils/mock_backend.dart';
 
 void main() {
@@ -50,6 +53,9 @@ class MyApp extends StatelessWidget {
         '/about': (_) => const AboutUsPage(),
         '/terms': (_) => const TermsPage(),
         '/privacy': (_) => const PrivacyPage(),
+        '/my-tickets': (_) => const MyTicketsScreen(),
+        '/my-events': (_) => const MyEventsPage(),
+        '/calendar': (_) => const CalendarPage(),
       },
     );
   }
