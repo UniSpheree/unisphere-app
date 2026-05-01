@@ -49,7 +49,6 @@ class LandingPage extends StatelessWidget {
               onSignInTap: () {
                 Navigator.pushNamed(context, '/login');
               },
-              showProfile: false,
             ),
             _HeroSection(),
             _StatsSection(),

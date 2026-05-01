@@ -130,10 +130,10 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            AppHeader(
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: AppHeader(
               onHostEventTap: () {
                 Navigator.push(
                   context,
@@ -163,7 +163,9 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
               },
               showProfile: false,
             ),
-            LayoutBuilder(
+          ),
+          SliverToBoxAdapter(
+            child: LayoutBuilder(
               builder: (context, constraints) {
                 final isMobile = constraints.maxWidth < 600;
                 return Center(
@@ -713,9 +715,16 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                 );
               },
             ),
-            const AppFooter(),
-          ],
-        ),
+          ),
+          const SliverFillRemaining(
+            hasScrollBody: false,
+            fillOverscroll: true,
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: AppFooter(),
+            ),
+          ),
+        ],
       ),
     );
   }
