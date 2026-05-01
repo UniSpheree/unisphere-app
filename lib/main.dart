@@ -3,11 +3,16 @@ import 'screens/create_event_screen.dart';
 import 'screens/profile_page.dart';
 import 'screens/landing_page.dart';
 import 'screens/landing_page_logged_in.dart';
-import 'screens/dashboard_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/login_screen.dart';
-import 'screens/profile_screen.dart';
 import 'screens/register_screen.dart';
+import 'screens/discover_event_screen.dart';
+import 'screens/about_us_page.dart';
+import 'screens/terms_page.dart';
+import 'screens/privacy_page.dart';
+import 'screens/my_tickets_screen.dart';
+import 'screens/my_events_page.dart';
+import 'screens/calendar_page.dart';
 import 'utils/mock_backend.dart';
 
 void main() {
@@ -44,16 +49,13 @@ class MyApp extends StatelessWidget {
         '/forgot-password': (_) => const ForgotPasswordScreen(),
         '/profile': (_) => const ProfilePage(),
         '/create-event': (_) => const CreateEventScreen(),
-      },
-      onGenerateRoute: (settings) {
-        if (settings.name == '/dashboard') {
-          final role = (settings.arguments as String?) ?? 'Attendee';
-          return MaterialPageRoute(
-            settings: settings,
-            builder: (_) => DashboardScreen(role: role),
-          );
-        }
-        return null;
+        '/discover': (_) => const DiscoverEventScreen(),
+        '/about': (_) => const AboutUsPage(),
+        '/terms': (_) => const TermsPage(),
+        '/privacy': (_) => const PrivacyPage(),
+        '/my-tickets': (_) => const MyTicketsScreen(),
+        '/my-events': (_) => const MyEventsPage(),
+        '/calendar': (_) => const CalendarPage(),
       },
     );
   }

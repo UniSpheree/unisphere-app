@@ -11,6 +11,7 @@ class AppHeader extends StatelessWidget {
   final VoidCallback? onHostEventTap;
   final VoidCallback? onRegisterTap;
   final bool showProfile;
+  final bool showBackButton;
 
   const AppHeader({
     super.key,
@@ -22,6 +23,7 @@ class AppHeader extends StatelessWidget {
     this.onHostEventTap,
     this.onRegisterTap,
     this.showProfile = true,
+    this.showBackButton = false,
   });
 
   @override
@@ -40,7 +42,22 @@ class AppHeader extends StatelessWidget {
               ? Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const _Brand(),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (showBackButton) ...[
+                          IconButton(
+                            onPressed: () => Navigator.maybePop(context),
+                            icon: const Icon(
+                              Icons.arrow_back_rounded,
+                              color: _HeaderColors.text,
+                            ),
+                            tooltip: 'Back',
+                          ),
+                        ],
+                        const _Brand(),
+                      ],
+                    ),
                     PopupMenuButton<String>(
                       icon: const Icon(
                         Icons.menu_rounded,
@@ -52,7 +69,13 @@ class AppHeader extends StatelessWidget {
                       onSelected: (value) {
                         switch (value) {
                           case 'find':
-                            onFindEventsTap?.call();
+                            if (onFindEventsTap != null) {
+                              onFindEventsTap!.call();
+                            } else {
+                              Future.microtask(() {
+                                if (context.mounted) Navigator.pushNamed(context, '/discover');
+                              });
+                            }
                             break;
                           case 'create':
                             if (onCreateEventsTap != null) {
@@ -67,11 +90,22 @@ class AppHeader extends StatelessWidget {
                               );
                             }
                             break;
-                          case 'tickets':
-                            onMyTicketsTap?.call();
+                          case 'dashboard':
+                            final user = MockBackend().currentUser;
+                            if (user != null) {
+                              Navigator.pushNamed(context, '/logged-in');
+                            } else {
+                              Navigator.pushNamed(context, '/register');
+                            }
                             break;
                           case 'about':
-                            onAboutTap?.call();
+                            if (onAboutTap != null) {
+                              onAboutTap!.call();
+                            } else {
+                              Future.microtask(() {
+                                if (context.mounted) Navigator.pushNamed(context, '/about');
+                              });
+                            }
                             break;
                           case 'signin':
                             onSignInTap?.call();
@@ -97,6 +131,7 @@ class AppHeader extends StatelessWidget {
                         }
                       },
                       itemBuilder: (context) {
+                        final isLoggedIn = MockBackend().currentUser != null;
                         final items = <PopupMenuEntry<String>>[
                           const PopupMenuItem(
                             value: 'find',
@@ -107,22 +142,25 @@ class AppHeader extends StatelessWidget {
                             child: Text('Create Events'),
                           ),
                           const PopupMenuItem(
-                            value: 'tickets',
-                            child: Text('My Tickets'),
+                            value: 'dashboard',
+                            child: Text('Dashboard'),
                           ),
                           const PopupMenuItem(
                             value: 'about',
                             child: Text('About us'),
                           ),
                           const PopupMenuDivider(),
-                          const PopupMenuItem(
-                            value: 'signin',
-                            child: Text('Sign In'),
-                          ),
-                          const PopupMenuItem(
-                            value: 'host',
-                            child: Text('Register'),
-                          ),
+                          // Only show Sign In and Register if not logged in
+                          if (!isLoggedIn) ...[
+                            const PopupMenuItem(
+                              value: 'signin',
+                              child: Text('Sign In'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'host',
+                              child: Text('Register'),
+                            ),
+                          ],
                         ];
 
                         if (showProfile) {
@@ -143,12 +181,29 @@ class AppHeader extends StatelessWidget {
               : Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const _Brand(),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (showBackButton) ...[
+                          IconButton(
+                            onPressed: () => Navigator.maybePop(context),
+                            icon: const Icon(
+                              Icons.arrow_back_rounded,
+                              color: _HeaderColors.text,
+                            ),
+                            tooltip: 'Back',
+                          ),
+                        ],
+                        const _Brand(),
+                      ],
+                    ),
                     Row(
                       children: [
                         _NavItem(
                           label: 'Find Events',
-                          onTap: onFindEventsTap ?? () {},
+                          onTap: onFindEventsTap ?? () {
+                            Navigator.pushNamed(context, '/discover');
+                          },
                         ),
                         _NavItem(
                           label: 'Create Events',
@@ -165,47 +220,65 @@ class AppHeader extends StatelessWidget {
                               },
                         ),
                         _NavItem(
-                          label: 'My Tickets',
-                          onTap: onMyTicketsTap ?? () {},
+                          label: 'Dashboard',
+                          onTap: () {
+                            final user = MockBackend().currentUser;
+                            if (user != null) {
+                              Navigator.pushNamed(context, '/logged-in');
+                            } else {
+                              Navigator.pushNamed(context, '/register');
+                            }
+                          },
                         ),
-                        _NavItem(label: 'About us', onTap: onAboutTap ?? () {}),
-                        const SizedBox(width: 12),
-                        OutlinedButton(
-                          onPressed: onSignInTap,
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: _HeaderColors.primary,
-                            side: const BorderSide(color: _HeaderColors.border),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 18,
-                              vertical: 16,
-                            ),
-                          ),
-                          child: const Text('Sign In'),
+                        _NavItem(
+                          label: 'About us', 
+                          onTap: onAboutTap ?? () {
+                            Navigator.pushNamed(context, '/about');
+                          }
                         ),
                         const SizedBox(width: 12),
-                        FilledButton(
-                          onPressed:
-                              onRegisterTap ??
-                              onHostEventTap ??
-                              () {
-                                Navigator.pushNamed(context, '/register');
-                              },
-                          style: FilledButton.styleFrom(
-                            backgroundColor: _HeaderColors.primary,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                        // Only show Sign In button if not logged in
+                        if (MockBackend().currentUser == null)
+                          OutlinedButton(
+                            onPressed: onSignInTap,
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: _HeaderColors.primary,
+                              side: const BorderSide(
+                                color: _HeaderColors.border,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 18,
+                                vertical: 16,
+                              ),
                             ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 18,
-                              vertical: 16,
-                            ),
+                            child: const Text('Sign In'),
                           ),
-                          child: const Text('Register'),
-                        ),
+                        const SizedBox(width: 12),
+                        // Only show Register button if not logged in
+                        if (MockBackend().currentUser == null)
+                          FilledButton(
+                            onPressed:
+                                onRegisterTap ??
+                                onHostEventTap ??
+                                () {
+                                  Navigator.pushNamed(context, '/register');
+                                },
+                            style: FilledButton.styleFrom(
+                              backgroundColor: _HeaderColors.primary,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 18,
+                                vertical: 16,
+                              ),
+                            ),
+                            child: const Text('Register'),
+                          ),
                         const SizedBox(width: 12),
                         if (showProfile)
                           IconButton(
@@ -256,7 +329,10 @@ class _Brand extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.pushNamed(context, '/');
+        // Always navigate to the initial welcome page
+        Future.microtask(() {
+          if (context.mounted) Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+        });
       },
       child: Row(
         children: [

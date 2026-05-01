@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:unisphere_app/widgets/app_footer.dart';
 import 'package:unisphere_app/widgets/header.dart';
+import 'event_details_screen.dart';
+import 'package:unisphere_app/utils/mock_backend.dart';
 import 'create_event_screen.dart';
+import 'discover_event_screen.dart';
+import 'my_tickets_screen.dart';
+import 'my_events_page.dart';
 
 class PersonalizedLandingPage extends StatefulWidget {
   final String userName;
@@ -72,10 +78,11 @@ class PersonalizedLandingPage extends StatefulWidget {
     },
   ];
 
-  static const List<Map<String, dynamic>> upcomingEvents = [
+  static final List<Map<String, dynamic>> upcomingEvents = [
     {
       'title': 'Flutter Workshop',
       'date': 'Mar 10, 2026 • 14:00',
+      'eventDate': DateTime(2026, 5, 8, 14, 0),
       'location': 'Room A101',
       'category': 'Workshop',
       'icon': Icons.code_rounded,
@@ -84,6 +91,7 @@ class PersonalizedLandingPage extends StatefulWidget {
     {
       'title': 'Career Fair 2026',
       'date': 'Mar 15, 2026 • 10:00',
+      'eventDate': DateTime(2026, 5, 14, 10, 0),
       'location': 'Main Hall',
       'category': 'Career',
       'icon': Icons.work_outline_rounded,
@@ -92,6 +100,7 @@ class PersonalizedLandingPage extends StatefulWidget {
     {
       'title': 'Sports Day',
       'date': 'Mar 20, 2026 • 09:00',
+      'eventDate': DateTime(2026, 5, 21, 9, 0),
       'location': 'University Grounds',
       'category': 'Sports',
       'icon': Icons.sports_soccer_rounded,
@@ -100,7 +109,8 @@ class PersonalizedLandingPage extends StatefulWidget {
   ];
 
   @override
-  State<PersonalizedLandingPage> createState() => _PersonalizedLandingPageState();
+  State<PersonalizedLandingPage> createState() =>
+      _PersonalizedLandingPageState();
 }
 
 class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
@@ -126,10 +136,17 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
       'this month': false,
       'next month': false,
     };
+    MockBackend().addListener(_onBackendChanged);
+  }
+
+  void _onBackendChanged() {
+    if (!mounted) return;
+    setState(() {});
   }
 
   @override
   void dispose() {
+    MockBackend().removeListener(_onBackendChanged);
     _searchController.dispose();
     super.dispose();
   }
@@ -158,12 +175,116 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
     });
   }
 
+  static bool _isWithinNext30Days(DateTime eventDate) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final limit = today.add(const Duration(days: 30));
+    return !eventDate.isBefore(today) && eventDate.isBefore(limit);
+  }
+
+  List<Map<String, dynamic>> get _organiserLiveEvents {
+    final email = MockBackend().currentUser?.email;
+    if (email == null) return [];
+
+    return MockBackend().events
+        .where((event) => event['organizerEmail']?.toString() == email)
+        .map(_toDashboardEvent)
+        .toList();
+  }
+
+  List<Map<String, dynamic>> get _upcomingEventsWithinNextMonth {
+    final isOrganiser = (MockBackend().currentUser?.isOrganiser ?? false) ||
+        widget.role.toLowerCase() == 'organiser';
+
+    if (isOrganiser) {
+      return _organiserLiveEvents;
+    }
+
+    return MockBackend().purchasedTickets.map((ticket) {
+      return {
+        'title': ticket.title,
+        'date': ticket.date,
+        'eventDate': DateTime.now().add(const Duration(days: 10)),
+        'location': ticket.location,
+        'category': ticket.category,
+        'icon': Icons.confirmation_number_outlined,
+        'color': const Color(0xFF4F46E5),
+      };
+    }).toList();
+  }
+
+  Map<String, dynamic> _toDashboardEvent(Map<String, dynamic> event) {
+    final category = event['category']?.toString() ?? 'Other';
+    final color = _dashboardColorForCategory(category);
+    final dateText = event['date']?.toString() ?? '';
+
+    return {
+      'title': event['title']?.toString() ?? 'Untitled Event',
+      'date': dateText,
+      'location': event['location']?.toString() ?? 'TBA',
+      'category': category,
+      'color': color,
+      'icon': _dashboardIconForCategory(category),
+    };
+  }
+
+  Color _dashboardColorForCategory(String category) {
+    switch (category.toLowerCase()) {
+      case 'social':
+        return const Color(0xFF0F766E);
+      case 'tech':
+      case 'technology':
+        return const Color(0xFF4F46E5);
+      case 'career':
+        return const Color(0xFFEA580C);
+      case 'sports':
+        return const Color(0xFF16A34A);
+      case 'music':
+        return const Color(0xFFDB2777);
+      default:
+        return const Color(0xFF4F46E5);
+    }
+  }
+
+  IconData _dashboardIconForCategory(String category) {
+    switch (category.toLowerCase()) {
+      case 'social':
+        return Icons.groups_rounded;
+      case 'tech':
+      case 'technology':
+        return Icons.code_rounded;
+      case 'career':
+        return Icons.work_outline_rounded;
+      case 'sports':
+        return Icons.sports_soccer_rounded;
+      case 'music':
+        return Icons.music_note_rounded;
+      default:
+        return Icons.event_rounded;
+    }
+  }
+
   List<Map<String, dynamic>> get _filteredEvents {
+    final backendEvents = MockBackend().events
+        .map(
+          (event) => {
+            'id': event['id'],
+            'title': event['title'] ?? 'Untitled Event',
+            'date': event['date'] ?? '',
+            'location': event['location'] ?? 'TBA',
+            'category': event['category'] ?? 'Other',
+            'description': event['description'] ?? '',
+            'imageColor': const Color(0xFFE0E7FF),
+            'icon': Icons.event_rounded,
+          },
+        )
+        .toList();
+
     final baseEvents = _selectedFilter == 'All'
-        ? PersonalizedLandingPage.discoverEvents
-        : PersonalizedLandingPage.discoverEvents
-            .where((event) => event['category'] == _selectedFilter)
-            .toList();
+        ? backendEvents
+        : backendEvents
+              .where((event) => event['category'] == _selectedFilter)
+              .toList();
 
     if (_searchQuery.isEmpty) {
       return baseEvents;
@@ -182,111 +303,134 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isOrganiser = widget.role.toLowerCase() == 'organiser';
+    final isOrganiser =
+        MockBackend().currentUser?.isOrganiser ??
+        widget.role.toLowerCase() == 'organiser';
+    final upcomingEvents = _upcomingEventsWithinNextMonth;
 
     return Scaffold(
       backgroundColor: PersonalizedLandingPage.background,
-      body: Column(
-        children: [
-          AppHeader(
-            onHostEventTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const CreateEventScreen(),
-                ),
-              );
-            },
-            onFindEventsTap: () {},
-            onCreateEventsTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const CreateEventScreen(),
-                ),
-              );
-            },
-            onMyTicketsTap: () {},
-            onAboutTap: () {},
-            onSignInTap: () {},
-          ),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final isMobile = constraints.maxWidth < 1100;
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    children: [
+                      AppHeader(
+                        onHostEventTap: () {
+                          Navigator.pushNamed(context, '/create-event');
+                        },
+                        onFindEventsTap: () {
+                          Navigator.pushNamed(context, '/discover');
+                        },
+                        onCreateEventsTap: () {
+                          Navigator.pushNamed(context, '/create-event');
+                        },
+                        onMyTicketsTap: () {
+                          Navigator.pushNamed(context, '/my-tickets');
+                        },
+                        onAboutTap: () {
+                          Navigator.pushNamed(context, '/about');
+                        },
+                        onSignInTap: () {
+                          Navigator.pushNamed(context, '/login');
+                        },
+                      ),
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isMobile = constraints.maxWidth < 1100;
 
-                if (isMobile) {
-                  return SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        _DiscoverSection(
-                          userName: widget.userName,
-                          isOrganiser: isOrganiser,
-                          selectedFilter: _selectedFilter,
-                          filteredEvents: _filteredEvents,
-                          onFilterChanged: _setFilter,
-                          searchController: _searchController,
-                          onSearchChanged: _setSearchQuery,
-                          showFiltersDropdown: _showFiltersDropdown,
-                          dateFilters: _dateFilters,
-                          onToggleFiltersDropdown: _toggleFiltersDropdown,
-                          onDateFilterChanged: _setDateFilter,
-                        ),
-                        const SizedBox(height: 20),
-                        _DashboardPanel(
-                          userName: widget.userName,
-                          isOrganiser: isOrganiser,
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 7,
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(28, 28, 20, 28),
-                        child: _DiscoverSection(
-                          userName: widget.userName,
-                          isOrganiser: isOrganiser,
-                          selectedFilter: _selectedFilter,
-                          filteredEvents: _filteredEvents,
-                          onFilterChanged: _setFilter,
-                          searchController: _searchController,
-                          onSearchChanged: _setSearchQuery,
-                          showFiltersDropdown: _showFiltersDropdown,
-                          dateFilters: _dateFilters,
-                          onToggleFiltersDropdown: _toggleFiltersDropdown,
-                          onDateFilterChanged: _setDateFilter,
-                        ),
+                          if (isMobile) {
+                            return Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                children: [
+                                  _DiscoverSection(
+                                    userName: widget.userName,
+                                    isOrganiser: isOrganiser,
+                                    selectedFilter: _selectedFilter,
+                                    filteredEvents: _filteredEvents,
+                                    onFilterChanged: _setFilter,
+                                    searchController: _searchController,
+                                    onSearchChanged: _setSearchQuery,
+                                    showFiltersDropdown: _showFiltersDropdown,
+                                    dateFilters: _dateFilters,
+                                    onToggleFiltersDropdown: _toggleFiltersDropdown,
+                                    onDateFilterChanged: _setDateFilter,
+                                  ),
+                                  const SizedBox(height: 20),
+                                  _DashboardPanel(
+                                    userName: widget.userName,
+                                    isOrganiser: isOrganiser,
+                                    upcomingEvents: upcomingEvents,
+                                  ),
+                                ],
+                              ),
+                            );
+                          } else {
+                            return Center(
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 1400),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      flex: 7,
+                                      child: Padding(
+                                        padding: const EdgeInsets.fromLTRB(28, 28, 20, 28),
+                                        child: _DiscoverSection(
+                                          userName: widget.userName,
+                                          isOrganiser: isOrganiser,
+                                          selectedFilter: _selectedFilter,
+                                          filteredEvents: _filteredEvents,
+                                          onFilterChanged: _setFilter,
+                                          searchController: _searchController,
+                                          onSearchChanged: _setSearchQuery,
+                                          showFiltersDropdown: _showFiltersDropdown,
+                                          dateFilters: _dateFilters,
+                                          onToggleFiltersDropdown: _toggleFiltersDropdown,
+                                          onDateFilterChanged: _setDateFilter,
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      width: 430,
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFFF8FAFC),
+                                        border: Border(
+                                          left: BorderSide(
+                                            color: PersonalizedLandingPage.border,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(24),
+                                        child: _DashboardPanel(
+                                          userName: widget.userName,
+                                          isOrganiser: isOrganiser,
+                                          upcomingEvents: upcomingEvents,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }
+                        },
                       ),
-                    ),
-                    Container(
-                      width: 430,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF8FAFC),
-                        border: Border(
-                          left: BorderSide(color: PersonalizedLandingPage.border),
-                        ),
-                      ),
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(24),
-                        child: _DashboardPanel(
-                            userName: widget.userName,
-                          isOrganiser: isOrganiser,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
+                    ],
+                  ),
+                  const AppFooter(),
+                ],
+              ),
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -324,10 +468,7 @@ class _DiscoverSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _TopWelcomeStrip(
-          userName: userName,
-          isOrganiser: isOrganiser,
-        ),
+        _TopWelcomeStrip(userName: userName, isOrganiser: isOrganiser),
         const SizedBox(height: 24),
         _SearchAndFilters(
           searchController: searchController,
@@ -406,10 +547,7 @@ class _TopWelcomeStrip extends StatelessWidget {
   final String userName;
   final bool isOrganiser;
 
-  const _TopWelcomeStrip({
-    required this.userName,
-    required this.isOrganiser,
-  });
+  const _TopWelcomeStrip({required this.userName, required this.isOrganiser});
 
   @override
   Widget build(BuildContext context) {
@@ -470,24 +608,19 @@ class _TopWelcomeStrip extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const CreateEventScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const CreateEventScreen()),
               );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: PersonalizedLandingPage.primary,
               foregroundColor: Colors.white,
               elevation: 0,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 18,
-                vertical: 14,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
             ),
-            child: Text(isOrganiser ? 'Create Event' : 'Explore Events'),
+            child: const Text('Create Events'),
           ),
         ],
       ),
@@ -536,14 +669,18 @@ class _SearchAndFilters extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.search_rounded, color: PersonalizedLandingPage.muted),
+                    const Icon(
+                      Icons.search_rounded,
+                      color: PersonalizedLandingPage.muted,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: TextField(
                         controller: searchController,
                         onChanged: onSearchChanged,
                         decoration: const InputDecoration(
-                          hintText: 'Search events, societies, categories, places...',
+                          hintText:
+                              'Search events, societies, categories, places...',
                           border: InputBorder.none,
                           isDense: true,
                           contentPadding: EdgeInsets.zero,
@@ -609,73 +746,91 @@ class _SearchAndFilters extends StatelessWidget {
                 LayoutBuilder(
                   builder: (context, constraints) {
                     final isWide = constraints.maxWidth > 440;
-                    final itemWidth = (constraints.maxWidth - (isWide ? 32 : 24)) / (isWide ? 3 : 2);
+                    final itemWidth =
+                        (constraints.maxWidth - (isWide ? 32 : 24)) /
+                        (isWide ? 3 : 2);
 
                     return Wrap(
                       spacing: 12,
                       runSpacing: 10,
-                      children: ['today', 'tomorrow', 'this week', 'next week', 'this month', 'next month']
-                          .map(
-                        (filter) {
-                          return SizedBox(
-                            width: itemWidth,
-                            child: GestureDetector(
-                              onTap: () => onDateFilterChanged(filter, !dateFilters[filter]!),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: dateFilters[filter]!
-                                      ? PersonalizedLandingPage.primary.withOpacity(0.12)
-                                      : Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
+                      children:
+                          [
+                            'today',
+                            'tomorrow',
+                            'this week',
+                            'next week',
+                            'this month',
+                            'next month',
+                          ].map((filter) {
+                            return SizedBox(
+                              width: itemWidth,
+                              child: GestureDetector(
+                                onTap: () => onDateFilterChanged(
+                                  filter,
+                                  !dateFilters[filter]!,
+                                ),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 10,
+                                  ),
+                                  decoration: BoxDecoration(
                                     color: dateFilters[filter]!
                                         ? PersonalizedLandingPage.primary
-                                        : PersonalizedLandingPage.border,
+                                              .withOpacity(0.12)
+                                        : Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: dateFilters[filter]!
+                                          ? PersonalizedLandingPage.primary
+                                          : PersonalizedLandingPage.border,
+                                    ),
                                   ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 18,
-                                      height: 18,
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 18,
+                                        height: 18,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: dateFilters[filter]!
+                                                ? PersonalizedLandingPage
+                                                      .primary
+                                                : PersonalizedLandingPage
+                                                      .border,
+                                            width: 2,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
                                           color: dateFilters[filter]!
                                               ? PersonalizedLandingPage.primary
-                                              : PersonalizedLandingPage.border,
-                                          width: 2,
+                                              : Colors.white,
                                         ),
-                                        borderRadius: BorderRadius.circular(4),
-                                        color: dateFilters[filter]!
-                                            ? PersonalizedLandingPage.primary
-                                            : Colors.white,
+                                        child: dateFilters[filter]!
+                                            ? const Icon(
+                                                Icons.check,
+                                                size: 12,
+                                                color: Colors.white,
+                                              )
+                                            : null,
                                       ),
-                                      child: dateFilters[filter]!
-                                          ? const Icon(
-                                              Icons.check,
-                                              size: 12,
-                                              color: Colors.white,
-                                            )
-                                          : null,
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text(
-                                        filter,
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: PersonalizedLandingPage.text,
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Text(
+                                          filter,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: PersonalizedLandingPage.text,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        },
-                      ).toList(),
+                            );
+                          }).toList(),
                     );
                   },
                 ),
@@ -719,7 +874,9 @@ class _CategoryChips extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: isSelected ? PersonalizedLandingPage.primary : Colors.white,
+              color: isSelected
+                  ? PersonalizedLandingPage.primary
+                  : Colors.white,
               borderRadius: BorderRadius.circular(999),
               border: Border.all(
                 color: isSelected
@@ -837,7 +994,14 @@ class _DiscoverEventCard extends StatelessWidget {
                     ),
                     const Spacer(),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => EventDetailsScreen(event: event),
+                          ),
+                        );
+                      },
                       child: const Text('View details'),
                     ),
                   ],
@@ -854,10 +1018,12 @@ class _DiscoverEventCard extends StatelessWidget {
 class _DashboardPanel extends StatelessWidget {
   final String userName;
   final bool isOrganiser;
+  final List<Map<String, dynamic>> upcomingEvents;
 
   const _DashboardPanel({
     required this.userName,
     required this.isOrganiser,
+    required this.upcomingEvents,
   });
 
   @override
@@ -878,10 +1044,7 @@ class _DashboardPanel extends StatelessWidget {
           isOrganiser
               ? 'Your event activity at a glance.'
               : 'Your activity and upcoming plans in one place.',
-          style: TextStyle(
-            fontSize: 15,
-            color: PersonalizedLandingPage.muted,
-          ),
+          style: TextStyle(fontSize: 15, color: PersonalizedLandingPage.muted),
         ),
         const SizedBox(height: 24),
 
@@ -935,7 +1098,13 @@ class _DashboardPanel extends StatelessWidget {
                 ),
               ),
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  if (MockBackend().currentUser != null) {
+                    Navigator.pushNamed(context, '/profile');
+                  } else {
+                    Navigator.pushNamed(context, '/register');
+                  }
+                },
                 icon: const Icon(Icons.settings_outlined),
                 color: PersonalizedLandingPage.muted,
               ),
@@ -945,23 +1114,45 @@ class _DashboardPanel extends StatelessWidget {
 
         const SizedBox(height: 18),
 
-        Row(
-          children: [
-            Expanded(
-              child: _DashboardMetricCard(
-                title: isOrganiser ? 'Live Events' : 'Events Joined',
-                value: isOrganiser ? '5' : '8',
-                icon: isOrganiser
-                    ? Icons.event_note_rounded
-                    : Icons.event_available_outlined,
-                color: const Color(0xFF4F46E5),
-              ),
-            ),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: isOrganiser
+                        ? () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const MyEventsPage(),
+                              ),
+                            );
+                          }
+                        : null,
+                    child: Builder(builder: (context) {
+                      final liveCount = isOrganiser
+                          ? MockBackend()
+                              .events
+                              .where((e) =>
+                                  e['organizerEmail']?.toString() ==
+                                  MockBackend().currentUser?.email)
+                              .length
+                          : MockBackend().purchasedTickets.length;
+                      return _DashboardMetricCard(
+                        title: isOrganiser ? 'Live Events' : 'Events Joined',
+                        value: '$liveCount',
+                        icon: isOrganiser
+                            ? Icons.event_note_rounded
+                            : Icons.event_available_outlined,
+                        color: const Color(0xFF4F46E5),
+                      );
+                    }),
+                  ),
+                ),
             const SizedBox(width: 12),
             Expanded(
               child: _DashboardMetricCard(
                 title: 'Upcoming',
-                value: '4',
+                value: '${upcomingEvents.length}',
                 icon: Icons.upcoming_rounded,
                 color: const Color(0xFF0F766E),
               ),
@@ -971,14 +1162,31 @@ class _DashboardPanel extends StatelessWidget {
 
         const SizedBox(height: 12),
 
-        _DashboardMetricCard(
-          title: isOrganiser ? 'Total Views' : 'My Tickets',
-          value: isOrganiser ? '2.4K' : '3',
-          icon: isOrganiser
-              ? Icons.bar_chart_rounded
-              : Icons.confirmation_number_outlined,
-          color: const Color(0xFFEA580C),
-          fullWidth: true,
+        ListenableBuilder(
+          listenable: MockBackend(),
+          builder: (context, _) {
+            final ticketCount = MockBackend().purchasedTickets.length;
+            final organiserEventCount = MockBackend()
+                .events
+                .where(
+                  (event) =>
+                      event['organizerEmail']?.toString() ==
+                      MockBackend().currentUser?.email,
+                )
+                .length;
+            final organiserViews = organiserEventCount * 1000;
+            return _DashboardMetricCard(
+              title: isOrganiser ? 'Total Views' : 'My Tickets',
+              value: isOrganiser
+                  ? _formatCompactCount(organiserViews)
+                  : '$ticketCount',
+              icon: isOrganiser
+                  ? Icons.bar_chart_rounded
+                  : Icons.confirmation_number_outlined,
+              color: const Color(0xFFEA580C),
+              fullWidth: true,
+            );
+          },
         ),
 
         const SizedBox(height: 22),
@@ -987,33 +1195,35 @@ class _DashboardPanel extends StatelessWidget {
           children: [
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  if (!isOrganiser) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const MyTicketsScreen(),
+                      ),
+                    );
+                    return;
+                  }
+                  
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const CreateEventScreen(),
+                    ),
+                  );
+                },
                 icon: Icon(
-                  isOrganiser ? Icons.add_rounded : Icons.explore_rounded,
+                  isOrganiser
+                      ? Icons.add_rounded
+                      : Icons.confirmation_number_outlined,
                   size: 18,
                 ),
-                label: Text(isOrganiser ? 'Create' : 'Browse'),
+                label: Text(isOrganiser ? 'Create' : 'My Tickets'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: PersonalizedLandingPage.primary,
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.confirmation_number_outlined, size: 18),
-                label: const Text('Tickets'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: PersonalizedLandingPage.primary,
-                  side: const BorderSide(color: PersonalizedLandingPage.border),
-                  backgroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -1036,12 +1246,30 @@ class _DashboardPanel extends StatelessWidget {
         ),
         const SizedBox(height: 14),
 
-        ...PersonalizedLandingPage.upcomingEvents.map(
-          (event) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _UpcomingEventCard(event: event),
+        if (upcomingEvents.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: PersonalizedLandingPage.border),
+            ),
+            child: const Text(
+              'No upcoming events in the next 30 days.',
+              style: TextStyle(
+                fontSize: 14,
+                color: PersonalizedLandingPage.muted,
+              ),
+            ),
+          )
+        else
+          ...upcomingEvents.map(
+            (event) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _UpcomingEventCard(event: event),
+            ),
           ),
-        ),
       ],
     );
   }
@@ -1111,6 +1339,19 @@ class _DashboardMetricCard extends StatelessWidget {
   }
 }
 
+String _formatCompactCount(int value) {
+  if (value <= 0) return '0';
+  if (value < 1000) return '$value';
+
+  final thousands = value ~/ 1000;
+  final remainder = value % 1000;
+  if (remainder == 0) {
+    return '${thousands}K';
+  }
+
+  return '${thousands}.${(remainder / 100).floor()}K';
+}
+
 class _UpcomingEventCard extends StatelessWidget {
   final Map<String, dynamic> event;
 
@@ -1136,11 +1377,7 @@ class _UpcomingEventCard extends StatelessWidget {
               color: color.withOpacity(0.12),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              event['icon'] as IconData,
-              color: color,
-              size: 22,
-            ),
+            child: Icon(event['icon'] as IconData, color: color, size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:unisphere_app/widgets/app_footer.dart';
 import 'package:unisphere_app/widgets/header.dart';
+import 'package:unisphere_app/utils/mock_backend.dart';
+import 'event_details_screen.dart';
 import 'create_event_screen.dart';
 
 class DiscoverEventScreen extends StatefulWidget {
@@ -15,7 +17,7 @@ class DiscoverEventScreen extends StatefulWidget {
 class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
   bool _showFiltersDropdown = false;
 
-  Map<String, bool> _dateFilters = {
+  final Map<String, bool> _dateFilters = {
     'today': false,
     'tomorrow': false,
     'this week': false,
@@ -24,7 +26,7 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
     'next month': false,
   };
 
-  Map<String, bool> _priceFilters = {'free': false, 'paid': false};
+  final Map<String, bool> _priceFilters = {'free': false, 'paid': false};
 
   void _toggleFiltersDropdown() {
     setState(() {
@@ -46,7 +48,6 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
 
   String _selectedFilter = 'All';
   late TextEditingController _searchController;
-  String _searchQuery = '';
   String _submittedSearchQuery = '';
 
   static const List<String> _filterChips = [
@@ -59,81 +60,20 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
     'Workshops',
   ];
 
-  static const List<Map<String, dynamic>> _discoverEvents = [
-    {
-      'title': 'Campus Tech Meetup',
-      'date': 'Today • 6:30 PM',
-      'location': 'Innovation Hub',
-      'category': 'Technology',
-      'imageColor': Color(0xFFE0E7FF),
-      'icon': Icons.memory_rounded,
-    },
-    {
-      'title': 'Girls Night',
-      'date': 'Today • 6:30 PM',
-      'location': 'Ravelin Sports Centre',
-      'category': 'Sports',
-      'imageColor': Color(0xFFE0E7FF),
-      'icon': Icons.memory_rounded,
-    },
-    {
-      'title': 'Indie Music Night',
-      'date': 'Fri • 8:00 PM',
-      'location': 'Student Union Hall',
-      'category': 'Music',
-      'imageColor': Color(0xFFFCE7F3),
-      'icon': Icons.music_note_rounded,
-    },
-    {
-      'title': 'Pub Quiz Night',
-      'date': 'Sat • 8:00 PM',
-      'location': 'Guildhall Village',
-      'category': 'Entertainment',
-      'imageColor': Color(0xFFFCE7F3),
-      'icon': Icons.music_note_rounded,
-    },
-
-    {
-      'title': 'Startup Networking',
-      'date': 'Sat • 3:00 PM',
-      'location': 'Business School',
-      'category': 'Career',
-      'imageColor': Color(0xFFDCFCE7),
-      'icon': Icons.handshake_rounded,
-    },
-    {
-      'title': 'Bingo Night',
-      'date': 'Sun • 8:00 PM',
-      'location': 'Guildhall Village',
-      'category': 'Entertainment',
-      'imageColor': Color(0xFFFCE7F3),
-      'icon': Icons.music_note_rounded,
-    },
-    {
-      'title': 'Wellbeing Workshop',
-      'date': 'Mon • 11:00 AM',
-      'location': 'Room B204',
-      'category': 'Workshops',
-      'imageColor': Color(0xFFE0F2FE),
-      'icon': Icons.spa_rounded,
-    },
-    {
-      'title': 'Design Showcase',
-      'date': 'Tue • 5:00 PM',
-      'location': 'Creative Studio',
-      'category': 'Technology',
-      'imageColor': Color(0xFFFFF7ED),
-      'icon': Icons.palette_rounded,
-    },
-    {
-      'title': 'Charity Fun Run',
-      'date': 'Sun • 9:00 AM',
-      'location': 'University Grounds',
-      'category': 'Sports',
-      'imageColor': Color(0xFFFFEDD5),
-      'icon': Icons.directions_run_rounded,
-    },
-  ];
+  List<Map<String, dynamic>> get _discoverEvents {
+    return MockBackend().events.map((event) {
+      return {
+        'id': event['id'],
+        'title': event['title'] ?? 'Untitled Event',
+        'date': event['date'] ?? '',
+        'location': event['location'] ?? 'TBA',
+        'category': event['category'] ?? 'Other',
+        'description': event['description'] ?? '',
+        'imageColor': const Color(0xFFE0E7FF),
+        'icon': Icons.event_rounded,
+      };
+    }).toList();
+  }
 
   void _setFilter(String filter) {
     setState(() {
@@ -145,16 +85,22 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
   void initState() {
     super.initState();
     _searchController = TextEditingController();
+    MockBackend().addListener(_onBackendChanged);
     if (widget.initialSearchQuery != null &&
         widget.initialSearchQuery!.isNotEmpty) {
-      _searchQuery = widget.initialSearchQuery!;
       _submittedSearchQuery = widget.initialSearchQuery!;
       _searchController.text = widget.initialSearchQuery!;
     }
   }
 
+  void _onBackendChanged() {
+    if (!mounted) return;
+    setState(() {});
+  }
+
   @override
   void dispose() {
+    MockBackend().removeListener(_onBackendChanged);
     _searchController.dispose();
     super.dispose();
   }
@@ -184,39 +130,40 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            AppHeader(
-              onHostEventTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const CreateEventScreen(),
-                  ),
-                );
-              },
-              onRegisterTap: () {
-                Navigator.pushNamed(context, '/register');
-              },
-              onFindEventsTap: () {
-                // already on this page
-              },
-              onCreateEventsTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const CreateEventScreen(),
-                  ),
-                );
-              },
-              onMyTicketsTap: () {},
-              onAboutTap: () {},
-              onSignInTap: () {
-                Navigator.pushNamed(context, '/login');
-              },
-              showProfile: false,
-            ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    children: [
+                      AppHeader(
+                        onHostEventTap: () {
+                          Navigator.pushNamed(context, '/create-event');
+                        },
+                        onRegisterTap: () {
+                          Navigator.pushNamed(context, '/register');
+                        },
+                        onFindEventsTap: () {
+                          // already on this page
+                        },
+                        onCreateEventsTap: () {
+                          Navigator.pushNamed(context, '/create-event');
+                        },
+                        onMyTicketsTap: () {
+                          Navigator.pushNamed(context, '/my-tickets');
+                        },
+                        onAboutTap: () {
+                          Navigator.pushNamed(context, '/about');
+                        },
+                        onSignInTap: () {
+                          Navigator.pushNamed(context, '/login');
+                        },
+                        showProfile: true,
+                      ),
             LayoutBuilder(
               builder: (context, constraints) {
                 final isMobile = constraints.maxWidth < 600;
@@ -733,7 +680,17 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                                   ),
                                                   const Spacer(),
                                                   TextButton(
-                                                    onPressed: () {},
+                                                    onPressed: () {
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (_) =>
+                                                              EventDetailsScreen(
+                                                                event: event,
+                                                              ),
+                                                        ),
+                                                      );
+                                                    },
                                                     child: const Text(
                                                       'View details',
                                                     ),
@@ -757,9 +714,14 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                 );
               },
             ),
-            const AppFooter(),
           ],
         ),
+        const AppFooter(),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

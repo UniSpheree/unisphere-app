@@ -13,52 +13,52 @@ class LandingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            AppHeader(
-              onHostEventTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const CreateEventScreen(),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    children: [
+                      AppHeader(
+                        onHostEventTap: () {
+                          Navigator.pushNamed(context, '/create-event');
+                        },
+                        onRegisterTap: () {
+                          Navigator.pushNamed(context, '/register');
+                        },
+                        onFindEventsTap: () {
+                          Navigator.pushNamed(context, '/discover');
+                        },
+                        onCreateEventsTap: () {
+                          Navigator.pushNamed(context, '/create-event');
+                        },
+                        onMyTicketsTap: () {
+                          Navigator.pushNamed(context, '/my-tickets');
+                        },
+                        onAboutTap: () {
+                          Navigator.pushNamed(context, '/about');
+                        },
+                        onSignInTap: () {
+                          Navigator.pushNamed(context, '/login');
+                        },
+                      ),
+                      _HeroSection(),
+                      _StatsSection(),
+                      _AudienceSection(),
+                      _HowItWorksSection(),
+                      _CTASection(),
+                    ],
                   ),
-                );
-              },
-              onRegisterTap: () {
-                Navigator.pushNamed(context, '/register');
-              },
-              onFindEventsTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const DiscoverEventScreen(),
-                  ),
-                );
-              },
-              onCreateEventsTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const CreateEventScreen(),
-                  ),
-                );
-              },
-              onMyTicketsTap: () {},
-              onAboutTap: () {},
-              onSignInTap: () {
-                Navigator.pushNamed(context, '/login');
-              },
-              showProfile: false,
+                  const AppFooter(),
+                ],
+              ),
             ),
-            _HeroSection(),
-            _StatsSection(),
-            _AudienceSection(),
-            _HowItWorksSection(),
-            _CTASection(),
-            const AppFooter(),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

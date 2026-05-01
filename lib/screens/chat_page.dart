@@ -11,94 +11,94 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   final TextEditingController _messageController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
 
-  final List<_ChatMessage> _messages = [];
+  final List<_ChatMessage> _messages = [
+    const _ChatMessage(
+      text: 'Hey! Want to catch up later?',
+      isMe: false,
+    ),
+    const _ChatMessage(
+      text: 'Sure, what time works for you?',
+      isMe: true,
+    ),
+  ];
 
   @override
   void dispose() {
     _messageController.dispose();
-    _scrollController.dispose();
     super.dispose();
   }
 
   void _sendMessage() {
-    final text = _messageController.text.trim();
-    if (text.isEmpty) {
-      return;
-    }
+    final message = _messageController.text.trim();
+    if (message.isEmpty) return;
 
     setState(() {
-      _messages.add(_ChatMessage(text: text, isMe: true));
+      _messages.add(_ChatMessage(text: message, isMe: true));
       _messageController.clear();
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 220),
-          curve: Curves.easeOut,
-        );
-      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF0F2F8),
       appBar: AppBar(
-        title: Text(widget.friendName),
         backgroundColor: Colors.white,
-        foregroundColor: Colors.indigo,
-        elevation: 0.5,
+        foregroundColor: Colors.black87,
+        elevation: 0,
+        title: Text(widget.friendName),
+        centerTitle: false,
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.separated(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(16),
-              itemCount: _messages.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final message = _messages[index];
-                return Align(
-                  alignment: message.isMe
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
-                  child: Container(
-                    constraints: const BoxConstraints(maxWidth: 320),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: message.isMe
-                          ? Colors.indigo
-                          : Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      message.text,
-                      style: TextStyle(
-                        color: message.isMe ? Colors.white : Colors.black87,
-                        fontSize: 15,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: _messages.length,
+                itemBuilder: (context, index) {
+                  final message = _messages[index];
+                  return Align(
+                    alignment:
+                        message.isMe ? Alignment.centerRight : Alignment.centerLeft,
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: message.isMe
+                            ? const Color(0xFF4F46E5)
+                            : Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        message.text,
+                        style: TextStyle(
+                          color: message.isMe ? Colors.white : Colors.black87,
+                          fontSize: 15,
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border(top: BorderSide(color: Colors.grey.shade300)),
-            ),
-            child: SafeArea(
-              top: false,
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border(top: BorderSide(color: Colors.grey.shade200)),
+              ),
               child: Row(
                 children: [
                   Expanded(
@@ -107,9 +107,9 @@ class _ChatPageState extends State<ChatPage> {
                       textInputAction: TextInputAction.send,
                       onSubmitted: (_) => _sendMessage(),
                       decoration: InputDecoration(
-                        hintText: 'Write a message',
+                        hintText: 'Write a message...',
                         filled: true,
-                        fillColor: Colors.grey.shade100,
+                        fillColor: const Color(0xFFF5F7FB),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(24),
                           borderSide: BorderSide.none,
@@ -121,16 +121,21 @@ class _ChatPageState extends State<ChatPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  IconButton.filled(
-                    onPressed: _sendMessage,
-                    icon: const Icon(Icons.send),
+                  const SizedBox(width: 10),
+                  Material(
+                    color: const Color(0xFF4F46E5),
+                    borderRadius: BorderRadius.circular(999),
+                    child: IconButton(
+                      onPressed: _sendMessage,
+                      icon: const Icon(Icons.send_rounded),
+                      color: Colors.white,
+                    ),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

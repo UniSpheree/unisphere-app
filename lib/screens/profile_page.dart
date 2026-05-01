@@ -173,18 +173,32 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
-      appBar: const PreferredSize(
-        preferredSize: Size.fromHeight(88),
-        child: AppHeader(),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1120),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    children: [
+                      AppHeader(
+                        onHostEventTap: () => Navigator.pushNamed(context, '/create-event'),
+                        onFindEventsTap: () => Navigator.pushNamed(context, '/discover'),
+                        onCreateEventsTap: () => Navigator.pushNamed(context, '/create-event'),
+                        onMyTicketsTap: () => Navigator.pushNamed(context, '/my-tickets'),
+                        onAboutTap: () => Navigator.pushNamed(context, '/about'),
+                        onSignInTap: () => Navigator.pushNamed(context, '/login'),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1120),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                 Row(
                   children: [
                     InkWell(
@@ -581,12 +595,19 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 22),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 const AppFooter(),
               ],
             ),
           ),
-        ),
+        );
+        },
       ),
     );
   }
