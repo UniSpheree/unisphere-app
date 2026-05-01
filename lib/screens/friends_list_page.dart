@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'chat_page.dart';
+import '../widgets/header.dart';
+import '../widgets/app_footer.dart';
 
 class FriendsListPage extends StatelessWidget {
   const FriendsListPage({super.key});
@@ -14,30 +16,38 @@ class FriendsListPage extends StatelessWidget {
       {'name': 'Emily Doe', 'status': 'Online'},
     ];
     return Scaffold(
-      appBar: AppBar(title: const Text('All Friends')),
-      body: ListView.separated(
-        itemCount: friends.length,
-        separatorBuilder: (context, i) => const Divider(height: 1),
-        itemBuilder: (context, i) {
-          final friend = friends[i];
-          final friendName = friend['name']!;
-          return ListTile(
-            leading: const CircleAvatar(child: Icon(Icons.person)),
-            title: Text(friendName),
-            subtitle: Text(friend['status']!),
-            trailing: IconButton(
-              icon: const Icon(Icons.message),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ChatPage(friendName: friendName),
+      backgroundColor: const Color(0xFFF0F2F8),
+      body: Column(
+        children: [
+          AppHeader(),
+          Expanded(
+            child: ListView.separated(
+              itemCount: friends.length,
+              separatorBuilder: (context, i) => const Divider(height: 1),
+              itemBuilder: (context, i) {
+                final friend = friends[i];
+                final friendName = friend['name']!;
+                return ListTile(
+                  leading: const CircleAvatar(child: Icon(Icons.person)),
+                  title: Text(friendName),
+                  subtitle: Text(friend['status']!),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.message),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatPage(friendName: friendName),
+                        ),
+                      );
+                    },
                   ),
                 );
               },
             ),
-          );
-        },
+          ),
+          const AppFooter(),
+        ],
       ),
     );
   }
