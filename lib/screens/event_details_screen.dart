@@ -200,6 +200,19 @@ class EventDetailsScreen extends StatelessWidget {
                     ),
                   FilledButton(
                     onPressed: () {
+                      if (MockBackend().currentUser == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'You must be logged in to buy tickets. Redirecting to Register.',
+                            ),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                        Navigator.pushNamed(context, '/register');
+                        return;
+                      }
+
                       MockBackend().purchaseTicket(
                         PurchasedTicket(
                           title: event['title'] as String,
