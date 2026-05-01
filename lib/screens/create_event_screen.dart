@@ -62,18 +62,13 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     'Social',
     'Sports',
     'Career',
-    'Workshop',
+    'Workshops',
     'Other',
   ];
 
   final List<Map<String, dynamic>> visibilityOptions = [
     {'value': 'Public', 'icon': Icons.public, 'desc': 'Any student'},
     {'value': 'Private', 'icon': Icons.lock_outline, 'desc': 'Invite only'},
-    {
-      'value': 'Restricted',
-      'icon': Icons.group_outlined,
-      'desc': 'Society / course',
-    },
   ];
 
   Future<void> _pickBannerImage() async {
@@ -185,6 +180,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           'description': descriptionController.text.trim(),
           'location': venueController.text.trim(),
           'category': eventCategory ?? 'Other',
+          'visibility': eventVisibility,
           'date': startDate?.toIso8601String() ?? '',
           'maxAttendees': int.tryParse(maxAttendeesController.text.trim()) ?? 0,
         };
@@ -221,6 +217,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       'description': descriptionController.text.trim(),
       'location': venueController.text.trim(),
       'category': eventCategory ?? 'Other',
+      'visibility': eventVisibility,
       'date': startDate?.toIso8601String() ?? '',
       'endDate': endDate?.toIso8601String() ?? '',
       'maxAttendees': int.tryParse(maxAttendeesController.text.trim()) ?? 0,
@@ -901,13 +898,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                                 duration: const Duration(
                                                   milliseconds: 200,
                                                 ),
-                                                margin: EdgeInsets.only(
-                                                  right:
-                                                      option['value'] !=
-                                                          'Restricted'
-                                                      ? 8
-                                                      : 0,
-                                                ),
+                                                margin: const EdgeInsets.only(right: 8),
                                                 padding:
                                                     const EdgeInsets.symmetric(
                                                       vertical: 12,
