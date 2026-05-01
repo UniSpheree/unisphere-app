@@ -54,18 +54,25 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
-      body: Column(
-        children: [
-          const AppHeader(),
-          Expanded(
-            child: SafeArea(
-              child: AnimatedBuilder(
-                animation: MockBackend(),
-                builder: (context, _) {
-                  final tickets = MockBackend().purchasedTickets;
-                  final filteredTickets = tickets.where(_matchesQuery).toList();
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    children: [
+                      const AppHeader(),
+                      SafeArea(
+                        child: AnimatedBuilder(
+                          animation: MockBackend(),
+                          builder: (context, _) {
+                            final tickets = MockBackend().purchasedTickets;
+                            final filteredTickets = tickets.where(_matchesQuery).toList();
 
-                  final List<Widget> children = [];
+                            final List<Widget> children = [];
 
                   children.add(
                     Container(
@@ -291,25 +298,35 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                     }
                   }
 
-                  return SingleChildScrollView(
+                  return Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
                       vertical: 16,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: children,
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 860),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: children,
+                        ),
+                      ),
                     ),
                   );
                 },
               ),
             ),
-          ),
-          const AppFooter(),
-        ],
-      ),
-    );
-  }
+          ],
+        ),
+        const AppFooter(),
+      ],
+    ),
+  ),
+);
+},
+),
+);
+}
 }
 
 class _SavedTicketCard extends StatelessWidget {
