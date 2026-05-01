@@ -130,10 +130,17 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
       'this month': false,
       'next month': false,
     };
+    MockBackend().addListener(_onBackendChanged);
+  }
+
+  void _onBackendChanged() {
+    if (!mounted) return;
+    setState(() {});
   }
 
   @override
   void dispose() {
+    MockBackend().removeListener(_onBackendChanged);
     _searchController.dispose();
     super.dispose();
   }
@@ -163,9 +170,24 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
   }
 
   List<Map<String, dynamic>> get _filteredEvents {
+    final backendEvents = MockBackend().events
+        .map(
+          (event) => {
+            'id': event['id'],
+            'title': event['title'] ?? 'Untitled Event',
+            'date': event['date'] ?? '',
+            'location': event['location'] ?? 'TBA',
+            'category': event['category'] ?? 'Other',
+            'description': event['description'] ?? '',
+            'imageColor': const Color(0xFFE0E7FF),
+            'icon': Icons.event_rounded,
+          },
+        )
+        .toList();
+
     final baseEvents = _selectedFilter == 'All'
-        ? PersonalizedLandingPage.discoverEvents
-        : PersonalizedLandingPage.discoverEvents
+        ? backendEvents
+        : backendEvents
               .where((event) => event['category'] == _selectedFilter)
               .toList();
 
@@ -993,14 +1015,20 @@ class _DashboardPanel extends StatelessWidget {
 
         const SizedBox(height: 12),
 
-        _DashboardMetricCard(
-          title: isOrganiser ? 'Total Views' : 'My Tickets',
-          value: isOrganiser ? '2.4K' : '3',
-          icon: isOrganiser
-              ? Icons.bar_chart_rounded
-              : Icons.confirmation_number_outlined,
-          color: const Color(0xFFEA580C),
-          fullWidth: true,
+        AnimatedBuilder(
+          animation: MockBackend(),
+          builder: (context, _) {
+            final ticketCount = MockBackend().purchasedTickets.length;
+            return _DashboardMetricCard(
+              title: isOrganiser ? 'Total Views' : 'My Tickets',
+              value: isOrganiser ? '2.4K' : '$ticketCount',
+              icon: isOrganiser
+                  ? Icons.bar_chart_rounded
+                  : Icons.confirmation_number_outlined,
+              color: const Color(0xFFEA580C),
+              fullWidth: true,
+            );
+          },
         ),
 
         const SizedBox(height: 22),
