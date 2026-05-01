@@ -61,7 +61,9 @@ class _ChatPageState extends State<ChatPage> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+                    border: Border(
+                      bottom: BorderSide(color: Colors.grey.shade300),
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -85,7 +87,8 @@ class _ChatPageState extends State<ChatPage> {
                     controller: _scrollController,
                     padding: const EdgeInsets.all(16),
                     itemCount: _messages.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 12),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final message = _messages[index];
                       return Align(
@@ -107,7 +110,9 @@ class _ChatPageState extends State<ChatPage> {
                           child: Text(
                             message.text,
                             style: TextStyle(
-                              color: message.isMe ? Colors.white : Colors.black87,
+                              color: message.isMe
+                                  ? Colors.white
+                                  : Colors.black87,
                               fontSize: 15,
                             ),
                           ),
@@ -121,7 +126,9 @@ class _ChatPageState extends State<ChatPage> {
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    border: Border(top: BorderSide(color: Colors.grey.shade300)),
+                    border: Border(
+                      top: BorderSide(color: Colors.grey.shade300),
+                    ),
                   ),
                   child: SafeArea(
                     top: false,
