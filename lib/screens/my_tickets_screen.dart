@@ -64,7 +64,14 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                 children: [
                   Column(
                     children: [
-                      const AppHeader(),
+                      AppHeader(
+                        onHostEventTap: () => Navigator.pushNamed(context, '/create-event'),
+                        onFindEventsTap: () => Navigator.pushNamed(context, '/discover'),
+                        onCreateEventsTap: () => Navigator.pushNamed(context, '/create-event'),
+                        onMyTicketsTap: () {},
+                        onAboutTap: () => Navigator.pushNamed(context, '/about'),
+                        onSignInTap: () => Navigator.pushNamed(context, '/login'),
+                      ),
                       SafeArea(
                         child: AnimatedBuilder(
                           animation: MockBackend(),
@@ -73,6 +80,55 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                             final filteredTickets = tickets.where(_matchesQuery).toList();
 
                             final List<Widget> children = [];
+
+                            // Breadcrumbs
+                            children.add(
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 24),
+                                child: Row(
+                                  children: [
+                                    InkWell(
+                                      onTap: () => Navigator.pop(context),
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: const Icon(
+                                        Icons.arrow_back,
+                                        size: 20,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    GestureDetector(
+                                      onTap: () => Navigator.pop(context),
+                                      child: const Text(
+                                        'Back',
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                    const Text(
+                                      '  /  ',
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    const Flexible(
+                                      child: Text(
+                                        'My Tickets',
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: Color(0xFF111827),
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
 
                   children.add(
                     Container(
@@ -97,7 +153,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Tickets you bought',
+                            'My Tickets',
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.w800,
