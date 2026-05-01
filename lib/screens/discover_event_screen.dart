@@ -141,35 +141,29 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                   Column(
                     children: [
                       AppHeader(
-              onHostEventTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const CreateEventScreen(),
-                  ),
-                );
-              },
-              onRegisterTap: () {
-                Navigator.pushNamed(context, '/register');
-              },
-              onFindEventsTap: () {
-                // already on this page
-              },
-              onCreateEventsTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const CreateEventScreen(),
-                  ),
-                );
-              },
-              onMyTicketsTap: () {},
-              onAboutTap: () {},
-              onSignInTap: () {
-                Navigator.pushNamed(context, '/login');
-              },
-              showProfile: true,
-            ),
+                        onHostEventTap: () {
+                          Navigator.pushNamed(context, '/create-event');
+                        },
+                        onRegisterTap: () {
+                          Navigator.pushNamed(context, '/register');
+                        },
+                        onFindEventsTap: () {
+                          // already on this page
+                        },
+                        onCreateEventsTap: () {
+                          Navigator.pushNamed(context, '/create-event');
+                        },
+                        onMyTicketsTap: () {
+                          Navigator.pushNamed(context, '/my-tickets');
+                        },
+                        onAboutTap: () {
+                          Navigator.pushNamed(context, '/about');
+                        },
+                        onSignInTap: () {
+                          Navigator.pushNamed(context, '/login');
+                        },
+                        showProfile: true,
+                      ),
             LayoutBuilder(
               builder: (context, constraints) {
                 final isMobile = constraints.maxWidth < 600;
