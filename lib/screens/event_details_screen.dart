@@ -4,8 +4,13 @@ import 'my_tickets_screen.dart';
 
 class EventDetailsScreen extends StatelessWidget {
   final Map<String, dynamic> event;
+  final bool allowPurchase;
 
-  const EventDetailsScreen({super.key, required this.event});
+  const EventDetailsScreen({
+    super.key,
+    required this.event,
+    this.allowPurchase = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -187,49 +192,75 @@ class EventDetailsScreen extends StatelessWidget {
               const SizedBox(height: 18),
 
               // Action bar
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  if (price != null && price.isNotEmpty)
-                    Text(
-                      price,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
+              if (allowPurchase)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    if (price != null && price.isNotEmpty)
+                      Text(
+                        price,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
+                    FilledButton(
+                      onPressed: () {
+                        MockBackend().purchaseTicket(
+                          PurchasedTicket(
+                            title: event['title'] as String,
+                            date: event['date'] as String,
+                            location: event['location'] as String,
+                            category: event['category'] as String,
+                            price: price ?? '',
+                          ),
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Saved ticket for ${event['title']}'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const MyTicketsScreen(),
+                          ),
+                        );
+                      },
+                      style: FilledButton.styleFrom(
+                        backgroundColor: color,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Buy ticket'),
                     ),
-                  FilledButton(
-                    onPressed: () {
-                      MockBackend().purchaseTicket(
-                        PurchasedTicket(
-                          title: event['title'] as String,
-                          date: event['date'] as String,
-                          location: event['location'] as String,
-                          category: event['category'] as String,
-                          price: price ?? '',
-                        ),
-                      );
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Saved ticket for ${event['title']}'),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const MyTicketsScreen(),
-                        ),
-                      );
-                    },
-                    style: FilledButton.styleFrom(
-                      backgroundColor: color,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('Buy ticket'),
+                  ],
+                )
+              else
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: color.withOpacity(0.18)),
                   ),
-                ],
-              ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.verified_rounded, color: color),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Text(
+                          'This ticket is already in your tickets list.',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF374151),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
             ],
           ),
         ),
