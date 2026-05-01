@@ -101,6 +101,7 @@ class SqliteBackend extends ChangeNotifier {
       'category': raw['category']?.toString() ?? '',
       'description': raw['description']?.toString() ?? '',
       'organizerEmail': organizerEmail,
+      'visibility': raw['visibility']?.toString() ?? 'Public',
       'createdAt':
           raw['createdAt']?.toString() ?? DateTime.now().toIso8601String(),
       'updatedAt': raw['updatedAt']?.toString(),
@@ -220,6 +221,7 @@ class SqliteBackend extends ChangeNotifier {
       'location': eventData['location']?.toString() ?? '',
       'category': eventData['category']?.toString() ?? '',
       'description': eventData['description']?.toString() ?? '',
+      'visibility': eventData['visibility']?.toString() ?? 'Public',
       'organizerEmail': _currentUser!.email,
       'bannerImageBase64': eventData['bannerImageData'] is Uint8List
           ? base64Encode(eventData['bannerImageData'] as Uint8List)

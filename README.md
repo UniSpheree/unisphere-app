@@ -121,17 +121,133 @@ UniSphere has successfully migrated from a mock-based environment to a fully per
 
 ## 👥 Team & Contributions
 
-| Name | Role | Key Contributions |
-| :--- | :--- | :--- |
-| **Achilleas** | **Tech Lead** | Architecture, SQLite Migration, UI Stabilization |
-| **Marinos** | **Design Co-Lead** | UI Mockups & System Requirements |
-| **Lily** | **Analyst** | User Requirements Documentation |
-| **Alecxis** | **Analyst** | System Requirements Specification |
-| **Akim** | **Modeller** | System Models & Technical Diagrams |
-| **Jim** | **Architect** | Component Design & Diagrams |
-| **Nikol** | **Documentation** | Final Report & Academic Editing |
+### Team Structure
+
+| Name          | Student ID | Role                                | Key Contributions                                                                |
+| ------------- | ---------- | ----------------------------------- | -------------------------------------------------------------------------------- |
+| **Achilleas** | 2258434    | **Project Coordinator & Tech Lead** | Requirements oversight, use case diagrams, GitHub setup, implementation strategy |
+| **Marinos**   | 2266126    | **Design Co-Lead**                  | Use case diagrams, system requirements collaboration                             |
+| **Lily**      | 2279849    | **Requirements Analyst**            | User requirements documentation                                |
+| **Alecxis**   | 2278372    | **Systems Analyst**                 | System requirements specification                        |
+| **Akim**      | 2306587    | **System Modeller**                 | System models & technical diagrams                                               |
+| **Jim**       | 2281534    | **Architecture Designer**           | Architectural design & component diagrams                                        |
+| **Nikol**     | 2265796    | **Documentation Lead**              | Final report compilation & editing                                               |
+
+### Project Coordination
+
+**Achilleas** coordinates deliverables, sets internal deadlines, and ensures alignment between requirements, design, and implementation phases. Regular team syncs track progress against the coursework timeline.
+
+### Contribution Guidelines
+
+1. **Branch Naming Convention**:
+
+   - `feat/`: New features (e.g., `feat/event-discovery`)
+   - `fix/`: Bug fixes (e.g., `fix/login-error`)
+   - `docs/`: Documentation (e.g., `docs/update-readme`)
+   - `refactor/`: Code refactoring
+   - `test/`: Test additions
+
+2. **Commit Messages**: Follow [Conventional Commits](https://www.conventionalcommits.org/)
+
+   - Format: `type: description`
+   - Example: `feat: add filtering by category and distance`
+
+3. **Code Standards**:
+
+   - Follow Dart/Flutter style guide
+   - Run `dart format` before committing
+   - Add comments for complex logic
+   - Write unit tests for new functionality
+
+4. **Review Process**:
+
+   - All PRs require at least one team review
+   - Reviewers check: functionality, code quality, testing, documentation
+   - No direct pushes to `main` branch
+
+5. **Testing Requirements**:
+   - Unit tests for business logic
+   - Widget tests for UI components
+   - Integration tests for user flows
+   - Minimum 80% test coverage for new features
 
 ---
 
-_Last Updated: May 2026_
-_Version: 2.0.0 (Final Stability Release)_
+## 🗺️ Development Roadmap
+
+### 🎯 Coursework 1 (Dec 2025)
+
+- ✅ **Project Setup**: GitHub organization, repository structure
+- ✅ **Requirements**: User & system requirements documented
+- ✅ **Design**: Use case diagrams
+- ✅ **Architecture**: System modelling in progress
+- ✅ **Implementation**: Flutter project initialized
+- ✅ **Testing**: Test plans for NFRs under development
+- ✅ **Report**: Final compilation pending
+
+### 🚀 Coursework 2 (Jan–May 2026)
+
+- **Phase 1**: Core features (event browsing, user authentication)
+- **Phase 2**: Social features (friends, sharing, notifications)
+- **Phase 3**: Organizer tools (event creation, analytics, payments)
+- **Phase 4**: Optimization, testing, deployment
+
+### ⚠️ Known Limitations
+
+- **iOS Deployment**: Requires Apple Developer account ($99/year)
+- **Firebase Limits**: Free tier constraints on database operations
+- **Offline Support**: Basic caching implemented; full offline sync in roadmap
+- **Payment Processing**: Initial integration with Stripe; additional providers planned
+
+---
+
+## 📄 License
+
+### Academic Use
+
+This project is developed for educational purposes as part of the **Software Engineering Theory and Practice (M30819)** module at the University of Portsmouth.
+
+### Academic Integrity
+
+All team members certify that:
+
+1. This work is original and created by the team
+2. All third-party code/resources are properly cited using APA 7 format
+3. We adhere to the University's Student Conduct Policy
+4. We have watched the University's Plagiarism video tutorial
+
+### Copyright
+
+**Copyright © 2025 UniSphere Development Team**. All rights reserved for original code and documentation. Third-party libraries and frameworks are used under their respective licenses.
+
+### References
+
+All references follow APA 7 format and are included in the final coursework report.
+
+---
+
+## 📞 Contact
+
+### Academic Contacts
+
+- **Module Coordinator**: Dr Claudia Iacob – claudia.iacob@port.ac.uk
+- **Academic Tutor**: Eleni Noussi – eleni.noussi@port.ac.uk
+- **Student Engagement Officer**: Ana Baker – ana.baker@port.ac.uk
+
+### Project Resources
+
+- **GitHub Organization**: [github.com/UniSpheree](https://github.com/UniSpheree)
+- **Main Repository**: [github.com/UniSpheree/unisphere-app](https://github.com/UniSpheree/unisphere-app)
+- **Module**: M30819 Software Engineering Theory and Practice
+- **Institution**: University of Portsmouth
+
+### Support Services
+
+- **ASDAC**: Additional support for students with disabilities
+- **Well-being Service**: Mental health and well-being support
+- **Extenuating Circumstances**: For serious issues affecting submission
+
+---
+
+_Last Updated: December 2025_
+_Version: 1.0.0 (Coursework 1 Release)_
