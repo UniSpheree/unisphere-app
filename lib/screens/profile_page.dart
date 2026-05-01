@@ -173,10 +173,6 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
-      appBar: const PreferredSize(
-        preferredSize: Size.fromHeight(88),
-        child: AppHeader(),
-      ),
       body: LayoutBuilder(
         builder: (context, constraints) {
           return SingleChildScrollView(
@@ -185,8 +181,18 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                  Column(
+                    children: [
+                      AppHeader(
+                        onHostEventTap: () => Navigator.pushNamed(context, '/create-event'),
+                        onFindEventsTap: () => Navigator.pushNamed(context, '/discover'),
+                        onCreateEventsTap: () => Navigator.pushNamed(context, '/create-event'),
+                        onMyTicketsTap: () => Navigator.pushNamed(context, '/my-tickets'),
+                        onAboutTap: () => Navigator.pushNamed(context, '/about'),
+                        onSignInTap: () => Navigator.pushNamed(context, '/login'),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                     child: Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 1120),
@@ -589,20 +595,22 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                 ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const AppFooter(),
               ],
             ),
           ),
-        ),
+        );
+        },
       ),
-      const AppFooter(),
-    ],
-  ),
-),
-);
-},
-),
-);
-}
+    );
+  }
 }
 
 class _SectionCard extends StatelessWidget {
