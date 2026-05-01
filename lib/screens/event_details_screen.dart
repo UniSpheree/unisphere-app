@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:unisphere_app/utils/mock_backend.dart';
-import 'package:unisphere_app/widgets/header.dart';
-import 'package:unisphere_app/widgets/app_footer.dart';
 import 'my_tickets_screen.dart';
+import 'register_screen.dart';
 
 class EventDetailsScreen extends StatelessWidget {
   final Map<String, dynamic> event;
@@ -22,251 +21,305 @@ class EventDetailsScreen extends StatelessWidget {
         'No extra description provided for this event.';
 
     final organizer =
-        event['organizer'] as String? ?? 'Organizer not specified';
+      event['organizer'] as String? ?? 'Organizer not specified';
     final capacity = event['capacity'] != null ? '${event['capacity']}' : null;
     final tags = (event['tags'] as List<dynamic>?)?.cast<String>() ?? [];
     final price = (event['price'] as String?)?.trim();
 
+    final isOrganizerViewing =
+      MockBackend().currentUser?.email ==
+        (event['organizerEmail']?.toString() ?? '');
+
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
-      body: Column(
-        children: [
-          AppHeader(showBackButton: true),
-          Expanded(
-            child: SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_rounded),
+        ),
+        title: Text(event['title'] as String),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Large header card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Large header card
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            event['title'] as String,
-                            style: const TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.calendar_today_outlined,
-                                size: 16,
-                                color: Colors.grey[600],
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                event['date'] as String,
-                                style: const TextStyle(color: Colors.grey),
-                              ),
-                              const SizedBox(width: 16),
-                              Icon(
-                                Icons.location_on_outlined,
-                                size: 16,
-                                color: Colors.grey[600],
-                              ),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  event['location'] as String,
-                                  style: const TextStyle(color: Colors.grey),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: color.withOpacity(0.10),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  event['category'] as String,
-                                  style: TextStyle(
-                                    color: color,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                              if (tags.isNotEmpty)
-                                ...tags.map(
-                                  (t) => Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey.shade100,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      t,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.person_outline,
-                                size: 16,
-                                color: Colors.grey,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                organizer,
-                                style: const TextStyle(color: Colors.grey),
-                              ),
-                              const SizedBox(width: 16),
-                              if (capacity != null) ...[
-                                const Icon(
-                                  Icons.people_outline,
-                                  size: 16,
-                                  color: Colors.grey,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'Capacity: $capacity',
-                                  style: const TextStyle(color: Colors.grey),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ],
+                    Text(
+                      event['title'] as String,
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
-
-                    const SizedBox(height: 18),
-
-                    // Description
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'About this event',
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today_outlined,
+                          size: 16,
+                          color: Colors.grey[600],
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          event['date'] as String,
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                        const SizedBox(width: 16),
+                        Icon(
+                          Icons.location_on_outlined,
+                          size: 16,
+                          color: Colors.grey[600],
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            event['location'] as String,
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: color.withOpacity(0.10),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            event['category'] as String,
                             style: TextStyle(
-                              fontSize: 18,
+                              color: color,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Text(description),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 18),
-
-                    // Action bar
-                    if (allowPurchase)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          if (price != null && price.isNotEmpty)
-                            Text(
-                              price,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w900,
+                        ),
+                        if (tags.isNotEmpty)
+                          ...tags.map(
+                            (t) => Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                t,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
-                          FilledButton(
-                            onPressed: () {
-                              MockBackend().purchaseTicket(
-                                PurchasedTicket(
-                                  title: event['title'] as String,
-                                  date: event['date'] as String,
-                                  location: event['location'] as String,
-                                  category: event['category'] as String,
-                                  price: price ?? '',
-                                ),
-                              );
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Saved ticket for ${event['title']}',
-                                  ),
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const MyTicketsScreen(),
-                                ),
-                              );
-                            },
-                            style: FilledButton.styleFrom(
-                              backgroundColor: color,
-                              foregroundColor: Colors.white,
-                            ),
-                            child: const Text('Buy ticket'),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.person_outline,
+                          size: 16,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          organizer,
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                        const SizedBox(width: 16),
+                        if (capacity != null) ...[
+                          const Icon(
+                            Icons.people_outline,
+                            size: 16,
+                            color: Colors.grey,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Capacity: $capacity',
+                            style: const TextStyle(color: Colors.grey),
                           ),
                         ],
-                      )
-                    else
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: color.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: color.withOpacity(0.18)),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.verified_rounded, color: color),
-                            const SizedBox(width: 10),
-                            const Expanded(
-                              child: Text(
-                                'This ticket is already in your tickets list.',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF374151),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      ],
+                    ),
                   ],
                 ),
               ),
-            ),
+
+              const SizedBox(height: 18),
+
+              // Description
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'About this event',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(description),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 18),
+
+                // Action bar
+                if (allowPurchase && !isOrganizerViewing)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    if (price != null && price.isNotEmpty)
+                      Text(
+                        price,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    FilledButton(
+                      onPressed: () {
+                        if (MockBackend().currentUser == null) {
+                          final pending = PurchasedTicket(
+                            title: event['title'] as String,
+                            date: event['date'] as String,
+                            location: event['location'] as String,
+                            category: event['category'] as String,
+                            price: price ?? '',
+                          );
+                          MockBackend().setPendingPurchase(pending);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Please register or sign in to complete your purchase. Your ticket was saved.',
+                              ),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const RegisterScreen(),
+                            ),
+                          );
+                          return;
+                        }
+
+                        MockBackend().purchaseTicket(
+                          PurchasedTicket(
+                            title: event['title'] as String,
+                            date: event['date'] as String,
+                            location: event['location'] as String,
+                            category: event['category'] as String,
+                            price: price ?? '',
+                          ),
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Saved ticket for ${event['title']}'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const MyTicketsScreen(),
+                          ),
+                        );
+                      },
+                      style: FilledButton.styleFrom(
+                        backgroundColor: color,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Buy ticket'),
+                    ),
+                  ],
+                )
+              else if (isOrganizerViewing)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.06),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: color.withOpacity(0.12)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.event_available_outlined, color: color),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Text(
+                          'This is your event — buyers cannot purchase from here.',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF374151),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: color.withOpacity(0.18)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.verified_rounded, color: color),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Text(
+                          'This ticket is already in your tickets list.',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF374151),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
           ),
-          const AppFooter(),
-        ],
+        ),
       ),
     );
   }

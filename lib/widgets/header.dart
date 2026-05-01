@@ -11,7 +11,6 @@ class AppHeader extends StatelessWidget {
   final VoidCallback? onHostEventTap;
   final VoidCallback? onRegisterTap;
   final bool showProfile;
-  final bool showBackButton;
 
   const AppHeader({
     super.key,
@@ -23,7 +22,6 @@ class AppHeader extends StatelessWidget {
     this.onHostEventTap,
     this.onRegisterTap,
     this.showProfile = true,
-    this.showBackButton = false,
   });
 
   @override
@@ -42,21 +40,7 @@ class AppHeader extends StatelessWidget {
               ? Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        if (showBackButton)
-                          IconButton(
-                            icon: const Icon(
-                              Icons.arrow_back,
-                              color: _HeaderColors.text,
-                            ),
-                            onPressed: () => Navigator.pop(context),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                        const _Brand(),
-                      ],
-                    ),
+                    const _Brand(),
                     PopupMenuButton<String>(
                       icon: const Icon(
                         Icons.menu_rounded,
@@ -168,20 +152,7 @@ class AppHeader extends StatelessWidget {
               : Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        if (showBackButton)
-                          IconButton(
-                            icon: const Icon(
-                              Icons.arrow_back,
-                              color: _HeaderColors.text,
-                            ),
-                            onPressed: () => Navigator.pop(context),
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                          ),
-                        const _Brand(),
-                      ],
-                    ),
+                    const _Brand(),
                     Row(
                       children: [
                         _NavItem(
@@ -307,13 +278,8 @@ class _Brand extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // If logged in, go to logged-in dashboard. Otherwise, go to landing page
-        final user = MockBackend().currentUser;
-        if (user != null) {
-          Navigator.pushNamed(context, '/logged-in');
-        } else {
-          Navigator.pushNamed(context, '/');
-        }
+        // Always navigate to the initial welcome page
+        Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
       },
       child: Row(
         children: [
