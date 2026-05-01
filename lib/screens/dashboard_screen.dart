@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import '../utils/mock_backend.dart';
 import '../widgets/header.dart';
+import '../widgets/app_footer.dart';
 
 class DashboardScreen extends StatelessWidget {
   final String role; // 'Attendee' | 'Organiser'
@@ -10,11 +11,12 @@ class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key, this.role = 'Attendee'});
 
   // Fake upcoming events for the attendee dashboard
-  static const _upcomingEvents = [
+  static final _upcomingEvents = [
     {
       'title': 'Flutter Workshop',
       'category': 'Workshop',
       'date': 'Mar 10, 2026 · 14:00',
+      'eventDate': DateTime(2026, 5, 8, 14, 0),
       'venue': 'Room A101',
       'icon': Icons.code,
       'color': Color(0xFF2D3A8C),
@@ -23,6 +25,7 @@ class DashboardScreen extends StatelessWidget {
       'title': 'Career Fair 2026',
       'category': 'Career',
       'date': 'Mar 15, 2026 · 10:00',
+      'eventDate': DateTime(2026, 5, 14, 10, 0),
       'venue': 'Main Hall',
       'icon': Icons.work_outline,
       'color': Color(0xFF00897B),
@@ -31,6 +34,7 @@ class DashboardScreen extends StatelessWidget {
       'title': 'Sports Day',
       'category': 'Sports',
       'date': 'Mar 20, 2026 · 09:00',
+      'eventDate': DateTime(2026, 5, 21, 9, 0),
       'venue': 'University Grounds',
       'icon': Icons.sports_soccer,
       'color': Color(0xFFE65100),
@@ -39,17 +43,28 @@ class DashboardScreen extends StatelessWidget {
       'title': 'Academic Symposium',
       'category': 'Academic',
       'date': 'Mar 25, 2026 · 13:00',
+      'eventDate': DateTime(2026, 5, 28, 13, 0),
       'venue': 'Lecture Theatre B',
       'icon': Icons.school_outlined,
       'color': Color(0xFF6A1B9A),
     },
   ];
 
+  static bool _isWithinNext30Days(DateTime eventDate) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final limit = today.add(const Duration(days: 30));
+    return !eventDate.isBefore(today) && eventDate.isBefore(limit);
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentUser = MockBackend().currentUser;
     final displayName = currentUser?.fullName ?? 'Guest';
     final isOrganiser = currentUser?.isOrganiser ?? false;
+    final upcomingEvents = _upcomingEvents
+        .where((event) => _isWithinNext30Days(event['eventDate'] as DateTime))
+        .toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
@@ -57,204 +72,247 @@ class DashboardScreen extends StatelessWidget {
         preferredSize: Size.fromHeight(72),
         child: AppHeader(),
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isMobile = constraints.maxWidth < 600;
-          return Center(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 16 : 32,
-                vertical: 28,
-              ),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 860),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ── Back breadcrumb ─────────────────────────────────
-                    Row(
-                      children: [
-                        InkWell(
-                          onTap: () =>
-                              Navigator.pushReplacementNamed(context, '/'),
-                          borderRadius: BorderRadius.circular(8),
-                          child: const Icon(
-                            Icons.arrow_back,
-                            size: 20,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: () =>
-                              Navigator.pushReplacementNamed(context, '/'),
-                          child: const Text(
-                            'Home Page',
-                            style: TextStyle(color: Colors.grey, fontSize: 14),
-                          ),
-                        ),
-                        const Text(
-                          '  /  ',
-                          style: TextStyle(color: Colors.grey, fontSize: 14),
-                        ),
-                        const Text(
-                          'Dashboard',
-                          style: TextStyle(
-                            color: Color(0xFF1A1F36),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
+      body: Column(
+        children: [
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isMobile = constraints.maxWidth < 600;
+                return Center(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isMobile ? 16 : 32,
+                      vertical: 28,
                     ),
-
-                    const SizedBox(height: 20),
-
-                    // ── Welcome banner ──────────────────────────────────
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(28),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF2D3A8C), Color(0xFF4A5CBA)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 860),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Welcome back, $displayName 👋',
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                          // ── Back breadcrumb ─────────────────────────────────
+                          Row(
+                            children: [
+                              InkWell(
+                                onTap: () => Navigator.pushReplacementNamed(
+                                  context,
+                                  '/',
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                                child: const Icon(
+                                  Icons.arrow_back,
+                                  size: 20,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              GestureDetector(
+                                onTap: () => Navigator.pushReplacementNamed(
+                                  context,
+                                  '/',
+                                ),
+                                child: const Text(
+                                  'Home Page',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 14,
                                   ),
                                 ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  'Discover and join university events around you.',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.white.withOpacity(0.85),
+                              ),
+                              const Text(
+                                '  /  ',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const Text(
+                                'Dashboard',
+                                style: TextStyle(
+                                  color: Color(0xFF1A1F36),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          // ── Welcome banner ──────────────────────────────────
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(28),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Color(0xFF2D3A8C),
+                                  Color(0xFF4A5CBA),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Welcome back, $displayName 👋',
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        'Discover and join university events around you.',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.white.withOpacity(0.85),
+                                        ),
+                                      ),
+                                    ],
                                   ),
+                                ),
+                                const SizedBox(width: 16),
+                                const Icon(
+                                  Icons.celebration_outlined,
+                                  color: Colors.white,
+                                  size: 48,
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(width: 16),
-                          Icon(
-                            Icons.celebration_outlined,
-                            color: Colors.white,
-                            size: 48,
+                          const SizedBox(height: 28),
+                          // ── Create Event button ─────────────────────────────
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 28),
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: isOrganiser
+                                    ? () => Navigator.pushNamed(
+                                        context,
+                                        '/create-event',
+                                      )
+                                    : () {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Switch to Organiser in your profile to create events.',
+                                            ),
+                                            behavior:
+                                                SnackBarBehavior.floating,
+                                          ),
+                                        );
+                                      },
+                                icon: Icon(
+                                  isOrganiser
+                                      ? Icons.add_circle_outline
+                                      : Icons.explore_outlined,
+                                  size: 20,
+                                ),
+                                label: const Text(
+                                  'Create Event',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF2D3A8C),
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 18,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
+                          // ── Stats row ───────────────────────────────────────
+                          Row(
+                            children: [
+                              const _StatCard(
+                                label: 'Events Joined',
+                                value: '8',
+                                icon: Icons.event_available_outlined,
+                                color: Color(0xFF2D3A8C),
+                              ),
+                              const SizedBox(width: 12),
+                              _StatCard(
+                                label: 'Upcoming',
+                                value: '${upcomingEvents.length}',
+                                icon: Icons.upcoming_outlined,
+                                color: const Color(0xFF00897B),
+                              ),
+                              const SizedBox(width: 12),
+                              const _StatCard(
+                                label: 'My Tickets',
+                                value: '3',
+                                icon: Icons.confirmation_number_outlined,
+                                color: Color(0xFFE65100),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 28),
+                          // ── Upcoming events ─────────────────────────────────
+                          const Text(
+                            'Upcoming Events',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1A1F36),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          if (upcomingEvents.isEmpty)
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(18),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: const Text(
+                                'No upcoming events in the next 30 days.',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            )
+                          else
+                            ...upcomingEvents.map(
+                              (event) => Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: _EventCard(event: event),
+                              ),
+                            ),
                         ],
                       ),
                     ),
-
-                    // ── Create Event button ─────────────────────────────
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 28),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: isOrganiser
-                              ? () => Navigator.pushNamed(
-                                  context,
-                                  '/create-event',
-                                )
-                              : () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Switch to Organiser in your profile to create events.',
-                                      ),
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
-                                  );
-                                },
-                          icon: Icon(
-                            isOrganiser
-                                ? Icons.add_circle_outline
-                                : Icons.explore_outlined,
-                            size: 20,
-                          ),
-                          label: const Text(
-                            'Create Event',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2D3A8C),
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(vertical: 18),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // ── Stats row ───────────────────────────────────────
-                    const Row(
-                      children: [
-                        _StatCard(
-                          label: 'Events Joined',
-                          value: '8',
-                          icon: Icons.event_available_outlined,
-                          color: const Color(0xFF2D3A8C),
-                        ),
-                        const SizedBox(width: 12),
-                        _StatCard(
-                          label: 'Upcoming',
-                          value: '4',
-                          icon: Icons.upcoming_outlined,
-                          color: const Color(0xFF00897B),
-                        ),
-                        const SizedBox(width: 12),
-                        _StatCard(
-                          label: 'My Tickets',
-                          value: '3',
-                          icon: Icons.confirmation_number_outlined,
-                          color: const Color(0xFFE65100),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 28),
-
-                    // ── Upcoming events ─────────────────────────────────
-                    const Text(
-                      'Upcoming Events',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A1F36),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    ...(_upcomingEvents.map(
-                      (event) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _EventCard(event: event),
-                      ),
-                    )),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
-          );
-        },
+          ),
+          const AppFooter(),
+        ],
       ),
     );
   }
