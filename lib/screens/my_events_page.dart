@@ -147,7 +147,7 @@ class MyEventsPage extends StatelessWidget {
       backgroundColor: const Color(0xFFF0F2F8),
       body: Column(
         children: [
-          AppHeader(showBackButton: true),
+          const AppHeader(),
           Expanded(child: bodyContent),
           const AppFooter(),
         ],
