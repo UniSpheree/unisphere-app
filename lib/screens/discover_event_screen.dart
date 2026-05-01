@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:unisphere_app/widgets/app_footer.dart';
 import 'package:unisphere_app/widgets/header.dart';
+import 'package:unisphere_app/utils/mock_backend.dart';
 import 'event_details_screen.dart';
 import 'create_event_screen.dart';
 
@@ -60,81 +61,20 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
     'Workshops',
   ];
 
-  static const List<Map<String, dynamic>> _discoverEvents = [
-    {
-      'title': 'Campus Tech Meetup',
-      'date': 'Today • 6:30 PM',
-      'location': 'Innovation Hub',
-      'category': 'Technology',
-      'imageColor': Color(0xFFE0E7FF),
-      'icon': Icons.memory_rounded,
-    },
-    {
-      'title': 'Girls Night',
-      'date': 'Today • 6:30 PM',
-      'location': 'Ravelin Sports Centre',
-      'category': 'Sports',
-      'imageColor': Color(0xFFE0E7FF),
-      'icon': Icons.memory_rounded,
-    },
-    {
-      'title': 'Indie Music Night',
-      'date': 'Fri • 8:00 PM',
-      'location': 'Student Union Hall',
-      'category': 'Music',
-      'imageColor': Color(0xFFFCE7F3),
-      'icon': Icons.music_note_rounded,
-    },
-    {
-      'title': 'Pub Quiz Night',
-      'date': 'Sat • 8:00 PM',
-      'location': 'Guildhall Village',
-      'category': 'Entertainment',
-      'imageColor': Color(0xFFFCE7F3),
-      'icon': Icons.music_note_rounded,
-    },
-
-    {
-      'title': 'Startup Networking',
-      'date': 'Sat • 3:00 PM',
-      'location': 'Business School',
-      'category': 'Career',
-      'imageColor': Color(0xFFDCFCE7),
-      'icon': Icons.handshake_rounded,
-    },
-    {
-      'title': 'Bingo Night',
-      'date': 'Sun • 8:00 PM',
-      'location': 'Guildhall Village',
-      'category': 'Entertainment',
-      'imageColor': Color(0xFFFCE7F3),
-      'icon': Icons.music_note_rounded,
-    },
-    {
-      'title': 'Wellbeing Workshop',
-      'date': 'Mon • 11:00 AM',
-      'location': 'Room B204',
-      'category': 'Workshops',
-      'imageColor': Color(0xFFE0F2FE),
-      'icon': Icons.spa_rounded,
-    },
-    {
-      'title': 'Design Showcase',
-      'date': 'Tue • 5:00 PM',
-      'location': 'Creative Studio',
-      'category': 'Technology',
-      'imageColor': Color(0xFFFFF7ED),
-      'icon': Icons.palette_rounded,
-    },
-    {
-      'title': 'Charity Fun Run',
-      'date': 'Sun • 9:00 AM',
-      'location': 'University Grounds',
-      'category': 'Sports',
-      'imageColor': Color(0xFFFFEDD5),
-      'icon': Icons.directions_run_rounded,
-    },
-  ];
+  List<Map<String, dynamic>> get _discoverEvents {
+    return MockBackend().events.map((event) {
+      return {
+        'id': event['id'],
+        'title': event['title'] ?? 'Untitled Event',
+        'date': event['date'] ?? '',
+        'location': event['location'] ?? 'TBA',
+        'category': event['category'] ?? 'Other',
+        'description': event['description'] ?? '',
+        'imageColor': const Color(0xFFE0E7FF),
+        'icon': Icons.event_rounded,
+      };
+    }).toList();
+  }
 
   void _setFilter(String filter) {
     setState(() {
@@ -146,6 +86,7 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
   void initState() {
     super.initState();
     _searchController = TextEditingController();
+    MockBackend().addListener(_onBackendChanged);
     if (widget.initialSearchQuery != null &&
         widget.initialSearchQuery!.isNotEmpty) {
       _searchQuery = widget.initialSearchQuery!;
@@ -154,8 +95,14 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
     }
   }
 
+  void _onBackendChanged() {
+    if (!mounted) return;
+    setState(() {});
+  }
+
   @override
   void dispose() {
+    MockBackend().removeListener(_onBackendChanged);
     _searchController.dispose();
     super.dispose();
   }
