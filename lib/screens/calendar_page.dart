@@ -174,7 +174,7 @@ class _CalendarPageState extends State<CalendarPage> {
       backgroundColor: const Color(0xFFF0F2F8),
       body: Column(
         children: [
-          AppHeader(),
+          AppHeader(showBackButton: true),
           Expanded(child: bodyContent),
           const AppFooter(),
         ],
