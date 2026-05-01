@@ -6,8 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../widgets/header.dart';
 import '../widgets/app_footer.dart';
-import 'discover_event_screen.dart';
-import '../utils/mock_backend.dart';
+import '../services/sqlite_backend.dart';
 
 class CreateEventScreen extends StatefulWidget {
   final Map<String, dynamic>? existingEvent;
@@ -50,7 +49,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       if (dateStr != null && dateStr.isNotEmpty) {
         try {
           startDate = DateTime.parse(dateStr);
-          endDate = ev['endDate'] != null ? DateTime.parse(ev['endDate'].toString()) : startDate?.add(const Duration(hours: 1));
+          endDate = ev['endDate'] != null
+              ? DateTime.parse(ev['endDate'].toString())
+              : startDate?.add(const Duration(hours: 1));
         } catch (_) {}
       }
     }
@@ -175,7 +176,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
     if (!_formKey.currentState!.validate() || _dateError != null) return;
 
-    final isLoggedIn = MockBackend().currentUser != null;
+    final isLoggedIn = SqliteBackend().currentUser != null;
 
     if (!isLoggedIn) {
       if (widget.existingEvent == null) {
@@ -185,10 +186,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           'location': venueController.text.trim(),
           'category': eventCategory ?? 'Other',
           'date': startDate?.toIso8601String() ?? '',
-          'maxAttendees':
-              int.tryParse(maxAttendeesController.text.trim()) ?? 0,
+          'maxAttendees': int.tryParse(maxAttendeesController.text.trim()) ?? 0,
         };
-        MockBackend().setPendingEvent(pendingPayload);
+        SqliteBackend().setPendingEvent(pendingPayload);
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -218,16 +218,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       'date': startDate?.toIso8601String() ?? '',
       'endDate': endDate?.toIso8601String() ?? '',
       'maxAttendees': int.tryParse(maxAttendeesController.text.trim()) ?? 0,
-      'organizerEmail': MockBackend().currentUser?.email,
+      'organizerEmail': SqliteBackend().currentUser?.email,
     };
 
     if (widget.existingEvent != null) {
-      await MockBackend().updateEvent(
+      await SqliteBackend().updateEvent(
         widget.existingEvent!['id'].toString(),
         payload,
       );
     } else {
-      await MockBackend().createEvent(payload);
+      await SqliteBackend().createEvent(payload);
     }
 
     await Future.delayed(const Duration(milliseconds: 600));
@@ -377,7 +377,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   Widget build(BuildContext context) {
     final currentUser =
         (ModalRoute.of(context)?.settings.arguments as Map?)?['user'];
-    final user = currentUser ?? MockBackend().currentUser;
+    final user = currentUser ?? SqliteBackend().currentUser;
     if (user != null && !user.isOrganiser) {
       return _buildLockedPage(context);
     }
@@ -402,11 +402,15 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     children: [
                       AppHeader(
                         showProfile: true,
-                        onFindEventsTap: () => Navigator.pushNamed(context, '/discover'),
+                        onFindEventsTap: () =>
+                            Navigator.pushNamed(context, '/discover'),
                         onCreateEventsTap: () {},
-                        onMyTicketsTap: () => Navigator.pushNamed(context, '/my-tickets'),
-                        onAboutTap: () => Navigator.pushNamed(context, '/about'),
-                        onSignInTap: () => Navigator.pushNamed(context, '/login'),
+                        onMyTicketsTap: () =>
+                            Navigator.pushNamed(context, '/my-tickets'),
+                        onAboutTap: () =>
+                            Navigator.pushNamed(context, '/about'),
+                        onSignInTap: () =>
+                            Navigator.pushNamed(context, '/login'),
                         onHostEventTap: () {},
                       ),
                       Center(
@@ -535,12 +539,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                   children: [
                                     _label('Event Banner'),
                                     Padding(
-                                      padding: const EdgeInsets.only(bottom: 24),
+                                      padding: const EdgeInsets.only(
+                                        bottom: 24,
+                                      ),
                                       child: MouseRegion(
                                         onEnter: (_) => setState(
-                                            () => _bannerHovered = true),
+                                          () => _bannerHovered = true,
+                                        ),
                                         onExit: (_) => setState(
-                                            () => _bannerHovered = false),
+                                          () => _bannerHovered = false,
+                                        ),
                                         child: GestureDetector(
                                           onTap: _bannerImage == null
                                               ? _pickBannerImage
@@ -557,8 +565,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                               border: Border.all(
                                                 color: _bannerHovered
                                                     ? Colors.indigo
-                                                    : Colors.indigo
-                                                        .withOpacity(0.35),
+                                                    : Colors.indigo.withOpacity(
+                                                        0.35,
+                                                      ),
                                                 width: 2,
                                               ),
                                             ),
@@ -569,13 +578,13 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                                   ? Container(
                                                       color: _bannerHovered
                                                           ? Colors.indigo
-                                                              .withOpacity(
-                                                              0.06,
-                                                            )
+                                                                .withOpacity(
+                                                                  0.06,
+                                                                )
                                                           : Colors.indigo
-                                                              .withOpacity(
-                                                              0.02,
-                                                            ),
+                                                                .withOpacity(
+                                                                  0.02,
+                                                                ),
                                                       child: Column(
                                                         mainAxisAlignment:
                                                             MainAxisAlignment
@@ -583,23 +592,24 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                                         children: [
                                                           Container(
                                                             padding:
-                                                                const EdgeInsets
-                                                                    .all(
-                                                              14,
-                                                            ),
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              color: _bannerHovered
-                                                                  ? Colors.indigo
-                                                                      .withOpacity(
-                                                                      0.12,
-                                                                    )
-                                                                  : Colors.indigo
-                                                                      .withOpacity(
-                                                                      0.07,
-                                                                    ),
-                                                              shape:
-                                                                  BoxShape.circle,
+                                                                const EdgeInsets.all(
+                                                                  14,
+                                                                ),
+                                                            decoration: BoxDecoration(
+                                                              color:
+                                                                  _bannerHovered
+                                                                  ? Colors
+                                                                        .indigo
+                                                                        .withOpacity(
+                                                                          0.12,
+                                                                        )
+                                                                  : Colors
+                                                                        .indigo
+                                                                        .withOpacity(
+                                                                          0.07,
+                                                                        ),
+                                                              shape: BoxShape
+                                                                  .circle,
                                                             ),
                                                             child: Icon(
                                                               Icons
@@ -607,11 +617,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                                               size: 36,
                                                               color:
                                                                   _bannerHovered
-                                                                      ? Colors
-                                                                          .indigo
-                                                                      : Colors
-                                                                          .indigo
-                                                                          .withOpacity(
+                                                                  ? Colors
+                                                                        .indigo
+                                                                  : Colors
+                                                                        .indigo
+                                                                        .withOpacity(
                                                                           0.6,
                                                                         ),
                                                             ),
@@ -624,14 +634,15 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                                             style: TextStyle(
                                                               fontSize: 15,
                                                               fontWeight:
-                                                                  FontWeight.w600,
+                                                                  FontWeight
+                                                                      .w600,
                                                               color:
                                                                   _bannerHovered
-                                                                      ? Colors
-                                                                          .indigo
-                                                                      : Colors
-                                                                          .indigo
-                                                                          .withOpacity(
+                                                                  ? Colors
+                                                                        .indigo
+                                                                  : Colors
+                                                                        .indigo
+                                                                        .withOpacity(
                                                                           0.7,
                                                                         ),
                                                             ),
@@ -658,22 +669,20 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                                             ? Image.network(
                                                                 _bannerImage!
                                                                     .path,
-                                                                fit:
-                                                                    BoxFit.cover,
+                                                                fit: BoxFit
+                                                                    .cover,
                                                               )
                                                             : Image.file(
                                                                 File(
                                                                   _bannerImage!
                                                                       .path,
                                                                 ),
-                                                                fit:
-                                                                    BoxFit.cover,
+                                                                fit: BoxFit
+                                                                    .cover,
                                                               ),
                                                         Container(
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            gradient:
-                                                                LinearGradient(
+                                                          decoration: BoxDecoration(
+                                                            gradient: LinearGradient(
                                                               begin: Alignment
                                                                   .topCenter,
                                                               end: Alignment
@@ -681,7 +690,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                                               colors: [
                                                                 Colors.black
                                                                     .withOpacity(
-                                                                        0.3),
+                                                                      0.3,
+                                                                    ),
                                                                 Colors
                                                                     .transparent,
                                                                 Colors
@@ -696,22 +706,19 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                                           child: Row(
                                                             children: [
                                                               Container(
-                                                                decoration:
-                                                                    BoxDecoration(
+                                                                decoration: BoxDecoration(
                                                                   color: Colors
                                                                       .black87,
                                                                   borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                    8,
-                                                                  ),
+                                                                      BorderRadius.circular(
+                                                                        8,
+                                                                      ),
                                                                 ),
                                                                 child: IconButton(
                                                                   padding:
-                                                                      const EdgeInsets
-                                                                          .all(
-                                                                    8,
-                                                                  ),
+                                                                      const EdgeInsets.all(
+                                                                        8,
+                                                                      ),
                                                                   constraints:
                                                                       const BoxConstraints(),
                                                                   icon: const Icon(
@@ -720,10 +727,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                                                         .white,
                                                                     size: 20,
                                                                   ),
-                                                                  onPressed:
-                                                                      () {
-                                                                    setState(
-                                                                        () {
+                                                                  onPressed: () {
+                                                                    setState(() {
                                                                       _bannerImage =
                                                                           null;
                                                                     });
@@ -736,22 +741,19 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                                                 width: 8,
                                                               ),
                                                               Container(
-                                                                decoration:
-                                                                    BoxDecoration(
+                                                                decoration: BoxDecoration(
                                                                   color: Colors
                                                                       .black87,
                                                                   borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                    8,
-                                                                  ),
+                                                                      BorderRadius.circular(
+                                                                        8,
+                                                                      ),
                                                                 ),
                                                                 child: IconButton(
                                                                   padding:
-                                                                      const EdgeInsets
-                                                                          .all(
-                                                                    8,
-                                                                  ),
+                                                                      const EdgeInsets.all(
+                                                                        8,
+                                                                      ),
                                                                   constraints:
                                                                       const BoxConstraints(),
                                                                   icon: const Icon(
@@ -810,7 +812,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                         final hasAlphanumeric = RegExp(
                                           r'[a-zA-Z0-9]',
                                         );
-                                        if (!hasAlphanumeric.hasMatch(trimmed)) {
+                                        if (!hasAlphanumeric.hasMatch(
+                                          trimmed,
+                                        )) {
                                           return 'Description must contain meaningful text';
                                         }
                                         return null;
@@ -818,8 +822,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                     ),
                                     _label('Event Type / Category'),
                                     Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 16),
+                                      padding: const EdgeInsets.only(
+                                        bottom: 16,
+                                      ),
                                       child: DropdownButtonFormField<String>(
                                         value: eventCategory,
                                         hint: const Text('Select a category'),
@@ -827,8 +832,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                           filled: true,
                                           fillColor: const Color(0xFFF7F9FC),
                                           border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(12),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
                                             borderSide: BorderSide.none,
                                           ),
                                         ),
@@ -841,7 +847,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                             )
                                             .toList(),
                                         onChanged: (value) => setState(
-                                            () => eventCategory = value),
+                                          () => eventCategory = value,
+                                        ),
                                         validator: (value) {
                                           if (value == null || value.isEmpty) {
                                             return 'Event category is required';
@@ -852,12 +859,15 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                     ),
                                     _label('Visibility / Privacy'),
                                     Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 16),
+                                      padding: const EdgeInsets.only(
+                                        bottom: 16,
+                                      ),
                                       child: Row(
-                                        children:
-                                            visibilityOptions.map((option) {
-                                          final isSelected = eventVisibility ==
+                                        children: visibilityOptions.map((
+                                          option,
+                                        ) {
+                                          final isSelected =
+                                              eventVisibility ==
                                               option['value'];
                                           return Expanded(
                                             child: GestureDetector(
@@ -870,27 +880,24 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                                   milliseconds: 200,
                                                 ),
                                                 margin: EdgeInsets.only(
-                                                  right: option['value'] !=
+                                                  right:
+                                                      option['value'] !=
                                                           'Restricted'
                                                       ? 8
                                                       : 0,
                                                 ),
                                                 padding:
                                                     const EdgeInsets.symmetric(
-                                                  vertical: 12,
-                                                  horizontal: 8,
-                                                ),
+                                                      vertical: 12,
+                                                      horizontal: 8,
+                                                    ),
                                                 decoration: BoxDecoration(
                                                   color: isSelected
                                                       ? Colors.indigo
-                                                          .withOpacity(
-                                                          0.08,
-                                                        )
+                                                            .withOpacity(0.08)
                                                       : const Color(0xFFF7F9FC),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                    12,
-                                                  ),
+                                                      BorderRadius.circular(12),
                                                   border: Border.all(
                                                     color: isSelected
                                                         ? Colors.indigo
@@ -950,7 +957,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                               _datePicker(
                                                 label: 'End Date & Time',
                                                 value: endDate,
-                                                onTap: () => pickDateTime(false),
+                                                onTap: () =>
+                                                    pickDateTime(false),
                                               ),
                                             ],
                                           )
@@ -1030,12 +1038,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                                     return 'Max Attendees is required';
                                                   }
                                                   if (int.tryParse(
-                                                          value.trim()) ==
+                                                        value.trim(),
+                                                      ) ==
                                                       null) {
                                                     return 'Max Attendees must be a number';
                                                   }
-                                                  if (int.parse(
-                                                          value.trim()) <
+                                                  if (int.parse(value.trim()) <
                                                       1) {
                                                     return 'Max Attendees must be at least 1';
                                                   }
@@ -1050,7 +1058,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                                 child: _textField(
                                                   controller: venueController,
                                                   label: 'Venue or Link',
-                                                  hint: 'Physical address or URL',
+                                                  hint:
+                                                      'Physical address or URL',
                                                   validator: (value) {
                                                     if (value == null ||
                                                         value.trim().isEmpty) {
@@ -1075,12 +1084,14 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                                       return 'Max Attendees is required';
                                                     }
                                                     if (int.tryParse(
-                                                            value.trim()) ==
+                                                          value.trim(),
+                                                        ) ==
                                                         null) {
                                                       return 'Max Attendees must be a number';
                                                     }
                                                     if (int.parse(
-                                                            value.trim()) <
+                                                          value.trim(),
+                                                        ) <
                                                         1) {
                                                       return 'Max Attendees must be at least 1';
                                                     }
@@ -1104,19 +1115,19 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                                 height: 20,
                                                 child:
                                                     CircularProgressIndicator(
-                                                  strokeWidth: 2,
-                                                  color: Colors.white,
-                                                ),
+                                                      strokeWidth: 2,
+                                                      color: Colors.white,
+                                                    ),
                                               )
                                             : const Icon(Icons.rocket_launch),
                                         label: Text(
                                           _isSubmitting
                                               ? (widget.existingEvent != null
-                                                  ? 'Updating...'
-                                                  : 'Creating Event...')
+                                                    ? 'Updating...'
+                                                    : 'Creating Event...')
                                               : (widget.existingEvent != null
-                                                  ? 'Update Event'
-                                                  : 'Create Event'),
+                                                    ? 'Update Event'
+                                                    : 'Create Event'),
                                           style: const TextStyle(fontSize: 16),
                                         ),
                                         style: ElevatedButton.styleFrom(
@@ -1126,8 +1137,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                               .withOpacity(0.6),
                                           disabledForegroundColor: Colors.white,
                                           shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(12),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
                                           ),
                                         ),
                                       ),
