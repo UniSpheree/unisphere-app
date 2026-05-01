@@ -105,6 +105,7 @@ class MockBackend extends ChangeNotifier {
   MockUser? _currentUser;
   final List<PurchasedTicket> _purchasedTickets = [];
   PurchasedTicket? _pendingPurchase;
+  Map<String, dynamic>? _pendingEvent;
   final List<_Event> _events = [
     _Event(
       id: 'e1',
@@ -160,13 +161,30 @@ class MockBackend extends ChangeNotifier {
     }
   }
 
-  Future<String> createEvent(Map<String, dynamic> eventData) async {
-    await Future.delayed(const Duration(milliseconds: 200));
+  void setPendingEvent(Map<String, dynamic> eventData) {
+    _pendingEvent = Map<String, dynamic>.from(eventData);
+  }
+
+  String _createEventInternal(Map<String, dynamic> eventData) {
     final id = DateTime.now().millisecondsSinceEpoch.toString();
     final ev = _Event.fromMap({...eventData, 'id': id});
     _events.add(ev);
     notifyListeners();
     return id;
+  }
+
+  void _completePendingEventInternal() {
+    if (_currentUser != null && _pendingEvent != null) {
+      final payload = Map<String, dynamic>.from(_pendingEvent!);
+      payload['organizerEmail'] = _currentUser!.email;
+      _createEventInternal(payload);
+      _pendingEvent = null;
+    }
+  }
+
+  Future<String> createEvent(Map<String, dynamic> eventData) async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    return _createEventInternal(eventData);
   }
 
   Future<bool> updateEvent(String id, Map<String, dynamic> updated) async {
@@ -300,6 +318,7 @@ class MockBackend extends ChangeNotifier {
     _users.add(user);
     _currentUser = user;
     _completePendingPurchaseInternal();
+    _completePendingEventInternal();
     return true;
   }
 
@@ -311,6 +330,7 @@ class MockBackend extends ChangeNotifier {
     if (user.isNotEmpty) {
       _currentUser = user.first;
       _completePendingPurchaseInternal();
+      _completePendingEventInternal();
       notifyListeners();
       return true;
     }
@@ -326,6 +346,8 @@ class MockBackend extends ChangeNotifier {
   void clear() {
     _users.clear();
     _purchasedTickets.clear();
+    _pendingPurchase = null;
+    _pendingEvent = null;
     _currentUser = null;
     notifyListeners();
   }
