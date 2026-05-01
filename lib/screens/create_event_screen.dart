@@ -163,6 +163,18 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   }
 
   Future<void> _submitForm() async {
+    setState(() {
+      if (startDate == null || endDate == null) {
+        _dateError = 'Both start and end date & time are required.';
+      } else if (!endDate!.isAfter(startDate!)) {
+        _dateError = 'End date & time must be after start date & time.';
+      } else {
+        _dateError = null;
+      }
+    });
+
+    if (!_formKey.currentState!.validate() || _dateError != null) return;
+
     final isLoggedIn = MockBackend().currentUser != null;
 
     if (!isLoggedIn) {
@@ -180,18 +192,6 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
       return;
     }
-
-    setState(() {
-      if (startDate == null || endDate == null) {
-        _dateError = 'Both start and end date & time are required.';
-      } else if (!endDate!.isAfter(startDate!)) {
-        _dateError = 'End date & time must be after start date & time.';
-      } else {
-        _dateError = null;
-      }
-    });
-
-    if (!_formKey.currentState!.validate() || _dateError != null) return;
 
     setState(() => _isSubmitting = true);
 
