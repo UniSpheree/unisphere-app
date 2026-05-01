@@ -181,10 +181,78 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
     return !eventDate.isBefore(today) && eventDate.isBefore(limit);
   }
 
+  List<Map<String, dynamic>> get _organiserLiveEvents {
+    final email = MockBackend().currentUser?.email;
+    if (email == null) return [];
+
+    return MockBackend().events
+        .where((event) => event['organizerEmail']?.toString() == email)
+        .map(_toDashboardEvent)
+        .toList();
+  }
+
   List<Map<String, dynamic>> get _upcomingEventsWithinNextMonth {
+    final isOrganiser = (MockBackend().currentUser?.isOrganiser ?? false) ||
+        widget.role.toLowerCase() == 'organiser';
+
+    if (isOrganiser) {
+      return _organiserLiveEvents;
+    }
+
     return PersonalizedLandingPage.upcomingEvents.where((event) {
       return _isWithinNext30Days(event['eventDate'] as DateTime);
     }).toList();
+  }
+
+  Map<String, dynamic> _toDashboardEvent(Map<String, dynamic> event) {
+    final category = event['category']?.toString() ?? 'Other';
+    final color = _dashboardColorForCategory(category);
+    final dateText = event['date']?.toString() ?? '';
+
+    return {
+      'title': event['title']?.toString() ?? 'Untitled Event',
+      'date': dateText,
+      'location': event['location']?.toString() ?? 'TBA',
+      'category': category,
+      'color': color,
+      'icon': _dashboardIconForCategory(category),
+    };
+  }
+
+  Color _dashboardColorForCategory(String category) {
+    switch (category.toLowerCase()) {
+      case 'social':
+        return const Color(0xFF0F766E);
+      case 'tech':
+      case 'technology':
+        return const Color(0xFF4F46E5);
+      case 'career':
+        return const Color(0xFFEA580C);
+      case 'sports':
+        return const Color(0xFF16A34A);
+      case 'music':
+        return const Color(0xFFDB2777);
+      default:
+        return const Color(0xFF4F46E5);
+    }
+  }
+
+  IconData _dashboardIconForCategory(String category) {
+    switch (category.toLowerCase()) {
+      case 'social':
+        return Icons.groups_rounded;
+      case 'tech':
+      case 'technology':
+        return Icons.code_rounded;
+      case 'career':
+        return Icons.work_outline_rounded;
+      case 'sports':
+        return Icons.sports_soccer_rounded;
+      case 'music':
+        return Icons.music_note_rounded;
+      default:
+        return Icons.event_rounded;
+    }
   }
 
   List<Map<String, dynamic>> get _filteredEvents {
@@ -226,7 +294,9 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isOrganiser = widget.role.toLowerCase() == 'organiser';
+    final isOrganiser =
+        MockBackend().currentUser?.isOrganiser ??
+        widget.role.toLowerCase() == 'organiser';
     final upcomingEvents = _upcomingEventsWithinNextMonth;
 
     return Scaffold(
@@ -1083,9 +1153,20 @@ class _DashboardPanel extends StatelessWidget {
           listenable: MockBackend(),
           builder: (context, _) {
             final ticketCount = MockBackend().purchasedTickets.length;
+            final organiserEventCount = MockBackend()
+                .events
+                .where(
+                  (event) =>
+                      event['organizerEmail']?.toString() ==
+                      MockBackend().currentUser?.email,
+                )
+                .length;
+            final organiserViews = organiserEventCount * 1000;
             return _DashboardMetricCard(
               title: isOrganiser ? 'Total Views' : 'My Tickets',
-              value: isOrganiser ? '2.4K' : '$ticketCount',
+              value: isOrganiser
+                  ? _formatCompactCount(organiserViews)
+                  : '$ticketCount',
               icon: isOrganiser
                   ? Icons.bar_chart_rounded
                   : Icons.confirmation_number_outlined,
@@ -1236,6 +1317,19 @@ class _DashboardMetricCard extends StatelessWidget {
       ),
     );
   }
+}
+
+String _formatCompactCount(int value) {
+  if (value <= 0) return '0';
+  if (value < 1000) return '$value';
+
+  final thousands = value ~/ 1000;
+  final remainder = value % 1000;
+  if (remainder == 0) {
+    return '${thousands}K';
+  }
+
+  return '${thousands}.${(remainder / 100).floor()}K';
 }
 
 class _UpcomingEventCard extends StatelessWidget {
