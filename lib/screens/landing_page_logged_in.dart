@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:unisphere_app/widgets/app_footer.dart';
 import 'package:unisphere_app/widgets/header.dart';
 import 'event_details_screen.dart';
 import 'package:unisphere_app/utils/mock_backend.dart';
@@ -75,10 +76,11 @@ class PersonalizedLandingPage extends StatefulWidget {
     },
   ];
 
-  static const List<Map<String, dynamic>> upcomingEvents = [
+  static final List<Map<String, dynamic>> upcomingEvents = [
     {
       'title': 'Flutter Workshop',
       'date': 'Mar 10, 2026 • 14:00',
+      'eventDate': DateTime(2026, 5, 8, 14, 0),
       'location': 'Room A101',
       'category': 'Workshop',
       'icon': Icons.code_rounded,
@@ -87,6 +89,7 @@ class PersonalizedLandingPage extends StatefulWidget {
     {
       'title': 'Career Fair 2026',
       'date': 'Mar 15, 2026 • 10:00',
+      'eventDate': DateTime(2026, 5, 14, 10, 0),
       'location': 'Main Hall',
       'category': 'Career',
       'icon': Icons.work_outline_rounded,
@@ -95,6 +98,7 @@ class PersonalizedLandingPage extends StatefulWidget {
     {
       'title': 'Sports Day',
       'date': 'Mar 20, 2026 • 09:00',
+      'eventDate': DateTime(2026, 5, 21, 9, 0),
       'location': 'University Grounds',
       'category': 'Sports',
       'icon': Icons.sports_soccer_rounded,
@@ -162,6 +166,19 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
     });
   }
 
+  static bool _isWithinNext30Days(DateTime eventDate) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final limit = today.add(const Duration(days: 30));
+    return !eventDate.isBefore(today) && eventDate.isBefore(limit);
+  }
+
+  List<Map<String, dynamic>> get _upcomingEventsWithinNextMonth {
+    return PersonalizedLandingPage.upcomingEvents.where((event) {
+      return _isWithinNext30Days(event['eventDate'] as DateTime);
+    }).toList();
+  }
+
   List<Map<String, dynamic>> get _filteredEvents {
     final baseEvents = _selectedFilter == 'All'
         ? PersonalizedLandingPage.discoverEvents
@@ -187,6 +204,7 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
   @override
   Widget build(BuildContext context) {
     final isOrganiser = widget.role.toLowerCase() == 'organiser';
+    final upcomingEvents = _upcomingEventsWithinNextMonth;
 
     return Scaffold(
       backgroundColor: PersonalizedLandingPage.background,
@@ -215,75 +233,93 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
               builder: (context, constraints) {
                 final isMobile = constraints.maxWidth < 1100;
 
-                if (isMobile) {
-                  return SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        _DiscoverSection(
-                          userName: widget.userName,
-                          isOrganiser: isOrganiser,
-                          selectedFilter: _selectedFilter,
-                          filteredEvents: _filteredEvents,
-                          onFilterChanged: _setFilter,
-                          searchController: _searchController,
-                          onSearchChanged: _setSearchQuery,
-                          showFiltersDropdown: _showFiltersDropdown,
-                          dateFilters: _dateFilters,
-                          onToggleFiltersDropdown: _toggleFiltersDropdown,
-                          onDateFilterChanged: _setDateFilter,
-                        ),
-                        const SizedBox(height: 20),
-                        _DashboardPanel(
-                          userName: widget.userName,
-                          isOrganiser: isOrganiser,
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 7,
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(28, 28, 20, 28),
-                        child: _DiscoverSection(
-                          userName: widget.userName,
-                          isOrganiser: isOrganiser,
-                          selectedFilter: _selectedFilter,
-                          filteredEvents: _filteredEvents,
-                          onFilterChanged: _setFilter,
-                          searchController: _searchController,
-                          onSearchChanged: _setSearchQuery,
-                          showFiltersDropdown: _showFiltersDropdown,
-                          dateFilters: _dateFilters,
-                          onToggleFiltersDropdown: _toggleFiltersDropdown,
-                          onDateFilterChanged: _setDateFilter,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      width: 430,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF8FAFC),
-                        border: Border(
-                          left: BorderSide(
-                            color: PersonalizedLandingPage.border,
+                return SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      if (isMobile)
+                        Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            children: [
+                              _DiscoverSection(
+                                userName: widget.userName,
+                                isOrganiser: isOrganiser,
+                                selectedFilter: _selectedFilter,
+                                filteredEvents: _filteredEvents,
+                                onFilterChanged: _setFilter,
+                                searchController: _searchController,
+                                onSearchChanged: _setSearchQuery,
+                                showFiltersDropdown: _showFiltersDropdown,
+                                dateFilters: _dateFilters,
+                                onToggleFiltersDropdown:
+                                    _toggleFiltersDropdown,
+                                onDateFilterChanged: _setDateFilter,
+                              ),
+                              const SizedBox(height: 20),
+                              _DashboardPanel(
+                                userName: widget.userName,
+                                isOrganiser: isOrganiser,
+                                upcomingEvents: upcomingEvents,
+                              ),
+                            ],
+                          ),
+                        )
+                      else
+                        SizedBox(
+                          height: constraints.maxHeight,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                flex: 7,
+                                child: SingleChildScrollView(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    28,
+                                    28,
+                                    20,
+                                    28,
+                                  ),
+                                  child: _DiscoverSection(
+                                    userName: widget.userName,
+                                    isOrganiser: isOrganiser,
+                                    selectedFilter: _selectedFilter,
+                                    filteredEvents: _filteredEvents,
+                                    onFilterChanged: _setFilter,
+                                    searchController: _searchController,
+                                    onSearchChanged: _setSearchQuery,
+                                    showFiltersDropdown: _showFiltersDropdown,
+                                    dateFilters: _dateFilters,
+                                    onToggleFiltersDropdown:
+                                        _toggleFiltersDropdown,
+                                    onDateFilterChanged: _setDateFilter,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                width: 430,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFF8FAFC),
+                                  border: Border(
+                                    left: BorderSide(
+                                      color: PersonalizedLandingPage.border,
+                                    ),
+                                  ),
+                                ),
+                                child: SingleChildScrollView(
+                                  padding: const EdgeInsets.all(24),
+                                  child: _DashboardPanel(
+                                    userName: widget.userName,
+                                    isOrganiser: isOrganiser,
+                                    upcomingEvents: upcomingEvents,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(24),
-                        child: _DashboardPanel(
-                          userName: widget.userName,
-                          isOrganiser: isOrganiser,
-                        ),
-                      ),
-                    ),
-                  ],
+                      const AppFooter(),
+                    ],
+                  ),
                 );
               },
             ),
@@ -876,8 +912,13 @@ class _DiscoverEventCard extends StatelessWidget {
 class _DashboardPanel extends StatelessWidget {
   final String userName;
   final bool isOrganiser;
+  final List<Map<String, dynamic>> upcomingEvents;
 
-  const _DashboardPanel({required this.userName, required this.isOrganiser});
+  const _DashboardPanel({
+    required this.userName,
+    required this.isOrganiser,
+    required this.upcomingEvents,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -983,7 +1024,7 @@ class _DashboardPanel extends StatelessWidget {
             Expanded(
               child: _DashboardMetricCard(
                 title: 'Upcoming',
-                value: '4',
+                value: '${upcomingEvents.length}',
                 icon: Icons.upcoming_rounded,
                 color: const Color(0xFF0F766E),
               ),
@@ -1053,12 +1094,30 @@ class _DashboardPanel extends StatelessWidget {
         ),
         const SizedBox(height: 14),
 
-        ...PersonalizedLandingPage.upcomingEvents.map(
-          (event) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _UpcomingEventCard(event: event),
+        if (upcomingEvents.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: PersonalizedLandingPage.border),
+            ),
+            child: const Text(
+              'No upcoming events in the next 30 days.',
+              style: TextStyle(
+                fontSize: 14,
+                color: PersonalizedLandingPage.muted,
+              ),
+            ),
+          )
+        else
+          ...upcomingEvents.map(
+            (event) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _UpcomingEventCard(event: event),
+            ),
           ),
-        ),
       ],
     );
   }
