@@ -32,19 +32,39 @@ class AppFooter extends StatelessWidget {
                 children: const [
                   _FooterColumn(
                     title: 'Use UniSphere',
-                    links: ['How it Works', 'Pricing', 'Content Standards', 'FAQs'],
+                    links: [
+                      {'label': 'About Us', 'route': '/about'},
+                      {'label': 'How it Works', 'route': null},
+                      {'label': 'Pricing', 'route': null},
+                      {'label': 'FAQs', 'route': null},
+                    ],
                   ),
                   _FooterColumn(
                     title: 'Plan Events',
-                    links: ['Create and Set Up', 'Sell Tickets', 'Online RSVPs', 'Online Events'],
+                    links: [
+                      {'label': 'Create and Set Up', 'route': '/create-event'},
+                      {'label': 'Sell Tickets', 'route': null},
+                      {'label': 'Online RSVPs', 'route': null},
+                      {'label': 'Online Events', 'route': null},
+                    ],
                   ),
                   _FooterColumn(
                     title: 'Find Events',
-                    links: ['Browse Events', 'Discover by Category', 'Local Events', 'Online Events'],
+                    links: [
+                      {'label': 'Browse Events', 'route': '/discover'},
+                      {'label': 'Discover by Category', 'route': '/discover'},
+                      {'label': 'Local Events', 'route': '/discover'},
+                      {'label': 'Online Events', 'route': '/discover'},
+                    ],
                   ),
                   _FooterColumn(
                     title: 'Connect With Us',
-                    links: ['Contact Support', 'Twitter', 'Facebook', 'LinkedIn'],
+                    links: [
+                      {'label': 'Contact Support', 'route': null},
+                      {'label': 'Twitter', 'route': null},
+                      {'label': 'Facebook', 'route': null},
+                      {'label': 'LinkedIn', 'route': null},
+                    ],
                   ),
                 ],
               ),
@@ -64,12 +84,33 @@ class AppFooter extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         Row(
-                          children: const [
-                            Text('About', style: TextStyle(color: Colors.white54, fontSize: 13)),
-                            SizedBox(width: 16),
-                            Text('Privacy', style: TextStyle(color: Colors.white54, fontSize: 13)),
-                            SizedBox(width: 16),
-                            Text('Terms', style: TextStyle(color: Colors.white54, fontSize: 13)),
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                Future.microtask(() {
+                                  if (context.mounted) Navigator.pushNamed(context, '/about');
+                                });
+                              },
+                              child: const Text('About', style: TextStyle(color: Colors.white54, fontSize: 13)),
+                            ),
+                            const SizedBox(width: 16),
+                            InkWell(
+                              onTap: () {
+                                Future.microtask(() {
+                                  if (context.mounted) Navigator.pushNamed(context, '/privacy');
+                                });
+                              },
+                              child: const Text('Privacy', style: TextStyle(color: Colors.white54, fontSize: 13)),
+                            ),
+                            const SizedBox(width: 16),
+                            InkWell(
+                              onTap: () {
+                                Future.microtask(() {
+                                  if (context.mounted) Navigator.pushNamed(context, '/terms');
+                                });
+                              },
+                              child: const Text('Terms', style: TextStyle(color: Colors.white54, fontSize: 13)),
+                            ),
                           ],
                         ),
                       ],
@@ -84,12 +125,33 @@ class AppFooter extends StatelessWidget {
                         style: const TextStyle(color: Colors.white54, fontSize: 13),
                       ),
                       Row(
-                        children: const [
-                          Text('About', style: TextStyle(color: Colors.white54, fontSize: 13)),
-                          SizedBox(width: 24),
-                          Text('Privacy', style: TextStyle(color: Colors.white54, fontSize: 13)),
-                          SizedBox(width: 24),
-                          Text('Terms', style: TextStyle(color: Colors.white54, fontSize: 13)),
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              Future.microtask(() {
+                                if (context.mounted) Navigator.pushNamed(context, '/about');
+                              });
+                            },
+                            child: const Text('About', style: TextStyle(color: Colors.white54, fontSize: 13)),
+                          ),
+                          const SizedBox(width: 24),
+                          InkWell(
+                            onTap: () {
+                              Future.microtask(() {
+                                if (context.mounted) Navigator.pushNamed(context, '/privacy');
+                              });
+                            },
+                            child: const Text('Privacy', style: TextStyle(color: Colors.white54, fontSize: 13)),
+                          ),
+                          const SizedBox(width: 24),
+                          InkWell(
+                            onTap: () {
+                              Future.microtask(() {
+                                if (context.mounted) Navigator.pushNamed(context, '/terms');
+                              });
+                            },
+                            child: const Text('Terms', style: TextStyle(color: Colors.white54, fontSize: 13)),
+                          ),
                         ],
                       ),
                     ],
@@ -106,7 +168,7 @@ class AppFooter extends StatelessWidget {
 
 class _FooterColumn extends StatelessWidget {
   final String title;
-  final List<String> links;
+  final List<Map<String, String?>> links;
 
   const _FooterColumn({required this.title, required this.links});
 
@@ -126,12 +188,19 @@ class _FooterColumn extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          ...links.map((link) => Padding(
+          ...links.map((linkData) => Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: InkWell(
-              onTap: () {},
+              onTap: () {
+                final route = linkData['route'];
+                if (route != null) {
+                  Future.microtask(() {
+                    if (context.mounted) Navigator.pushNamed(context, route);
+                  });
+                }
+              },
               child: Text(
-                link,
+                linkData['label'] ?? '',
                 style: const TextStyle(
                   color: Colors.white70,
                   fontSize: 14,
