@@ -123,7 +123,8 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                               },
                               style: const TextStyle(color: Colors.white),
                               decoration: InputDecoration(
-                                hintText: 'Search by event, date, venue, or category',
+                                hintText:
+                                    'Search by event, date, venue, or category',
                                 hintStyle: TextStyle(
                                   color: Colors.white.withOpacity(0.72),
                                 ),
@@ -291,7 +292,10 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                   }
 
                   return SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 16,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: children,
