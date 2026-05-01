@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:unisphere_app/widgets/app_footer.dart';
 import 'package:unisphere_app/widgets/header.dart';
 import 'event_details_screen.dart';
-import 'package:unisphere_app/utils/mock_backend.dart';
+import 'package:unisphere_app/services/sqlite_backend.dart';
 import 'create_event_screen.dart';
-import 'discover_event_screen.dart';
 import 'my_tickets_screen.dart';
 import 'my_events_page.dart';
 
@@ -136,7 +135,7 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
       'this month': false,
       'next month': false,
     };
-    MockBackend().addListener(_onBackendChanged);
+    SqliteBackend().addListener(_onBackendChanged);
   }
 
   void _onBackendChanged() {
@@ -146,7 +145,7 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
 
   @override
   void dispose() {
-    MockBackend().removeListener(_onBackendChanged);
+    SqliteBackend().removeListener(_onBackendChanged);
     _searchController.dispose();
     super.dispose();
   }
@@ -175,32 +174,26 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
     });
   }
 
-  static bool _isWithinNext30Days(DateTime eventDate) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final limit = today.add(const Duration(days: 30));
-    return !eventDate.isBefore(today) && eventDate.isBefore(limit);
-  }
-
   List<Map<String, dynamic>> get _organiserLiveEvents {
-    final email = MockBackend().currentUser?.email;
+    final email = SqliteBackend().currentUser?.email;
     if (email == null) return [];
 
-    return MockBackend().events
+    return SqliteBackend().events
         .where((event) => event['organizerEmail']?.toString() == email)
         .map(_toDashboardEvent)
         .toList();
   }
 
   List<Map<String, dynamic>> get _upcomingEventsWithinNextMonth {
-    final isOrganiser = (MockBackend().currentUser?.isOrganiser ?? false) ||
+    final isOrganiser =
+        (SqliteBackend().currentUser?.isOrganiser ?? false) ||
         widget.role.toLowerCase() == 'organiser';
 
     if (isOrganiser) {
       return _organiserLiveEvents;
     }
 
-    return MockBackend().purchasedTickets.map((ticket) {
+    return SqliteBackend().purchasedTickets.map((ticket) {
       return {
         'title': ticket.title,
         'date': ticket.date,
@@ -265,7 +258,7 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
   }
 
   List<Map<String, dynamic>> get _filteredEvents {
-    final backendEvents = MockBackend().events
+    final backendEvents = SqliteBackend().events
         .map(
           (event) => {
             'id': event['id'],
@@ -304,7 +297,7 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
   @override
   Widget build(BuildContext context) {
     final isOrganiser =
-        MockBackend().currentUser?.isOrganiser ??
+        SqliteBackend().currentUser?.isOrganiser ??
         widget.role.toLowerCase() == 'organiser';
     final upcomingEvents = _upcomingEventsWithinNextMonth;
 
@@ -359,7 +352,8 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
                                     onSearchChanged: _setSearchQuery,
                                     showFiltersDropdown: _showFiltersDropdown,
                                     dateFilters: _dateFilters,
-                                    onToggleFiltersDropdown: _toggleFiltersDropdown,
+                                    onToggleFiltersDropdown:
+                                        _toggleFiltersDropdown,
                                     onDateFilterChanged: _setDateFilter,
                                   ),
                                   const SizedBox(height: 20),
@@ -374,14 +368,21 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
                           } else {
                             return Center(
                               child: ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 1400),
+                                constraints: const BoxConstraints(
+                                  maxWidth: 1400,
+                                ),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Expanded(
                                       flex: 7,
                                       child: Padding(
-                                        padding: const EdgeInsets.fromLTRB(28, 28, 20, 28),
+                                        padding: const EdgeInsets.fromLTRB(
+                                          28,
+                                          28,
+                                          20,
+                                          28,
+                                        ),
                                         child: _DiscoverSection(
                                           userName: widget.userName,
                                           isOrganiser: isOrganiser,
@@ -390,9 +391,11 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
                                           onFilterChanged: _setFilter,
                                           searchController: _searchController,
                                           onSearchChanged: _setSearchQuery,
-                                          showFiltersDropdown: _showFiltersDropdown,
+                                          showFiltersDropdown:
+                                              _showFiltersDropdown,
                                           dateFilters: _dateFilters,
-                                          onToggleFiltersDropdown: _toggleFiltersDropdown,
+                                          onToggleFiltersDropdown:
+                                              _toggleFiltersDropdown,
                                           onDateFilterChanged: _setDateFilter,
                                         ),
                                       ),
@@ -403,7 +406,8 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
                                         color: Color(0xFFF8FAFC),
                                         border: Border(
                                           left: BorderSide(
-                                            color: PersonalizedLandingPage.border,
+                                            color:
+                                                PersonalizedLandingPage.border,
                                           ),
                                         ),
                                       ),
@@ -1099,7 +1103,7 @@ class _DashboardPanel extends StatelessWidget {
               ),
               IconButton(
                 onPressed: () {
-                  if (MockBackend().currentUser != null) {
+                  if (SqliteBackend().currentUser != null) {
                     Navigator.pushNamed(context, '/profile');
                   } else {
                     Navigator.pushNamed(context, '/register');
@@ -1114,40 +1118,43 @@ class _DashboardPanel extends StatelessWidget {
 
         const SizedBox(height: 18),
 
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: isOrganiser
-                        ? () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const MyEventsPage(),
-                              ),
-                            );
-                          }
-                        : null,
-                    child: Builder(builder: (context) {
-                      final liveCount = isOrganiser
-                          ? MockBackend()
-                              .events
-                              .where((e) =>
-                                  e['organizerEmail']?.toString() ==
-                                  MockBackend().currentUser?.email)
+        Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: isOrganiser
+                    ? () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const MyEventsPage(),
+                          ),
+                        );
+                      }
+                    : null,
+                child: Builder(
+                  builder: (context) {
+                    final liveCount = isOrganiser
+                        ? SqliteBackend().events
+                              .where(
+                                (e) =>
+                                    e['organizerEmail']?.toString() ==
+                                    SqliteBackend().currentUser?.email,
+                              )
                               .length
-                          : MockBackend().purchasedTickets.length;
-                      return _DashboardMetricCard(
-                        title: isOrganiser ? 'Live Events' : 'Events Joined',
-                        value: '$liveCount',
-                        icon: isOrganiser
-                            ? Icons.event_note_rounded
-                            : Icons.event_available_outlined,
-                        color: const Color(0xFF4F46E5),
-                      );
-                    }),
-                  ),
+                        : SqliteBackend().purchasedTickets.length;
+                    return _DashboardMetricCard(
+                      title: isOrganiser ? 'Live Events' : 'Events Joined',
+                      value: '$liveCount',
+                      icon: isOrganiser
+                          ? Icons.event_note_rounded
+                          : Icons.event_available_outlined,
+                      color: const Color(0xFF4F46E5),
+                    );
+                  },
                 ),
+              ),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: _DashboardMetricCard(
@@ -1163,15 +1170,14 @@ class _DashboardPanel extends StatelessWidget {
         const SizedBox(height: 12),
 
         ListenableBuilder(
-          listenable: MockBackend(),
+          listenable: SqliteBackend(),
           builder: (context, _) {
-            final ticketCount = MockBackend().purchasedTickets.length;
-            final organiserEventCount = MockBackend()
-                .events
+            final ticketCount = SqliteBackend().purchasedTickets.length;
+            final organiserEventCount = SqliteBackend().events
                 .where(
                   (event) =>
                       event['organizerEmail']?.toString() ==
-                      MockBackend().currentUser?.email,
+                      SqliteBackend().currentUser?.email,
                 )
                 .length;
             final organiserViews = organiserEventCount * 1000;
@@ -1205,7 +1211,7 @@ class _DashboardPanel extends StatelessWidget {
                     );
                     return;
                   }
-                  
+
                   Navigator.push(
                     context,
                     MaterialPageRoute(
