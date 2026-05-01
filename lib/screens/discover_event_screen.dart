@@ -62,7 +62,9 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
 
   List<Map<String, dynamic>> get _discoverEvents {
     return SqliteBackend().events
-        .where((e) => e['title']?.toString().toLowerCase() != 'demo event')
+        .where((e) =>
+            e['title']?.toString().toLowerCase() != 'demo event' &&
+            e['visibility']?.toString() != 'Private')
         .map((event) {
       return {
         'id': event['id'],
