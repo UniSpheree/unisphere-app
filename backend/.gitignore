@@ -1,0 +1,5 @@
+node_modules/
+unisphere.db-shm
+unisphere.db-wal
+storage/uploads/*
+!storage/uploads/.gitkeep
