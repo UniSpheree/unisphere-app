@@ -188,6 +188,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           'date': startDate?.toIso8601String() ?? '',
           'maxAttendees': int.tryParse(maxAttendeesController.text.trim()) ?? 0,
         };
+        if (_bannerImage != null) {
+          try {
+            pendingPayload['bannerImageData'] = await _bannerImage!
+                .readAsBytes();
+          } catch (_) {}
+        }
         SqliteBackend().setPendingEvent(pendingPayload);
       }
 
@@ -220,6 +226,22 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       'maxAttendees': int.tryParse(maxAttendeesController.text.trim()) ?? 0,
       'organizerEmail': SqliteBackend().currentUser?.email,
     };
+
+    if (_bannerImage != null) {
+      try {
+        payload['bannerImageData'] = await _bannerImage!.readAsBytes();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Could not read banner image: $e'),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+        return;
+      }
+    }
 
     if (widget.existingEvent != null) {
       await SqliteBackend().updateEvent(

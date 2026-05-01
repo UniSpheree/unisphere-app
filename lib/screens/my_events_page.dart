@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
 import '../services/sqlite_backend.dart';
 import 'create_event_screen.dart';
 import 'event_details_screen.dart';
@@ -146,7 +147,9 @@ class MyEventsPage extends StatelessWidget {
       builder: (context, _) {
         final email = SqliteBackend().currentUser?.email;
         final myEvents = SqliteBackend().events
-            .where((event) => event['organizerEmail']?.toString() == email)
+            .where((event) => 
+                event['organizerEmail']?.toString() == email && 
+                event['title']?.toString().toLowerCase() != 'demo event')
             .toList();
 
         return Padding(
@@ -306,6 +309,8 @@ class MyEventsPage extends StatelessWidget {
     final String title = event['title']?.toString() ?? 'Untitled Event';
     final String location = event['location']?.toString() ?? '';
     final String category = event['category']?.toString() ?? 'Other';
+    final bannerData = event['bannerImageData'];
+    final Uint8List? bannerBytes = bannerData is Uint8List ? bannerData : null;
 
     return Container(
       decoration: BoxDecoration(
@@ -337,17 +342,19 @@ class MyEventsPage extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                // Category Tag/Icon
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
+                // Banner thumbnail / category icon
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    width: 92,
+                    height: 72,
                     color: const Color(0xFFF3F4F6),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Icon(
-                    _getCategoryIcon(category),
-                    color: const Color(0xFF4F46E5),
+                    child: bannerBytes != null
+                        ? Image.memory(bannerBytes, fit: BoxFit.cover)
+                        : Icon(
+                            _getCategoryIcon(category),
+                            color: const Color(0xFF4F46E5),
+                          ),
                   ),
                 ),
                 const SizedBox(width: 20),

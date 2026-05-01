@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
 import 'package:unisphere_app/widgets/app_footer.dart';
 import 'package:unisphere_app/widgets/header.dart';
 import 'event_details_screen.dart';
@@ -25,87 +26,6 @@ class PersonalizedLandingPage extends StatefulWidget {
   static const Color muted = Color(0xFF6B7280);
   static const Color border = Color(0xFFE5E7EB);
   static const Color softBlue = Color(0xFFEEF2FF);
-
-  static const List<Map<String, dynamic>> discoverEvents = [
-    {
-      'title': 'Campus Tech Meetup',
-      'date': 'Today • 6:30 PM',
-      'location': 'Innovation Hub',
-      'category': 'Technology',
-      'imageColor': Color(0xFFE0E7FF),
-      'icon': Icons.memory_rounded,
-    },
-    {
-      'title': 'Indie Music Night',
-      'date': 'Fri • 8:00 PM',
-      'location': 'Student Union Hall',
-      'category': 'Music',
-      'imageColor': Color(0xFFFCE7F3),
-      'icon': Icons.music_note_rounded,
-    },
-    {
-      'title': 'Startup Networking',
-      'date': 'Sat • 3:00 PM',
-      'location': 'Business School',
-      'category': 'Career',
-      'imageColor': Color(0xFFDCFCE7),
-      'icon': Icons.handshake_rounded,
-    },
-    {
-      'title': 'Wellbeing Workshop',
-      'date': 'Mon • 11:00 AM',
-      'location': 'Room B204',
-      'category': 'Wellness',
-      'imageColor': Color(0xFFE0F2FE),
-      'icon': Icons.spa_rounded,
-    },
-    {
-      'title': 'Design Showcase',
-      'date': 'Tue • 5:00 PM',
-      'location': 'Creative Studio',
-      'category': 'Design',
-      'imageColor': Color(0xFFFFF7ED),
-      'icon': Icons.palette_rounded,
-    },
-    {
-      'title': 'Charity Fun Run',
-      'date': 'Sun • 9:00 AM',
-      'location': 'University Grounds',
-      'category': 'Sports',
-      'imageColor': Color(0xFFFFEDD5),
-      'icon': Icons.directions_run_rounded,
-    },
-  ];
-
-  static final List<Map<String, dynamic>> upcomingEvents = [
-    {
-      'title': 'Flutter Workshop',
-      'date': 'Mar 10, 2026 • 14:00',
-      'eventDate': DateTime(2026, 5, 8, 14, 0),
-      'location': 'Room A101',
-      'category': 'Workshop',
-      'icon': Icons.code_rounded,
-      'color': Color(0xFF4F46E5),
-    },
-    {
-      'title': 'Career Fair 2026',
-      'date': 'Mar 15, 2026 • 10:00',
-      'eventDate': DateTime(2026, 5, 14, 10, 0),
-      'location': 'Main Hall',
-      'category': 'Career',
-      'icon': Icons.work_outline_rounded,
-      'color': Color(0xFF0F766E),
-    },
-    {
-      'title': 'Sports Day',
-      'date': 'Mar 20, 2026 • 09:00',
-      'eventDate': DateTime(2026, 5, 21, 9, 0),
-      'location': 'University Grounds',
-      'category': 'Sports',
-      'icon': Icons.sports_soccer_rounded,
-      'color': Color(0xFFEA580C),
-    },
-  ];
 
   @override
   State<PersonalizedLandingPage> createState() =>
@@ -179,7 +99,9 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
     if (email == null) return [];
 
     return SqliteBackend().events
-        .where((event) => event['organizerEmail']?.toString() == email)
+        .where((event) => 
+            event['organizerEmail']?.toString() == email && 
+            event['title']?.toString().toLowerCase() != 'demo event')
         .map(_toDashboardEvent)
         .toList();
   }
@@ -193,7 +115,15 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
       return _organiserLiveEvents;
     }
 
-    return SqliteBackend().purchasedTickets.map((ticket) {
+    return SqliteBackend().purchasedTickets
+        .where((t) => t.title.toLowerCase() != 'demo event')
+        .map((ticket) {
+      // Find the actual event by matching title
+      final matchingEvent = SqliteBackend().events.firstWhere(
+        (event) => event['title']?.toString() == ticket.title,
+        orElse: () => {},
+      );
+
       return {
         'title': ticket.title,
         'date': ticket.date,
@@ -202,6 +132,12 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
         'category': ticket.category,
         'icon': Icons.confirmation_number_outlined,
         'color': const Color(0xFF4F46E5),
+        'bannerImageData': matchingEvent.isNotEmpty
+            ? matchingEvent['bannerImageData']
+            : null,
+        'organizer': matchingEvent.isNotEmpty
+            ? (matchingEvent['organizer']?.toString() ?? 'UniSphere')
+            : 'UniSphere',
       };
     }).toList();
   }
@@ -218,6 +154,8 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
       'category': category,
       'color': color,
       'icon': _dashboardIconForCategory(category),
+      'bannerImageData': event['bannerImageData'],
+      'organizer': event['organizer']?.toString() ?? 'UniSphere',
     };
   }
 
@@ -259,6 +197,7 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
 
   List<Map<String, dynamic>> get _filteredEvents {
     final backendEvents = SqliteBackend().events
+        .where((e) => e['title']?.toString().toLowerCase() != 'demo event')
         .map(
           (event) => {
             'id': event['id'],
@@ -269,6 +208,8 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
             'description': event['description'] ?? '',
             'imageColor': const Color(0xFFE0E7FF),
             'icon': Icons.event_rounded,
+            'bannerImageData': event['bannerImageData'],
+            'organizer': event['organizer'] ?? 'UniSphere',
           },
         )
         .toList();
@@ -533,7 +474,7 @@ class _DiscoverSection extends StatelessWidget {
                 crossAxisCount: crossAxisCount,
                 crossAxisSpacing: 18,
                 mainAxisSpacing: 18,
-                childAspectRatio: isSmall ? 2.2 : 1.45,
+                childAspectRatio: isSmall ? 1.6 : 0.85,
               ),
               itemBuilder: (context, index) {
                 final event = filteredEvents[index];
@@ -911,6 +852,8 @@ class _DiscoverEventCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = event['imageColor'] as Color;
     final icon = event['icon'] as IconData;
+    final bannerData = event['bannerImageData'];
+    final Uint8List? bannerBytes = bannerData is Uint8List ? bannerData : null;
 
     return Container(
       decoration: BoxDecoration(
@@ -937,13 +880,7 @@ class _DiscoverEventCard extends StatelessWidget {
                   top: Radius.circular(22),
                 ),
               ),
-              child: Center(
-                child: Icon(
-                  icon,
-                  size: 42,
-                  color: PersonalizedLandingPage.primary,
-                ),
-              ),
+              child: _buildEventCardImage(bannerBytes, icon),
             ),
           ),
           Padding(
@@ -973,6 +910,15 @@ class _DiscoverEventCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     color: PersonalizedLandingPage.muted,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'By ${event['organizer']?.toString() ?? 'UniSphere'}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: PersonalizedLandingPage.muted,
+                    fontStyle: FontStyle.italic,
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -1016,6 +962,26 @@ class _DiscoverEventCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildEventCardImage(Uint8List? bannerBytes, IconData icon) {
+    if (bannerBytes != null) {
+      return ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+        child: Image.memory(
+          bannerBytes,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => Container(
+            color: Colors.grey[200],
+            child: const Icon(Icons.broken_image, color: Colors.grey),
+          ),
+        ),
+      );
+    } else {
+      return Center(
+        child: Icon(icon, size: 42, color: PersonalizedLandingPage.primary),
+      );
+    }
   }
 }
 
@@ -1269,13 +1235,83 @@ class _DashboardPanel extends StatelessWidget {
               ),
             ),
           )
-        else
+        else ...[
+          if (upcomingEvents.isNotEmpty && upcomingEvents.first['bannerImageData'] != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(18),
+                child: Stack(
+                  children: [
+                    Image.memory(
+                      upcomingEvents.first['bannerImageData'],
+                      height: 160,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        height: 160,
+                        color: Colors.grey[200],
+                      ),
+                    ),
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.7),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 16,
+                      left: 16,
+                      right: 16,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF4F46E5),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text(
+                              'NEXT EVENT',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            upcomingEvents.first['title'],
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ...upcomingEvents.map(
             (event) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: _UpcomingEventCard(event: event),
             ),
           ),
+        ],
       ],
     );
   }
@@ -1366,6 +1402,8 @@ class _UpcomingEventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = event['color'] as Color;
+    final bannerData = event['bannerImageData'];
+    final Uint8List? bannerBytes = bannerData is Uint8List ? bannerData : null;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -1376,15 +1414,35 @@ class _UpcomingEventCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(event['icon'] as IconData, color: color, size: 22),
-          ),
+          bannerBytes != null
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.memory(
+                    bannerBytes,
+                    width: 46,
+                    height: 46,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 46,
+                      height: 46,
+                      color: Colors.grey[200],
+                      child: const Icon(Icons.broken_image, size: 20),
+                    ),
+                  ),
+                )
+              : Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    event['icon'] as IconData,
+                    color: color,
+                    size: 22,
+                  ),
+                ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(

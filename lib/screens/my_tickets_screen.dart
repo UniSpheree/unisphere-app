@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
 import 'package:unisphere_app/screens/event_details_screen.dart';
 import 'package:unisphere_app/services/sqlite_backend.dart';
 import 'package:unisphere_app/models/database_models.dart';
@@ -23,6 +24,12 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
   }
 
   Map<String, dynamic> _ticketToEvent(DbPurchasedTicket ticket) {
+    // Find the actual event by matching title
+    final matchingEvent = SqliteBackend().events.firstWhere(
+      (event) => event['title']?.toString() == ticket.title,
+      orElse: () => {},
+    );
+
     return {
       'title': ticket.title,
       'date': ticket.date,
@@ -31,7 +38,15 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
       'price': ticket.price,
       'description':
           'Ticket details for ${ticket.title}. You can review the event information and keep this ticket handy for check-in.',
-      'organizer': 'Event Organiser',
+      'organizer': matchingEvent.isNotEmpty
+          ? (matchingEvent['organizer']?.toString() ?? 'UniSphere')
+          : 'UniSphere',
+      'organizerEmail': matchingEvent.isNotEmpty
+          ? matchingEvent['organizerEmail']?.toString()
+          : null,
+      'bannerImageData': matchingEvent.isNotEmpty
+          ? matchingEvent['bannerImageData']
+          : null,
       'capacity': null,
       'tags': <String>['Purchased ticket'],
       'color': const Color(0xFF4F46E5),
@@ -84,7 +99,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                           builder: (context, _) {
                             final tickets = SqliteBackend().purchasedTickets;
                             final filteredTickets = tickets
-                                .where(_matchesQuery)
+                                .where((t) => _matchesQuery(t) && t.title.toLowerCase() != 'demo event')
                                 .toList();
 
                             final List<Widget> children = [];
@@ -362,6 +377,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                                     padding: const EdgeInsets.only(bottom: 10),
                                     child: _SavedTicketCard(
                                       ticket: ticket,
+                                      eventData: _ticketToEvent(ticket),
                                       onTap: () {
                                         Navigator.push(
                                           context,
@@ -415,73 +431,142 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
 
 class _SavedTicketCard extends StatelessWidget {
   final DbPurchasedTicket ticket;
+  final Map<String, dynamic> eventData;
   final VoidCallback onTap;
 
-  const _SavedTicketCard({required this.ticket, required this.onTap});
+  const _SavedTicketCard({
+    required this.ticket,
+    required this.eventData,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      elevation: 2,
-      child: ListTile(
-        onTap: onTap,
-        isThreeLine: true,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
-        ),
-        leading: Container(
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-            color: const Color(0xFF4F46E5).withOpacity(0.12),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Icon(
-            Icons.confirmation_number_outlined,
-            color: Color(0xFF4F46E5),
-            size: 26,
-          ),
-        ),
-        title: Text(
-          ticket.title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 6),
-            Text('${ticket.date} • ${ticket.location}'),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF4F46E5).withOpacity(0.10),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                ticket.category,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF4F46E5),
-                ),
-              ),
+    final bannerData = eventData['bannerImageData'];
+    final Uint8List? bannerBytes = bannerData is Uint8List ? bannerData : null;
+    final organizer = eventData['organizer']?.toString() ?? 'UniSphere';
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
-        trailing: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.end,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              ticket.price,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            // Leading image
+            bannerBytes != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.memory(
+                      bannerBytes,
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        width: 60,
+                        height: 60,
+                        color: Colors.grey[200],
+                        child: const Icon(Icons.broken_image, color: Colors.grey),
+                      ),
+                    ),
+                  )
+                : Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4F46E5).withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.confirmation_number_outlined,
+                      color: Color(0xFF4F46E5),
+                      size: 28,
+                    ),
+                  ),
+            const SizedBox(width: 16),
+            // Content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    ticket.title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '${ticket.date} • ${ticket.location}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'By $organizer',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[500],
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4F46E5).withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      ticket.category,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF4F46E5),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 6),
-            const Icon(Icons.chevron_right_rounded, color: Color(0xFF9CA3AF)),
+            const SizedBox(width: 12),
+            // Trailing price
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  ticket.price,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 14,
+                  color: Colors.grey,
+                ),
+              ],
+            ),
           ],
         ),
       ),

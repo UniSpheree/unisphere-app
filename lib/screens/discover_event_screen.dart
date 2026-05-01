@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
 import 'package:unisphere_app/widgets/app_footer.dart';
 import 'package:unisphere_app/widgets/header.dart';
 import 'package:unisphere_app/services/sqlite_backend.dart';
@@ -60,7 +61,9 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
   ];
 
   List<Map<String, dynamic>> get _discoverEvents {
-    return SqliteBackend().events.map((event) {
+    return SqliteBackend().events
+        .where((e) => e['title']?.toString().toLowerCase() != 'demo event')
+        .map((event) {
       return {
         'id': event['id'],
         'title': event['title'] ?? 'Untitled Event',
@@ -68,6 +71,8 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
         'location': event['location'] ?? 'TBA',
         'category': event['category'] ?? 'Other',
         'description': event['description'] ?? '',
+        'bannerImageData': event['bannerImageData'],
+        'organizer': event['organizer'] ?? 'UniSphere',
         'imageColor': const Color(0xFFE0E7FF),
         'icon': Icons.event_rounded,
       };
@@ -123,6 +128,33 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
       return titleLower.contains(searchLower) ||
           categoryLower.contains(searchLower);
     }).toList();
+  }
+
+  Widget _buildEventCardImage(Map<String, dynamic> event) {
+    final bannerData = event['bannerImageData'];
+    final Uint8List? bannerBytes = bannerData is Uint8List ? bannerData : null;
+
+    if (bannerBytes != null) {
+      return ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+        child: Image.memory(
+          bannerBytes,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => Container(
+            color: Colors.grey[200],
+            child: const Icon(Icons.broken_image, color: Colors.grey),
+          ),
+        ),
+      );
+    } else {
+      return Center(
+        child: Icon(
+          event['icon'] as IconData,
+          size: 42,
+          color: const Color(0xFF4F46E5),
+        ),
+      );
+    }
   }
 
   @override
@@ -631,19 +663,24 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                             constraints.maxWidth;
                                         final crossAxisCount =
                                             availableWidth > 800
-                                            ? 3
-                                            : (availableWidth > 400 ? 2 : 1);
+                                                ? 3
+                                                : (availableWidth > 400 ? 2 : 1);
 
-                                        return GridView.count(
-                                          crossAxisCount: crossAxisCount,
-                                          crossAxisSpacing: 16,
-                                          mainAxisSpacing: 16,
+                                        return GridView.builder(
+                                          itemCount: _filteredEvents.length,
+                                          gridDelegate:
+                                              SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: crossAxisCount,
+                                            crossAxisSpacing: 16,
+                                            mainAxisSpacing: 16,
+                                            childAspectRatio: 0.72,
+                                          ),
                                           shrinkWrap: true,
                                           physics:
                                               const NeverScrollableScrollPhysics(),
-                                          children: _filteredEvents.map((
-                                            event,
-                                          ) {
+                                          itemBuilder: (context, index) {
+                                            final event =
+                                                _filteredEvents[index];
                                             return Container(
                                               decoration: BoxDecoration(
                                                 color: Colors.white,
@@ -683,16 +720,10 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                                                   ),
                                                             ),
                                                       ),
-                                                      child: Center(
-                                                        child: Icon(
-                                                          event['icon']
-                                                              as IconData,
-                                                          size: 42,
-                                                          color: const Color(
-                                                            0xFF4F46E5,
+                                                      child:
+                                                          _buildEventCardImage(
+                                                            event,
                                                           ),
-                                                        ),
-                                                      ),
                                                     ),
                                                   ),
                                                   Padding(
@@ -708,6 +739,8 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                                         Text(
                                                           event['title']
                                                               as String,
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow.ellipsis,
                                                           style:
                                                               const TextStyle(
                                                                 fontSize: 18,
@@ -739,12 +772,30 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                                         Text(
                                                           event['location']
                                                               as String,
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow.ellipsis,
                                                           style:
                                                               const TextStyle(
                                                                 fontSize: 14,
                                                                 color: Color(
                                                                   0xFF6B7280,
                                                                 ),
+                                                              ),
+                                                        ),
+                                                        const SizedBox(
+                                                          height: 4,
+                                                        ),
+                                                        Text(
+                                                          'By ${event['organizer']?.toString() ?? 'UniSphere'}',
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 12,
+                                                                color: Color(
+                                                                  0xFF9CA3AF,
+                                                                ),
+                                                                fontStyle:
+                                                                    FontStyle
+                                                                        .italic,
                                                               ),
                                                         ),
                                                         const SizedBox(
@@ -798,7 +849,7 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                                                 );
                                                               },
                                                               child: const Text(
-                                                                'View details',
+                                                                'Details',
                                                               ),
                                                             ),
                                                           ],
@@ -809,7 +860,7 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                                 ],
                                               ),
                                             );
-                                          }).toList(),
+                                          },
                                         );
                                       },
                                     ),

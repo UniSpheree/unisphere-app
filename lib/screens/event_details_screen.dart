@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
 import 'package:unisphere_app/services/sqlite_backend.dart';
 import 'package:unisphere_app/models/database_models.dart';
 import '../widgets/header.dart';
@@ -20,6 +21,10 @@ class EventDetailsScreen extends StatelessWidget {
     final description =
         event['description'] as String? ??
         'No extra description provided for this event.';
+    final bannerImageData = event['bannerImageData'];
+    final Uint8List? bannerBytes = bannerImageData is Uint8List
+        ? bannerImageData
+        : null;
 
     final organizer =
         event['organizer'] as String? ?? 'Organizer not specified';
@@ -118,6 +123,25 @@ class EventDetailsScreen extends StatelessWidget {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
+                                      if (bannerBytes != null) ...[
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            18,
+                                          ),
+                                          child: Image.memory(
+                                            bannerBytes,
+                                            width: double.infinity,
+                                            height: 240,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) => Container(
+                                              height: 240,
+                                              color: Colors.grey[200],
+                                              child: const Icon(Icons.broken_image, size: 48, color: Colors.grey),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 24),
+                                      ],
                                       Text(
                                         event['title'] as String,
                                         style: const TextStyle(
