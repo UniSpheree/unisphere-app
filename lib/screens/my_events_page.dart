@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../utils/mock_backend.dart';
 import 'create_event_screen.dart';
+import 'event_details_screen.dart';
 
 class MyEventsPage extends StatelessWidget {
   const MyEventsPage({Key? key}) : super(key: key);
@@ -61,28 +62,102 @@ class MyEventsPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('My Events')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'You have no events',
-              style: TextStyle(fontSize: 18, color: Colors.grey),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const CreateEventScreen(),
+      body: AnimatedBuilder(
+        animation: MockBackend(),
+        builder: (context, _) {
+          final email = MockBackend().currentUser?.email;
+          final myEvents = MockBackend().events
+              .where((event) => event['organizerEmail']?.toString() == email)
+              .toList();
+
+          if (myEvents.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'You have no events',
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
                   ),
-                );
-              },
-              child: const Text('Create Event'),
-            ),
-          ],
-        ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CreateEventScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text('Create Event'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemBuilder: (context, index) {
+              final event = myEvents[index];
+              return Card(
+                child: ListTile(
+                  title: Text(event['title']?.toString() ?? 'Untitled Event'),
+                  subtitle: Text(
+                    '${event['date'] ?? ''} • ${event['location'] ?? ''}',
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => EventDetailsScreen(event: event),
+                      ),
+                    );
+                  },
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  CreateEventScreen(existingEvent: event),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.edit_outlined),
+                        tooltip: 'Edit',
+                      ),
+                      IconButton(
+                        onPressed: () async {
+                          await MockBackend().deleteEvent(
+                            event['id'].toString(),
+                          );
+                        },
+                        icon: const Icon(Icons.delete_outline),
+                        tooltip: 'Delete',
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            itemCount: myEvents.length,
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CreateEventScreen()),
+          );
+        },
+        label: const Text('Create Event'),
+        icon: const Icon(Icons.add),
       ),
     );
   }
