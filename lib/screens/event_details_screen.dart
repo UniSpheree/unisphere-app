@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:unisphere_app/utils/mock_backend.dart';
+import 'package:unisphere_app/widgets/header.dart';
+import 'package:unisphere_app/widgets/app_footer.dart';
 import 'my_tickets_screen.dart';
 
 class EventDetailsScreen extends StatelessWidget {
@@ -27,23 +29,18 @@ class EventDetailsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back_rounded),
-        ),
-        title: Text(event['title'] as String),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Large header card
-              Container(
+      body: Column(
+        children: [
+          AppHeader(showBackButton: true),
+          Expanded(
+            child: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Large header card
+                    Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
@@ -261,9 +258,13 @@ class EventDetailsScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-            ],
+              ],
+            ),
           ),
         ),
+      ),
+          const AppFooter(),
+        ],
       ),
     );
   }
