@@ -14,18 +14,9 @@ import 'screens/my_tickets_screen.dart';
 import 'screens/my_events_page.dart';
 import 'screens/calendar_page.dart';
 import 'services/sqlite_backend.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize Hive for web/native persistence
-  await Hive.initFlutter();
-  await Hive.openBox('unisphere_users');
-  await Hive.openBox('unisphere_events');
-  await Hive.openBox('unisphere_tickets');
 
   // Initialize backend
   final backend = SqliteBackend();
