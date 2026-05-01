@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:unisphere_app/utils/mock_backend.dart';
 import 'my_tickets_screen.dart';
+import 'register_screen.dart';
 
 class EventDetailsScreen extends StatelessWidget {
   final Map<String, dynamic> event;
@@ -20,10 +21,14 @@ class EventDetailsScreen extends StatelessWidget {
         'No extra description provided for this event.';
 
     final organizer =
-        event['organizer'] as String? ?? 'Organizer not specified';
+      event['organizer'] as String? ?? 'Organizer not specified';
     final capacity = event['capacity'] != null ? '${event['capacity']}' : null;
     final tags = (event['tags'] as List<dynamic>?)?.cast<String>() ?? [];
     final price = (event['price'] as String?)?.trim();
+
+    final isOrganizerViewing =
+      MockBackend().currentUser?.email ==
+        (event['organizerEmail']?.toString() ?? '');
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
@@ -191,8 +196,8 @@ class EventDetailsScreen extends StatelessWidget {
 
               const SizedBox(height: 18),
 
-              // Action bar
-              if (allowPurchase)
+                // Action bar
+                if (allowPurchase && !isOrganizerViewing)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -206,6 +211,32 @@ class EventDetailsScreen extends StatelessWidget {
                       ),
                     FilledButton(
                       onPressed: () {
+                        if (MockBackend().currentUser == null) {
+                          final pending = PurchasedTicket(
+                            title: event['title'] as String,
+                            date: event['date'] as String,
+                            location: event['location'] as String,
+                            category: event['category'] as String,
+                            price: price ?? '',
+                          );
+                          MockBackend().setPendingPurchase(pending);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Please register or sign in to complete your purchase. Your ticket was saved.',
+                              ),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const RegisterScreen(),
+                            ),
+                          );
+                          return;
+                        }
+
                         MockBackend().purchaseTicket(
                           PurchasedTicket(
                             title: event['title'] as String,
@@ -235,6 +266,31 @@ class EventDetailsScreen extends StatelessWidget {
                       child: const Text('Buy ticket'),
                     ),
                   ],
+                )
+              else if (isOrganizerViewing)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.06),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: color.withOpacity(0.12)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.event_available_outlined, color: color),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Text(
+                          'This is your event — buyers cannot purchase from here.',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF374151),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 )
               else
                 Container(
