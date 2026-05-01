@@ -46,7 +46,10 @@ class AppHeader extends StatelessWidget {
                       children: [
                         if (showBackButton)
                           IconButton(
-                            icon: const Icon(Icons.arrow_back, color: _HeaderColors.text),
+                            icon: const Icon(
+                              Icons.arrow_back,
+                              color: _HeaderColors.text,
+                            ),
                             onPressed: () => Navigator.pop(context),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
@@ -169,7 +172,10 @@ class AppHeader extends StatelessWidget {
                       children: [
                         if (showBackButton)
                           IconButton(
-                            icon: const Icon(Icons.arrow_back, color: _HeaderColors.text),
+                            icon: const Icon(
+                              Icons.arrow_back,
+                              color: _HeaderColors.text,
+                            ),
                             onPressed: () => Navigator.pop(context),
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                           ),
