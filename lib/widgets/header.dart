@@ -52,7 +52,13 @@ class AppHeader extends StatelessWidget {
                       onSelected: (value) {
                         switch (value) {
                           case 'find':
-                            onFindEventsTap?.call();
+                            if (onFindEventsTap != null) {
+                              onFindEventsTap!.call();
+                            } else {
+                              Future.microtask(() {
+                                if (context.mounted) Navigator.pushNamed(context, '/discover');
+                              });
+                            }
                             break;
                           case 'create':
                             if (onCreateEventsTap != null) {
@@ -76,7 +82,13 @@ class AppHeader extends StatelessWidget {
                             }
                             break;
                           case 'about':
-                            onAboutTap?.call();
+                            if (onAboutTap != null) {
+                              onAboutTap!.call();
+                            } else {
+                              Future.microtask(() {
+                                if (context.mounted) Navigator.pushNamed(context, '/about');
+                              });
+                            }
                             break;
                           case 'signin':
                             onSignInTap?.call();
@@ -157,7 +169,11 @@ class AppHeader extends StatelessWidget {
                       children: [
                         _NavItem(
                           label: 'Find Events',
-                          onTap: onFindEventsTap ?? () {},
+                          onTap: onFindEventsTap ?? () {
+                            Future.microtask(() {
+                              if (context.mounted) Navigator.pushNamed(context, '/discover');
+                            });
+                          },
                         ),
                         _NavItem(
                           label: 'Create Events',
@@ -184,7 +200,14 @@ class AppHeader extends StatelessWidget {
                             }
                           },
                         ),
-                        _NavItem(label: 'About us', onTap: onAboutTap ?? () {}),
+                        _NavItem(
+                          label: 'About us', 
+                          onTap: onAboutTap ?? () {
+                            Future.microtask(() {
+                              if (context.mounted) Navigator.pushNamed(context, '/about');
+                            });
+                          }
+                        ),
                         const SizedBox(width: 12),
                         // Only show Sign In button if not logged in
                         if (MockBackend().currentUser == null)
@@ -279,7 +302,9 @@ class _Brand extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         // Always navigate to the initial welcome page
-        Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+        Future.microtask(() {
+          if (context.mounted) Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+        });
       },
       child: Row(
         children: [
