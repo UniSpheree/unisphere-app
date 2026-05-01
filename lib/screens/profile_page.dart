@@ -175,7 +175,7 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundColor: const Color(0xFFF5F7FB),
       appBar: const PreferredSize(
         preferredSize: Size.fromHeight(88),
-        child: AppHeader(),
+        child: AppHeader(showBackButton: true),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
