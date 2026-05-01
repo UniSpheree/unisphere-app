@@ -199,8 +199,16 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
       return _organiserLiveEvents;
     }
 
-    return PersonalizedLandingPage.upcomingEvents.where((event) {
-      return _isWithinNext30Days(event['eventDate'] as DateTime);
+    return MockBackend().purchasedTickets.map((ticket) {
+      return {
+        'title': ticket.title,
+        'date': ticket.date,
+        'eventDate': DateTime.now().add(const Duration(days: 10)),
+        'location': ticket.location,
+        'category': ticket.category,
+        'icon': Icons.confirmation_number_outlined,
+        'color': const Color(0xFF4F46E5),
+      };
     }).toList();
   }
 
@@ -1192,6 +1200,13 @@ class _DashboardPanel extends StatelessWidget {
                     );
                     return;
                   }
+                  
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const CreateEventScreen(),
+                    ),
+                  );
                 },
                 icon: Icon(
                   isOrganiser
