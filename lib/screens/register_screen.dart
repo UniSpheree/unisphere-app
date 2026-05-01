@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import '../utils/validators.dart';
 import '../widgets/auth_text_field.dart';
 import '../utils/unis.dart';
@@ -417,6 +418,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     fontWeight: FontWeight.w600,
                                     decoration: TextDecoration.underline,
                                   ),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () {
+                                      Navigator.pushNamed(context, '/terms');
+                                    },
                                 ),
                                 const TextSpan(text: ' and '),
                                 TextSpan(
@@ -426,6 +431,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     fontWeight: FontWeight.w600,
                                     decoration: TextDecoration.underline,
                                   ),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () {
+                                      Navigator.pushNamed(context, '/privacy');
+                                    },
                                 ),
                               ],
                             ),
