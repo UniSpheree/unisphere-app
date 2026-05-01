@@ -168,7 +168,7 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
               onSignInTap: () {
                 Navigator.pushNamed(context, '/login');
               },
-              showProfile: false,
+              showProfile: true,
             ),
             LayoutBuilder(
               builder: (context, constraints) {
