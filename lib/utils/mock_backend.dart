@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+
 class MockUser {
   final String email;
   final String password;
@@ -42,17 +44,131 @@ class PurchasedTicket {
   });
 }
 
-class MockBackend {
+class _Event {
+  final String id;
+  final String title;
+  final String date;
+  final String location;
+  final String category;
+  final String description;
+  final String? organizerEmail;
+
+  const _Event({
+    required this.id,
+    required this.title,
+    required this.date,
+    required this.location,
+    required this.category,
+    required this.description,
+    this.organizerEmail,
+  });
+
+  factory _Event.fromMap(Map<String, dynamic> m) {
+    return _Event(
+      id: m['id']?.toString() ?? '',
+      title: m['title']?.toString() ?? '',
+      date: m['date']?.toString() ?? '',
+      location: m['location']?.toString() ?? '',
+      category: m['category']?.toString() ?? '',
+      description: m['description']?.toString() ?? '',
+      organizerEmail: m['organizerEmail']?.toString(),
+    );
+  }
+
+  Map<String, dynamic> toMap() => {
+    'id': id,
+    'title': title,
+    'date': date,
+    'location': location,
+    'category': category,
+    'description': description,
+    'organizerEmail': organizerEmail,
+  };
+
+  bool get isEmpty => id.isEmpty;
+
+  factory _Event.empty() => const _Event(
+    id: '',
+    title: '',
+    date: '',
+    location: '',
+    category: '',
+    description: '',
+  );
+}
+
+class MockBackend extends ChangeNotifier {
   MockUser? _currentUser;
   final List<PurchasedTicket> _purchasedTickets = [];
+  final List<_Event> _events = [
+    _Event(
+      id: 'e1',
+      title: 'Welcome Mixer',
+      date: '2024-06-20',
+      location: 'Main Hall',
+      category: 'Social',
+      description: 'Meet and greet with new students',
+      organizerEmail: 'organiser@example.com',
+    ),
+    _Event(
+      id: 'e2',
+      title: 'Tech Talk',
+      date: '2024-07-05',
+      location: 'Auditorium',
+      category: 'Tech',
+      description: 'AI and the future of computing',
+      organizerEmail: 'organiser@example.com',
+    ),
+  ];
 
   MockUser? get currentUser => _currentUser;
 
   List<PurchasedTicket> get purchasedTickets =>
       List.unmodifiable(_purchasedTickets);
 
+  List<Map<String, dynamic>> get events =>
+      List.unmodifiable(_events.map((e) => e.toMap()).toList());
+
+  Map<String, dynamic>? getEventById(String id) {
+    final ev = _events.firstWhere(
+      (e) => e.id == id,
+      orElse: () => _Event.empty(),
+    );
+    if (ev.isEmpty) return null;
+    return ev.toMap();
+  }
+
   void purchaseTicket(PurchasedTicket ticket) {
     _purchasedTickets.add(ticket);
+    notifyListeners();
+  }
+
+  Future<String> createEvent(Map<String, dynamic> eventData) async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    final id = DateTime.now().millisecondsSinceEpoch.toString();
+    final ev = _Event.fromMap({...eventData, 'id': id});
+    _events.add(ev);
+    notifyListeners();
+    return id;
+  }
+
+  Future<bool> updateEvent(String id, Map<String, dynamic> updated) async {
+    await Future.delayed(const Duration(milliseconds: 180));
+    final idx = _events.indexWhere((e) => e.id == id);
+    if (idx == -1) return false;
+    final merged = _events[idx].toMap()..addAll(updated);
+    _events[idx] = _Event.fromMap(merged);
+    notifyListeners();
+    return true;
+  }
+
+  Future<bool> deleteEvent(String id) async {
+    await Future.delayed(const Duration(milliseconds: 160));
+    final before = _events.length;
+    _events.removeWhere((e) => e.id == id);
+    final removed = _events.length < before;
+    if (removed) notifyListeners();
+    return removed;
   }
 
   Future<MockUser?> updateCurrentUserProfile({
@@ -82,6 +198,7 @@ class MockBackend {
       isApproved: current.isApproved,
     );
     _currentUser = updatedUser;
+    notifyListeners();
     return updatedUser;
   }
 
@@ -108,6 +225,7 @@ class MockBackend {
       _users[index] = updatedUser;
     }
 
+    notifyListeners();
     return updatedUser;
   }
 
@@ -127,6 +245,7 @@ class MockBackend {
         );
         if (_currentUser?.email == email) {
           _currentUser = _users.firstWhere((u) => u.email == email);
+          notifyListeners();
         }
         return true;
       }
@@ -173,6 +292,7 @@ class MockBackend {
         .toList();
     if (user.isNotEmpty) {
       _currentUser = user.first;
+      notifyListeners();
       return true;
     }
     return false;
@@ -184,9 +304,16 @@ class MockBackend {
   }
 
   // For testing/demo
-  void clear() => _users.clear();
+  void clear() {
+    _users.clear();
+    _purchasedTickets.clear();
+    _currentUser = null;
+    notifyListeners();
+  }
+
   void logout() {
     _currentUser = null;
+    notifyListeners();
   }
 
   List<MockUser> get users => List.unmodifiable(_users);
