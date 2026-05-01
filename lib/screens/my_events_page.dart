@@ -12,7 +12,7 @@ class MyEventsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = MockBackend().currentUser;
-    
+
     Widget bodyContent;
     if (!(user?.isOrganiser ?? false)) {
       bodyContent = Center(
@@ -35,18 +35,12 @@ class MyEventsPage extends StatelessWidget {
                   const SizedBox(height: 16),
                   const Text(
                     'My events is organiser only',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Switch your profile role to Organiser to manage created events here.',
-                    style: TextStyle(
-                      color: Colors.grey.shade700,
-                      height: 1.5,
-                    ),
+                    style: TextStyle(color: Colors.grey.shade700, height: 1.5),
                   ),
                   const SizedBox(height: 18),
                   FilledButton(
@@ -154,9 +148,7 @@ class MyEventsPage extends StatelessWidget {
       body: Column(
         children: [
           AppHeader(),
-          Expanded(
-            child: bodyContent,
-          ),
+          Expanded(child: bodyContent),
           const AppFooter(),
         ],
       ),
@@ -165,7 +157,9 @@ class MyEventsPage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const CreateEventScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const CreateEventScreen(),
+                  ),
                 );
               },
               label: const Text('Create Event'),
