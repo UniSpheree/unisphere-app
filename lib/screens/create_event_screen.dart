@@ -4,9 +4,11 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import '../models/database_models.dart';
 import '../widgets/header.dart';
 import '../widgets/app_footer.dart';
 import '../services/sqlite_backend.dart';
+import '../utils/event_categories.dart';
 
 class CreateEventScreen extends StatefulWidget {
   final Map<String, dynamic>? existingEvent;
@@ -35,6 +37,13 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   XFile? _bannerImage;
   final ImagePicker _imagePicker = ImagePicker();
 
+  DbUser? _resolvedUser(BuildContext context) {
+    final routeUser =
+        (ModalRoute.of(context)?.settings.arguments as Map?)?['user'];
+    if (routeUser is DbUser) return routeUser;
+    return SqliteBackend().currentUser;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -57,14 +66,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     }
   }
 
-  final List<String> eventCategories = [
-    'Academic',
-    'Social',
-    'Sports',
-    'Career',
-    'Workshops',
-    'Other',
-  ];
+  final List<String> eventCategories = kEventCategories;
 
   final List<Map<String, dynamic>> visibilityOptions = [
     {'value': 'Public', 'icon': Icons.public, 'desc': 'Any student'},
@@ -171,7 +173,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
     if (!_formKey.currentState!.validate() || _dateError != null) return;
 
-    final isLoggedIn = SqliteBackend().currentUser != null;
+    final currentUser = _resolvedUser(context);
+    final isLoggedIn = currentUser != null;
 
     if (!isLoggedIn) {
       if (widget.existingEvent == null) {
@@ -211,73 +214,82 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     }
 
     setState(() => _isSubmitting = true);
+    try {
+      final payload = <String, dynamic>{
+        'title': eventNameController.text.trim(),
+        'description': descriptionController.text.trim(),
+        'location': venueController.text.trim(),
+        'category': eventCategory ?? 'Other',
+        'visibility': eventVisibility,
+        'date': startDate?.toIso8601String() ?? '',
+        'endDate': endDate?.toIso8601String() ?? '',
+        'maxAttendees': int.tryParse(maxAttendeesController.text.trim()) ?? 0,
+        'organizerEmail': currentUser.email,
+      };
 
-    final payload = <String, dynamic>{
-      'title': eventNameController.text.trim(),
-      'description': descriptionController.text.trim(),
-      'location': venueController.text.trim(),
-      'category': eventCategory ?? 'Other',
-      'visibility': eventVisibility,
-      'date': startDate?.toIso8601String() ?? '',
-      'endDate': endDate?.toIso8601String() ?? '',
-      'maxAttendees': int.tryParse(maxAttendeesController.text.trim()) ?? 0,
-      'organizerEmail': SqliteBackend().currentUser?.email,
-    };
+      if ((payload['organizerEmail'] as String?)?.trim().isEmpty ?? true) {
+        throw Exception('Organiser account not available');
+      }
 
-    if (_bannerImage != null) {
-      try {
+      if (_bannerImage != null) {
         payload['bannerImageData'] = await _bannerImage!.readAsBytes();
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Could not read banner image: $e'),
-              backgroundColor: Colors.redAccent,
-            ),
-          );
+      }
+
+      if (widget.existingEvent != null) {
+        final ok = await SqliteBackend().updateEvent(
+          widget.existingEvent!['id'].toString(),
+          payload,
+        );
+        if (!ok) {
+          throw Exception('Failed to update event');
         }
-        return;
+      } else {
+        await SqliteBackend().createEvent(payload);
+      }
+
+      await Future.delayed(const Duration(milliseconds: 600));
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.green.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle_outline, color: Colors.white),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  widget.existingEvent != null
+                      ? 'Event updated successfully!'
+                      : 'Event created successfully!',
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      _clearForm();
+      Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not save event: $e'),
+            backgroundColor: Colors.red.shade600,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
       }
     }
-
-    if (widget.existingEvent != null) {
-      await SqliteBackend().updateEvent(
-        widget.existingEvent!['id'].toString(),
-        payload,
-      );
-    } else {
-      await SqliteBackend().createEvent(payload);
-    }
-
-    await Future.delayed(const Duration(milliseconds: 600));
-    setState(() => _isSubmitting = false);
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: Colors.green.shade600,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle_outline, color: Colors.white),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                widget.existingEvent != null
-                    ? 'Event updated successfully!'
-                    : 'Event created successfully!',
-                style: const TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-
-    _clearForm();
-    Navigator.pop(context);
   }
 
   void _clearForm() {
@@ -394,9 +406,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser =
-        (ModalRoute.of(context)?.settings.arguments as Map?)?['user'];
-    final user = currentUser ?? SqliteBackend().currentUser;
+    final user = _resolvedUser(context);
     if (user != null && !user.isOrganiser) {
       return _buildLockedPage(context);
     }
