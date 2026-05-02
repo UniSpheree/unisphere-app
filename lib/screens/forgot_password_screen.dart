@@ -394,9 +394,9 @@ class _StepCode extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: const Color(0xFFFFE082)),
             ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: const Wrap(
+              alignment: WrapAlignment.center,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Icon(Icons.info_outline, size: 14, color: Color(0xFFF9A825)),
                 SizedBox(width: 6),
@@ -463,8 +463,9 @@ class _StepCode extends StatelessWidget {
           const SizedBox(height: 14),
 
           // Resend
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               const Text(
                 "Didn't receive it? ",
@@ -662,8 +663,9 @@ class _StepNewPassword extends StatelessWidget {
 class _BackToLogin extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         const Icon(Icons.arrow_back, size: 13, color: Colors.grey),
         const SizedBox(width: 4),
