@@ -803,7 +803,9 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                                         const SizedBox(
                                                           height: 14,
                                                         ),
-                                                        Row(
+                                                        Wrap(
+                                                          alignment: WrapAlignment.spaceBetween,
+                                                          crossAxisAlignment: WrapCrossAlignment.center,
                                                           children: [
                                                             Container(
                                                               padding:
@@ -836,7 +838,6 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                                                 ),
                                                               ),
                                                             ),
-                                                            const Spacer(),
                                                             TextButton(
                                                               onPressed: () {
                                                                 Navigator.push(

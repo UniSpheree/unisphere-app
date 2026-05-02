@@ -240,8 +240,11 @@ class _CalendarPageState extends State<CalendarPage> {
                     // Header
                     Padding(
                       padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 16,
+                        runSpacing: 16,
                         children: [
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -265,6 +268,7 @@ class _CalendarPageState extends State<CalendarPage> {
                             ],
                           ),
                           Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
                                 icon: const Icon(Icons.chevron_left_rounded),
