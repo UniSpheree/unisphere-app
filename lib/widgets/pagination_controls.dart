@@ -87,21 +87,11 @@ class PaginationControls extends StatelessWidget {
           if (compact) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                status,
-                const SizedBox(height: 12),
-                controls,
-              ],
+              children: [status, const SizedBox(height: 12), controls],
             );
           }
 
-          return Row(
-            children: [
-              status,
-              const Spacer(),
-              controls,
-            ],
-          );
+          return Row(children: [status, const Spacer(), controls]);
         },
       ),
     );
@@ -145,7 +135,9 @@ class _PagerButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: enabled
-                  ? (inverse ? const Color(0xFF4F46E5) : const Color(0xFFD1D5DB))
+                  ? (inverse
+                        ? const Color(0xFF4F46E5)
+                        : const Color(0xFFD1D5DB))
                   : const Color(0xFFE5E7EB),
             ),
           ),
