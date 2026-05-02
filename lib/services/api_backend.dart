@@ -542,6 +542,31 @@ class SqliteBackend extends ChangeNotifier {
     }
   }
 
+  Future<bool> deleteTicket(String ticketId) async {
+    final current = _currentUser;
+    if (current == null) return false;
+
+    try {
+      final response = await _delete(
+        '/tickets/${Uri.encodeComponent(current.email)}/$ticketId',
+      );
+      if (response.statusCode != 200) {
+        print('Delete ticket failed: ${response.statusCode} ${response.body}');
+        return false;
+      }
+
+      _purchasedTickets.removeWhere(
+        (ticket) => ticket.id?.toString() == ticketId,
+      );
+      _pruneStalePurchasedTickets();
+      notifyListeners();
+      return true;
+    } catch (e) {
+      print('Error deleting ticket: $e');
+      return false;
+    }
+  }
+
   void purchaseTicket(DbPurchasedTicket ticket) {
     if (_currentUser == null) {
       _pendingPurchase = ticket;
@@ -573,6 +598,29 @@ class SqliteBackend extends ChangeNotifier {
     _pendingEvent = null;
     _clearSavedUserFromPrefs();
     notifyListeners();
+  }
+
+  Future<bool> deleteAccount() async {
+    final current = _currentUser;
+    if (current == null) return false;
+    try {
+      final response = await _delete(
+        '/auth/users/${Uri.encodeComponent(current.email)}',
+      );
+      if (response.statusCode == 200) {
+        _currentUser = null;
+        _purchasedTickets.clear();
+        _cachedEvents.clear();
+        await _clearSavedUserFromPrefs();
+        notifyListeners();
+        return true;
+      }
+      print('Delete account failed: ${response.statusCode} ${response.body}');
+      return false;
+    } catch (e) {
+      print('Error deleting account: $e');
+      return false;
+    }
   }
 
   Future<void> clear() async {
