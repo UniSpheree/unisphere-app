@@ -24,7 +24,6 @@ class _MyEventsPageState extends State<MyEventsPage> {
     });
   }
 
-  
   @override
   Widget build(BuildContext context) {
     final user = SqliteBackend().currentUser;
@@ -163,9 +162,11 @@ class _MyEventsPageState extends State<MyEventsPage> {
       builder: (context, _) {
         final email = SqliteBackend().currentUser?.email;
         final myEvents = SqliteBackend().events
-            .where((event) => 
-                event['organizerEmail']?.toString() == email && 
-                event['title']?.toString().toLowerCase() != 'demo event')
+            .where(
+              (event) =>
+                  event['organizerEmail']?.toString() == email &&
+                  event['title']?.toString().toLowerCase() != 'demo event',
+            )
             .toList();
         final itemsPerPage = eventsPerPageForWidth(constraints.maxWidth);
         final totalPages = totalPagesForLength(myEvents.length, itemsPerPage);
