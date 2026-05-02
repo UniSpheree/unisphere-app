@@ -638,32 +638,112 @@ class _ProfilePageState extends State<ProfilePage> {
                                       'Sign out when you are finished using UniSphere.',
                                   child: SizedBox(
                                     width: double.infinity,
-                                    child: OutlinedButton.icon(
-                                      onPressed: () {
-                                        SqliteBackend().logout();
-                                        Navigator.pushReplacementNamed(
-                                          context,
-                                          '/',
-                                        );
-                                      },
-                                      icon: const Icon(Icons.logout, size: 18),
-                                      label: const Text('Log out'),
-                                      style: OutlinedButton.styleFrom(
-                                        foregroundColor: const Color(
-                                          0xFFDC2626,
-                                        ),
-                                        side: const BorderSide(
-                                          color: Color(0xFFFCA5A5),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 14,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            16,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: [
+                                        OutlinedButton.icon(
+                                          onPressed: () {
+                                            SqliteBackend().logout();
+                                            Navigator.pushReplacementNamed(
+                                              context,
+                                              '/',
+                                            );
+                                          },
+                                          icon:
+                                              const Icon(Icons.logout, size: 18),
+                                          label: const Text('Log out'),
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor: const Color(
+                                              0xFFDC2626,
+                                            ),
+                                            side: const BorderSide(
+                                              color: Color(0xFFFCA5A5),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 14,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                16,
+                                              ),
+                                            ),
                                           ),
                                         ),
-                                      ),
+                                        const SizedBox(height: 8),
+                                        OutlinedButton.icon(
+                                          onPressed: () async {
+                                            final confirm = await showDialog<bool>(
+                                              context: context,
+                                              builder: (dialogContext) {
+                                                return AlertDialog(
+                                                  title:
+                                                      const Text('Delete account'),
+                                                  content: const Text(
+                                                      'Deleting your account will remove your profile, all events you created, and any tickets you own. This action cannot be undone. Are you sure you want to continue?'),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(dialogContext, false),
+                                                      child: const Text('Cancel'),
+                                                    ),
+                                                    FilledButton(
+                                                      onPressed: () => Navigator.pop(dialogContext, true),
+                                                      child: const Text('Delete'),
+                                                      style: FilledButton.styleFrom(
+                                                        backgroundColor: const Color(0xFFDC2626),
+                                                        foregroundColor: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            );
+
+                                            if (confirm != true) return;
+                                            final ok = await SqliteBackend().deleteAccount();
+                                            if (ok) {
+                                              if (!mounted) return;
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text('Account deleted.'),
+                                                  behavior: SnackBarBehavior.floating,
+                                                ),
+                                              );
+                                              Navigator.pushReplacementNamed(context, '/');
+                                            } else {
+                                              if (!mounted) return;
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text('Failed to delete account.'),
+                                                  behavior: SnackBarBehavior.floating,
+                                                ),
+                                              );
+                                            }
+                                          },
+                                          icon: const Icon(
+                                            Icons.delete_outline,
+                                            size: 18,
+                                            color: Color(0xFFDC2626),
+                                          ),
+                                          label: const Text('Delete account'),
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor:
+                                                const Color(0xFFDC2626),
+                                            side: const BorderSide(
+                                              color: Color(0xFFFCA5A5),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 14,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
