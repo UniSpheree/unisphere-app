@@ -96,8 +96,8 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
     final baseEvents = _selectedFilter == 'All'
         ? _discoverEvents
         : _discoverEvents
-            .where((event) => event['category'] == _selectedFilter)
-            .toList();
+              .where((event) => event['category'] == _selectedFilter)
+              .toList();
 
     final dateFiltered = baseEvents
         .where((event) => matchesDateFilters(event['date'], _dateFilters))
@@ -112,7 +112,9 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
       final title = (event['title'] as String).toLowerCase();
       final category = (event['category'] as String).toLowerCase();
       final location = (event['location'] as String).toLowerCase();
-      return title.contains(query) || category.contains(query) || location.contains(query);
+      return title.contains(query) ||
+          category.contains(query) ||
+          location.contains(query);
     }).toList();
   }
 
@@ -131,13 +133,19 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                   Column(
                     children: [
                       AppHeader(
-                        onHostEventTap: () => Navigator.pushNamed(context, '/create-event'),
-                        onRegisterTap: () => Navigator.pushNamed(context, '/register'),
+                        onHostEventTap: () =>
+                            Navigator.pushNamed(context, '/create-event'),
+                        onRegisterTap: () =>
+                            Navigator.pushNamed(context, '/register'),
                         onFindEventsTap: () {},
-                        onCreateEventsTap: () => Navigator.pushNamed(context, '/create-event'),
-                        onMyTicketsTap: () => Navigator.pushNamed(context, '/my-tickets'),
-                        onAboutTap: () => Navigator.pushNamed(context, '/about'),
-                        onSignInTap: () => Navigator.pushNamed(context, '/login'),
+                        onCreateEventsTap: () =>
+                            Navigator.pushNamed(context, '/create-event'),
+                        onMyTicketsTap: () =>
+                            Navigator.pushNamed(context, '/my-tickets'),
+                        onAboutTap: () =>
+                            Navigator.pushNamed(context, '/about'),
+                        onSignInTap: () =>
+                            Navigator.pushNamed(context, '/login'),
                         showProfile: true,
                       ),
                       LayoutBuilder(
@@ -150,7 +158,9 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                 vertical: 28,
                               ),
                               child: ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 1100),
+                                constraints: const BoxConstraints(
+                                  maxWidth: 1100,
+                                ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -158,18 +168,33 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                       children: [
                                         InkWell(
                                           onTap: () => Navigator.pop(context),
-                                          borderRadius: BorderRadius.circular(8),
-                                          child: const Icon(Icons.arrow_back, size: 20, color: Colors.grey),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          child: const Icon(
+                                            Icons.arrow_back,
+                                            size: 20,
+                                            color: Colors.grey,
+                                          ),
                                         ),
                                         const SizedBox(width: 8),
                                         GestureDetector(
                                           onTap: () => Navigator.pop(context),
                                           child: const Text(
                                             'Landing Page',
-                                            style: TextStyle(color: Colors.grey, fontSize: 14),
+                                            style: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: 14,
+                                            ),
                                           ),
                                         ),
-                                        const Text('  /  ', style: TextStyle(color: Colors.grey, fontSize: 14)),
+                                        const Text(
+                                          '  /  ',
+                                          style: TextStyle(
+                                            color: Colors.grey,
+                                            fontSize: 14,
+                                          ),
+                                        ),
                                         const Flexible(
                                           child: Text(
                                             'Discover Events',
@@ -200,10 +225,12 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                             height: 48,
                                             decoration: BoxDecoration(
                                               color: Colors.white,
-                                              borderRadius: BorderRadius.circular(12),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.black.withOpacity(0.05),
+                                                  color: Colors.black
+                                                      .withOpacity(0.05),
                                                   blurRadius: 8,
                                                   offset: const Offset(0, 2),
                                                 ),
@@ -223,20 +250,39 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                               },
                                               decoration: InputDecoration(
                                                 hintText: 'Search events...',
-                                                hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
-                                                prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF9CA3AF), size: 20),
+                                                hintStyle: const TextStyle(
+                                                  color: Color(0xFF9CA3AF),
+                                                  fontSize: 14,
+                                                ),
+                                                prefixIcon: const Icon(
+                                                  Icons.search_rounded,
+                                                  color: Color(0xFF9CA3AF),
+                                                  size: 20,
+                                                ),
                                                 suffixIcon: IconButton(
-                                                  icon: const Icon(Icons.arrow_forward_rounded, color: Color(0xFF4F46E5)),
+                                                  icon: const Icon(
+                                                    Icons.arrow_forward_rounded,
+                                                    color: Color(0xFF4F46E5),
+                                                  ),
                                                   onPressed: () {
                                                     setState(() {
-                                                      _submittedSearchQuery = _searchController.text;
+                                                      _submittedSearchQuery =
+                                                          _searchController
+                                                              .text;
                                                     });
                                                   },
                                                 ),
                                                 border: InputBorder.none,
-                                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                                contentPadding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 14,
+                                                    ),
                                               ),
-                                              style: const TextStyle(fontSize: 14, color: Color(0xFF1A1F36)),
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                color: Color(0xFF1A1F36),
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -246,16 +292,25 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                           width: 54,
                                           decoration: BoxDecoration(
                                             color: Colors.white,
-                                            borderRadius: BorderRadius.circular(18),
-                                            border: Border.all(color: const Color(0xFFE5E7EB)),
+                                            borderRadius: BorderRadius.circular(
+                                              18,
+                                            ),
+                                            border: Border.all(
+                                              color: const Color(0xFFE5E7EB),
+                                            ),
                                           ),
                                           child: IconButton(
                                             onPressed: () {
                                               setState(() {
-                                                _showFiltersDropdown = !_showFiltersDropdown;
+                                                _showFiltersDropdown =
+                                                    !_showFiltersDropdown;
                                               });
                                             },
-                                            icon: const Icon(Icons.tune_rounded, color: Color(0xFF4F46E5), size: 20),
+                                            icon: const Icon(
+                                              Icons.tune_rounded,
+                                              color: Color(0xFF4F46E5),
+                                              size: 20,
+                                            ),
                                             tooltip: 'Filter events',
                                           ),
                                         ),
@@ -268,18 +323,25 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                         padding: const EdgeInsets.all(20),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
-                                          borderRadius: BorderRadius.circular(18),
-                                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                                          borderRadius: BorderRadius.circular(
+                                            18,
+                                          ),
+                                          border: Border.all(
+                                            color: const Color(0xFFE5E7EB),
+                                          ),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Colors.black.withOpacity(0.03),
+                                              color: Colors.black.withOpacity(
+                                                0.03,
+                                              ),
                                               blurRadius: 12,
                                               offset: const Offset(0, 6),
                                             ),
                                           ],
                                         ),
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             const Text(
                                               'Date',
@@ -293,25 +355,48 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                             Wrap(
                                               spacing: 12,
                                               runSpacing: 10,
-                                              children: kEventDateFilters.map((filter) {
-                                                final isSelected = _dateFilters[filter] ?? false;
+                                              children: kEventDateFilters.map((
+                                                filter,
+                                              ) {
+                                                final isSelected =
+                                                    _dateFilters[filter] ??
+                                                    false;
                                                 return GestureDetector(
-                                                  onTap: () => _setDateFilter(filter, !isSelected),
+                                                  onTap: () => _setDateFilter(
+                                                    filter,
+                                                    !isSelected,
+                                                  ),
                                                   child: Container(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 14,
+                                                          vertical: 10,
+                                                        ),
                                                     decoration: BoxDecoration(
                                                       color: isSelected
-                                                          ? const Color(0xFF4F46E5).withOpacity(0.10)
-                                                          : const Color(0xFFF8FAFC),
-                                                      borderRadius: BorderRadius.circular(16),
+                                                          ? const Color(
+                                                              0xFF4F46E5,
+                                                            ).withOpacity(0.10)
+                                                          : const Color(
+                                                              0xFFF8FAFC,
+                                                            ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            16,
+                                                          ),
                                                       border: Border.all(
                                                         color: isSelected
-                                                            ? const Color(0xFF4F46E5)
-                                                            : const Color(0xFFE5E7EB),
+                                                            ? const Color(
+                                                                0xFF4F46E5,
+                                                              )
+                                                            : const Color(
+                                                                0xFFE5E7EB,
+                                                              ),
                                                       ),
                                                     ),
                                                     child: Row(
-                                                      mainAxisSize: MainAxisSize.min,
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
                                                       children: [
                                                         Container(
                                                           width: 18,
@@ -319,32 +404,49 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                                           decoration: BoxDecoration(
                                                             border: Border.all(
                                                               color: isSelected
-                                                                  ? const Color(0xFF4F46E5)
-                                                                  : const Color(0xFFD1D5DB),
+                                                                  ? const Color(
+                                                                      0xFF4F46E5,
+                                                                    )
+                                                                  : const Color(
+                                                                      0xFFD1D5DB,
+                                                                    ),
                                                               width: 2,
                                                             ),
-                                                            borderRadius: BorderRadius.circular(5),
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  5,
+                                                                ),
                                                             color: isSelected
-                                                                ? const Color(0xFF4F46E5)
+                                                                ? const Color(
+                                                                    0xFF4F46E5,
+                                                                  )
                                                                 : Colors.white,
                                                           ),
                                                           child: isSelected
                                                               ? const Icon(
                                                                   Icons.check,
                                                                   size: 12,
-                                                                  color: Colors.white,
+                                                                  color: Colors
+                                                                      .white,
                                                                 )
                                                               : null,
                                                         ),
-                                                        const SizedBox(width: 10),
+                                                        const SizedBox(
+                                                          width: 10,
+                                                        ),
                                                         Text(
                                                           filter,
                                                           style: TextStyle(
                                                             fontSize: 14,
-                                                            fontWeight: FontWeight.w600,
+                                                            fontWeight:
+                                                                FontWeight.w600,
                                                             color: isSelected
-                                                                ? const Color(0xFF4F46E5)
-                                                                : const Color(0xFF1A1F36),
+                                                                ? const Color(
+                                                                    0xFF4F46E5,
+                                                                  )
+                                                                : const Color(
+                                                                    0xFF1A1F36,
+                                                                  ),
                                                           ),
                                                         ),
                                                       ],
@@ -363,22 +465,34 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                         spacing: 10,
                                         runSpacing: 10,
                                         children: _filterChips.map((chip) {
-                                          final isSelected = chip == _selectedFilter;
+                                          final isSelected =
+                                              chip == _selectedFilter;
                                           return GestureDetector(
                                             onTap: () => _setFilter(chip),
                                             child: Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 14,
+                                                    vertical: 10,
+                                                  ),
                                               decoration: BoxDecoration(
-                                                color: isSelected ? const Color(0xFF4F46E5) : Colors.white,
-                                                borderRadius: BorderRadius.circular(999),
+                                                color: isSelected
+                                                    ? const Color(0xFF4F46E5)
+                                                    : Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(999),
                                                 border: Border.all(
-                                                  color: isSelected ? const Color(0xFF4F46E5) : const Color(0xFFE5E7EB),
+                                                  color: isSelected
+                                                      ? const Color(0xFF4F46E5)
+                                                      : const Color(0xFFE5E7EB),
                                                 ),
                                               ),
                                               child: Text(
                                                 chip,
                                                 style: TextStyle(
-                                                  color: isSelected ? Colors.white : const Color(0xFF1A1F36),
+                                                  color: isSelected
+                                                      ? Colors.white
+                                                      : const Color(0xFF1A1F36),
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                               ),
@@ -392,7 +506,10 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                         padding: const EdgeInsets.only(top: 16),
                                         child: Text(
                                           'Showing results for "$_submittedSearchQuery"',
-                                          style: const TextStyle(fontSize: 13, color: Color(0xFF9CA3AF)),
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            color: Color(0xFF9CA3AF),
+                                          ),
                                         ),
                                       ),
                                     const SizedBox(height: 28),
@@ -460,7 +577,11 @@ class _PaginatedDiscoverGridState extends State<_PaginatedDiscoverGrid> {
         ),
         child: Column(
           children: [
-            Icon(Icons.event_busy_outlined, size: 36, color: const Color(0xFF4F46E5).withOpacity(0.65)),
+            Icon(
+              Icons.event_busy_outlined,
+              size: 36,
+              color: const Color(0xFF4F46E5).withOpacity(0.65),
+            ),
             const SizedBox(height: 10),
             Text(
               widget.emptyMessage,
@@ -479,11 +600,20 @@ class _PaginatedDiscoverGridState extends State<_PaginatedDiscoverGrid> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final availableWidth = constraints.maxWidth;
-        final crossAxisCount = availableWidth > 800 ? 3 : (availableWidth > 400 ? 2 : 1);
+        final crossAxisCount = availableWidth > 800
+            ? 3
+            : (availableWidth > 400 ? 2 : 1);
         final itemsPerPage = eventsPerPageForWidth(availableWidth);
-        final totalPages = totalPagesForLength(widget.events.length, itemsPerPage);
+        final totalPages = totalPagesForLength(
+          widget.events.length,
+          itemsPerPage,
+        );
         final pageIndex = clampPageIndex(_currentPage, totalPages);
-        final pageEvents = paginateItems(widget.events, pageIndex, itemsPerPage);
+        final pageEvents = paginateItems(
+          widget.events,
+          pageIndex,
+          itemsPerPage,
+        );
 
         if (totalPages > 0 && pageIndex != _currentPage) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -505,7 +635,8 @@ class _PaginatedDiscoverGridState extends State<_PaginatedDiscoverGrid> {
                 mainAxisSpacing: 16,
                 childAspectRatio: 0.72,
               ),
-              itemBuilder: (context, index) => _DiscoverEventCard(event: pageEvents[index]),
+              itemBuilder: (context, index) =>
+                  _DiscoverEventCard(event: pageEvents[index]),
             ),
             PaginationControls(
               currentPage: pageIndex,
@@ -561,20 +692,34 @@ class _DiscoverEventCard extends StatelessWidget {
               width: double.infinity,
               decoration: BoxDecoration(
                 color: event['imageColor'] as Color? ?? const Color(0xFFE0E7FF),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(22),
+                ),
               ),
               child: bannerBytes != null
                   ? ClipRRect(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(22),
+                      ),
                       child: Image.memory(
                         bannerBytes,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => Center(
-                          child: Icon(icon, size: 42, color: const Color(0xFF4F46E5)),
+                          child: Icon(
+                            icon,
+                            size: 42,
+                            color: const Color(0xFF4F46E5),
+                          ),
                         ),
                       ),
                     )
-                  : Center(child: Icon(icon, size: 42, color: const Color(0xFF4F46E5))),
+                  : Center(
+                      child: Icon(
+                        icon,
+                        size: 42,
+                        color: const Color(0xFF4F46E5),
+                      ),
+                    ),
             ),
           ),
           Padding(
@@ -593,13 +738,22 @@ class _DiscoverEventCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(event['date']?.toString() ?? '', style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280))),
+                Text(
+                  event['date']?.toString() ?? '',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
                 const SizedBox(height: 4),
                 Text(
                   event['location']?.toString() ?? 'TBA',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF6B7280),
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -614,7 +768,10 @@ class _DiscoverEventCard extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEEF2FF),
                         borderRadius: BorderRadius.circular(999),
