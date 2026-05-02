@@ -650,8 +650,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                               '/',
                                             );
                                           },
-                                          icon:
-                                              const Icon(Icons.logout, size: 18),
+                                          icon: const Icon(
+                                            Icons.logout,
+                                            size: 18,
+                                          ),
                                           label: const Text('Log out'),
                                           style: OutlinedButton.styleFrom(
                                             foregroundColor: const Color(
@@ -665,9 +667,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                             ),
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(
-                                                16,
-                                              ),
+                                                  BorderRadius.circular(16),
                                             ),
                                           ),
                                         ),
@@ -678,23 +678,41 @@ class _ProfilePageState extends State<ProfilePage> {
                                               context: context,
                                               builder: (dialogContext) {
                                                 return AlertDialog(
-                                                  title:
-                                                      const Text('Delete account'),
+                                                  title: const Text(
+                                                    'Delete account',
+                                                  ),
                                                   content: const Text(
-                                                      'Deleting your account will remove your profile, all events you created, and any tickets you own. This action cannot be undone. Are you sure you want to continue?'),
+                                                    'Deleting your account will remove your profile, all events you created, and any tickets you own. This action cannot be undone. Are you sure you want to continue?',
+                                                  ),
                                                   actions: [
                                                     TextButton(
                                                       onPressed: () =>
-                                                          Navigator.pop(dialogContext, false),
-                                                      child: const Text('Cancel'),
+                                                          Navigator.pop(
+                                                            dialogContext,
+                                                            false,
+                                                          ),
+                                                      child: const Text(
+                                                        'Cancel',
+                                                      ),
                                                     ),
                                                     FilledButton(
-                                                      onPressed: () => Navigator.pop(dialogContext, true),
-                                                      child: const Text('Delete'),
-                                                      style: FilledButton.styleFrom(
-                                                        backgroundColor: const Color(0xFFDC2626),
-                                                        foregroundColor: Colors.white,
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                            dialogContext,
+                                                            true,
+                                                          ),
+                                                      child: const Text(
+                                                        'Delete',
                                                       ),
+                                                      style:
+                                                          FilledButton.styleFrom(
+                                                            backgroundColor:
+                                                                const Color(
+                                                                  0xFFDC2626,
+                                                                ),
+                                                            foregroundColor:
+                                                                Colors.white,
+                                                          ),
                                                     ),
                                                   ],
                                                 );
@@ -702,22 +720,36 @@ class _ProfilePageState extends State<ProfilePage> {
                                             );
 
                                             if (confirm != true) return;
-                                            final ok = await SqliteBackend().deleteAccount();
+                                            final ok = await SqliteBackend()
+                                                .deleteAccount();
                                             if (ok) {
                                               if (!mounted) return;
-                                              ScaffoldMessenger.of(context).showSnackBar(
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
                                                 const SnackBar(
-                                                  content: Text('Account deleted.'),
-                                                  behavior: SnackBarBehavior.floating,
+                                                  content: Text(
+                                                    'Account deleted.',
+                                                  ),
+                                                  behavior:
+                                                      SnackBarBehavior.floating,
                                                 ),
                                               );
-                                              Navigator.pushReplacementNamed(context, '/');
+                                              Navigator.pushReplacementNamed(
+                                                context,
+                                                '/',
+                                              );
                                             } else {
                                               if (!mounted) return;
-                                              ScaffoldMessenger.of(context).showSnackBar(
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
                                                 const SnackBar(
-                                                  content: Text('Failed to delete account.'),
-                                                  behavior: SnackBarBehavior.floating,
+                                                  content: Text(
+                                                    'Failed to delete account.',
+                                                  ),
+                                                  behavior:
+                                                      SnackBarBehavior.floating,
                                                 ),
                                               );
                                             }
@@ -729,8 +761,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                           ),
                                           label: const Text('Delete account'),
                                           style: OutlinedButton.styleFrom(
-                                            foregroundColor:
-                                                const Color(0xFFDC2626),
+                                            foregroundColor: const Color(
+                                              0xFFDC2626,
+                                            ),
                                             side: const BorderSide(
                                               color: Color(0xFFFCA5A5),
                                             ),
