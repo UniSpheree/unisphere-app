@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:unisphere_app/widgets/app_footer.dart';
 import 'package:unisphere_app/widgets/header.dart';
 import 'package:unisphere_app/services/sqlite_backend.dart';
+import 'package:unisphere_app/utils/event_categories.dart';
 import 'event_details_screen.dart';
 
 class DiscoverEventScreen extends StatefulWidget {
@@ -50,15 +51,7 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
   late TextEditingController _searchController;
   String _submittedSearchQuery = '';
 
-  static const List<String> _filterChips = [
-    'All',
-    'Technology',
-    'Music',
-    'Entertainment',
-    'Career',
-    'Sports',
-    'Workshops',
-  ];
+  static const List<String> _filterChips = kEventFilterCategories;
 
   List<Map<String, dynamic>> get _discoverEvents {
     return SqliteBackend().events
@@ -75,6 +68,7 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
         'description': event['description'] ?? '',
         'bannerImageData': event['bannerImageData'],
         'organizer': event['organizer'] ?? 'UniSphere',
+        'organizerEmail': event['organizerEmail'],
         'imageColor': const Color(0xFFE0E7FF),
         'icon': Icons.event_rounded,
       };
@@ -659,31 +653,71 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                         ),
                                       ),
                                     const SizedBox(height: 28),
-                                    LayoutBuilder(
-                                      builder: (context, constraints) {
-                                        final availableWidth =
-                                            constraints.maxWidth;
-                                        final crossAxisCount =
-                                            availableWidth > 800
-                                                ? 3
-                                                : (availableWidth > 400 ? 2 : 1);
-
-                                        return GridView.builder(
-                                          itemCount: _filteredEvents.length,
-                                          gridDelegate:
-                                              SliverGridDelegateWithFixedCrossAxisCount(
-                                            crossAxisCount: crossAxisCount,
-                                            crossAxisSpacing: 16,
-                                            mainAxisSpacing: 16,
-                                            childAspectRatio: 0.72,
+                                    if (_filteredEvents.isEmpty)
+                                      Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.all(24),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(
+                                            16,
                                           ),
-                                          shrinkWrap: true,
-                                          physics:
-                                              const NeverScrollableScrollPhysics(),
-                                          itemBuilder: (context, index) {
-                                            final event =
-                                                _filteredEvents[index];
-                                            return Container(
+                                          border: Border.all(
+                                            color: const Color(0xFFE5E7EB),
+                                          ),
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Icon(
+                                              Icons.event_busy_outlined,
+                                              size: 36,
+                                              color: const Color(
+                                                0xFF4F46E5,
+                                              ).withOpacity(0.65),
+                                            ),
+                                            const SizedBox(height: 10),
+                                            Text(
+                                              _selectedFilter == 'All'
+                                                  ? 'No events available right now.'
+                                                  : 'No ${_selectedFilter.toLowerCase()} events available right now.',
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w600,
+                                                color: Color(0xFF374151),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    else
+                                      LayoutBuilder(
+                                        builder: (context, constraints) {
+                                          final availableWidth =
+                                              constraints.maxWidth;
+                                          final crossAxisCount =
+                                              availableWidth > 800
+                                                  ? 3
+                                                  : (availableWidth > 400
+                                                        ? 2
+                                                        : 1);
+
+                                          return GridView.builder(
+                                            itemCount: _filteredEvents.length,
+                                            gridDelegate:
+                                                SliverGridDelegateWithFixedCrossAxisCount(
+                                              crossAxisCount: crossAxisCount,
+                                              crossAxisSpacing: 16,
+                                              mainAxisSpacing: 16,
+                                              childAspectRatio: 0.72,
+                                            ),
+                                            shrinkWrap: true,
+                                            physics:
+                                                const NeverScrollableScrollPhysics(),
+                                            itemBuilder: (context, index) {
+                                              final event =
+                                                  _filteredEvents[index];
+                                              return Container(
                                               decoration: BoxDecoration(
                                                 color: Colors.white,
                                                 borderRadius:
