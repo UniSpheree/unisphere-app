@@ -64,21 +64,23 @@ CREATE TABLE IF NOT EXISTS tickets (
 
 // Migration: Add visibility column if it doesn't exist
 try {
-  db.prepare("ALTER TABLE events ADD COLUMN visibility TEXT NOT NULL DEFAULT 'Public'").run();
-  console.log('✓ Added visibility column to events table');
+  db.prepare(
+    "ALTER TABLE events ADD COLUMN visibility TEXT NOT NULL DEFAULT 'Public'"
+  ).run();
+  console.log("✓ Added visibility column to events table");
 } catch (err) {
-  if (!err.message.includes('duplicate column name')) {
-    console.log('Note: visibility column already exists or migration skipped');
+  if (!err.message.includes("duplicate column name")) {
+    console.log("Note: visibility column already exists or migration skipped");
   }
 }
 
 // Migration: Add event_id column to tickets table
 try {
   db.prepare("ALTER TABLE tickets ADD COLUMN event_id INTEGER").run();
-  console.log('✓ Added event_id column to tickets table');
+  console.log("✓ Added event_id column to tickets table");
 } catch (err) {
-  if (!err.message.includes('duplicate column name')) {
-    console.log('Note: event_id column already exists or migration skipped');
+  if (!err.message.includes("duplicate column name")) {
+    console.log("Note: event_id column already exists or migration skipped");
   }
 }
 
@@ -126,7 +128,7 @@ function toEventOut(req, row) {
     description: row.description,
     organizerEmail: row.organizer_email,
     bannerImageUrl: eventBannerUrl(req, row.banner_image_path),
-    visibility: row.visibility || 'Public',
+    visibility: row.visibility || "Public",
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -352,7 +354,9 @@ app.put("/events/:id", (req, res) => {
     category:
       body.category !== undefined ? String(body.category).trim() : row.category,
     visibility:
-      body.visibility !== undefined ? String(body.visibility).trim() : row.visibility,
+      body.visibility !== undefined
+        ? String(body.visibility).trim()
+        : row.visibility,
     description:
       body.description !== undefined
         ? String(body.description).trim()
@@ -414,11 +418,9 @@ app.delete("/events/:id", (req, res) => {
     } catch (_) {}
   }
   // Cascade delete: remove linked tickets, including legacy rows without event_id
-  db
-    .prepare(
-      "DELETE FROM tickets WHERE event_id = ? OR (event_id IS NULL AND title = ? AND date = ? AND location = ?)"
-    )
-    .run(id, row.title, row.date, row.location);
+  db.prepare(
+    "DELETE FROM tickets WHERE event_id = ? OR (event_id IS NULL AND title = ? AND date = ? AND location = ?)"
+  ).run(id, row.title, row.date, row.location);
   db.prepare("DELETE FROM events WHERE id = ?").run(id);
   res.json({ ok: true });
 });
@@ -455,20 +457,17 @@ app.post("/tickets", (req, res) => {
 app.get("/tickets/:email", (req, res) => {
   const email = normalizeEmail(req.params.email);
 
-  db
-    .prepare(
-      `
+  db.prepare(
+    `
       DELETE FROM tickets
       WHERE user_email = ?
         AND event_id IS NOT NULL
         AND event_id NOT IN (SELECT id FROM events)
     `
-    )
-    .run(email);
+  ).run(email);
 
-  db
-    .prepare(
-      `
+  db.prepare(
+    `
       DELETE FROM tickets
       WHERE user_email = ?
         AND event_id IS NULL
@@ -480,8 +479,7 @@ app.get("/tickets/:email", (req, res) => {
             AND events.location = tickets.location
         )
     `
-    )
-    .run(email);
+  ).run(email);
 
   const rows = db
     .prepare(
