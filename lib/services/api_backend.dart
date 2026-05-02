@@ -9,9 +9,12 @@ import '../models/database_models.dart';
 class SqliteBackend extends ChangeNotifier {
   SqliteBackend._internal();
 
-  static final SqliteBackend _instance = SqliteBackend._internal();
+  static SqliteBackend _instance = SqliteBackend._internal();
   factory SqliteBackend() => _instance;
   factory SqliteBackend.getInstance() => _instance;
+
+  @visibleForTesting
+  static set instance(SqliteBackend mock) => _instance = mock;
 
   static const String _defaultBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
