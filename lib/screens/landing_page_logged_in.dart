@@ -157,25 +157,24 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
         widget.role.toLowerCase() == 'organiser';
 
     if (isOrganiser) {
-      return _applyDateFiltersToEvents(_sortUpcomingEvents(_organiserLiveEvents));
+      return _applyDateFiltersToEvents(
+        _sortUpcomingEvents(_organiserLiveEvents),
+      );
     }
 
     final upcoming = <Map<String, dynamic>>[];
     for (final ticket in SqliteBackend().purchasedTickets) {
       if (ticket.title.toLowerCase() == 'demo event') continue;
 
-      final matchingEvent = SqliteBackend().events.firstWhere(
-        (event) {
-          final eventId = int.tryParse(event['id']?.toString() ?? '');
-          if (ticket.eventId != null && eventId == ticket.eventId) {
-            return true;
-          }
-          return event['title']?.toString() == ticket.title &&
-              event['date']?.toString() == ticket.date &&
-              event['location']?.toString() == ticket.location;
-        },
-        orElse: () => {},
-      );
+      final matchingEvent = SqliteBackend().events.firstWhere((event) {
+        final eventId = int.tryParse(event['id']?.toString() ?? '');
+        if (ticket.eventId != null && eventId == ticket.eventId) {
+          return true;
+        }
+        return event['title']?.toString() == ticket.title &&
+            event['date']?.toString() == ticket.date &&
+            event['location']?.toString() == ticket.location;
+      }, orElse: () => {});
 
       final eventDate = _tryParseDate(matchingEvent['date'] ?? ticket.date);
       if (eventDate == null) continue;
@@ -750,74 +749,75 @@ class _SearchAndFilters extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 10,
-                      children: kEventDateFilters.map((filter) {
-                        final isSelected = dateFilters[filter] ?? false;
-                        return GestureDetector(
-                          onTap: () => onDateFilterChanged(filter, !isSelected),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 180),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 10,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? PersonalizedLandingPage.primary
-                                      .withOpacity(0.10)
-                                  : const Color(0xFFF8FAFC),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 10,
+                  children: kEventDateFilters.map((filter) {
+                    final isSelected = dateFilters[filter] ?? false;
+                    return GestureDetector(
+                      onTap: () => onDateFilterChanged(filter, !isSelected),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? PersonalizedLandingPage.primary.withOpacity(
+                                  0.10,
+                                )
+                              : const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isSelected
+                                ? PersonalizedLandingPage.primary
+                                : PersonalizedLandingPage.border,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 18,
+                              height: 18,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: isSelected
+                                      ? PersonalizedLandingPage.primary
+                                      : const Color(0xFFD1D5DB),
+                                  width: 2,
+                                ),
+                                borderRadius: BorderRadius.circular(5),
                                 color: isSelected
                                     ? PersonalizedLandingPage.primary
-                                    : PersonalizedLandingPage.border,
+                                    : Colors.white,
+                              ),
+                              child: isSelected
+                                  ? const Icon(
+                                      Icons.check,
+                                      size: 12,
+                                      color: Colors.white,
+                                    )
+                                  : null,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              filter,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: isSelected
+                                    ? PersonalizedLandingPage.primary
+                                    : PersonalizedLandingPage.text,
                               ),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 18,
-                                  height: 18,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: isSelected
-                                          ? PersonalizedLandingPage.primary
-                                          : const Color(0xFFD1D5DB),
-                                      width: 2,
-                                    ),
-                                    borderRadius: BorderRadius.circular(5),
-                                    color: isSelected
-                                        ? PersonalizedLandingPage.primary
-                                        : Colors.white,
-                                  ),
-                                  child: isSelected
-                                      ? const Icon(
-                                          Icons.check,
-                                          size: 12,
-                                          color: Colors.white,
-                                        )
-                                      : null,
-                                ),
-                                const SizedBox(width: 10),
-                                Text(
-                                  filter,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: isSelected
-                                        ? PersonalizedLandingPage.primary
-                                        : PersonalizedLandingPage.text,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
               ],
             ),
           ),
@@ -1354,10 +1354,7 @@ class _PaginatedEventGrid extends StatefulWidget {
   final List<Map<String, dynamic>> events;
   final String emptyMessage;
 
-  const _PaginatedEventGrid({
-    required this.events,
-    required this.emptyMessage,
-  });
+  const _PaginatedEventGrid({required this.events, required this.emptyMessage});
 
   @override
   State<_PaginatedEventGrid> createState() => _PaginatedEventGridState();
@@ -1413,9 +1410,16 @@ class _PaginatedEventGridState extends State<_PaginatedEventGrid> {
         final isSmall = constraints.maxWidth < 800;
         final crossAxisCount = isSmall ? 1 : 2;
         final itemsPerPage = eventsPerPageForWidth(constraints.maxWidth);
-        final totalPages = totalPagesForLength(widget.events.length, itemsPerPage);
+        final totalPages = totalPagesForLength(
+          widget.events.length,
+          itemsPerPage,
+        );
         final pageIndex = clampPageIndex(_currentPage, totalPages);
-        final pageEvents = paginateItems(widget.events, pageIndex, itemsPerPage);
+        final pageEvents = paginateItems(
+          widget.events,
+          pageIndex,
+          itemsPerPage,
+        );
 
         if (totalPages > 0 && pageIndex != _currentPage) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
