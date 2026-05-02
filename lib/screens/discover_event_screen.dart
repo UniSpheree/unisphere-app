@@ -55,24 +55,27 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
 
   List<Map<String, dynamic>> get _discoverEvents {
     return SqliteBackend().events
-        .where((e) =>
-            e['title']?.toString().toLowerCase() != 'demo event' &&
-            e['visibility']?.toString() != 'Private')
+        .where(
+          (e) =>
+              e['title']?.toString().toLowerCase() != 'demo event' &&
+              e['visibility']?.toString() != 'Private',
+        )
         .map((event) {
-      return {
-        'id': event['id'],
-        'title': event['title'] ?? 'Untitled Event',
-        'date': event['date'] ?? '',
-        'location': event['location'] ?? 'TBA',
-        'category': event['category'] ?? 'Other',
-        'description': event['description'] ?? '',
-        'bannerImageData': event['bannerImageData'],
-        'organizer': event['organizer'] ?? 'UniSphere',
-        'organizerEmail': event['organizerEmail'],
-        'imageColor': const Color(0xFFE0E7FF),
-        'icon': Icons.event_rounded,
-      };
-    }).toList();
+          return {
+            'id': event['id'],
+            'title': event['title'] ?? 'Untitled Event',
+            'date': event['date'] ?? '',
+            'location': event['location'] ?? 'TBA',
+            'category': event['category'] ?? 'Other',
+            'description': event['description'] ?? '',
+            'bannerImageData': event['bannerImageData'],
+            'organizer': event['organizer'] ?? 'UniSphere',
+            'organizerEmail': event['organizerEmail'],
+            'imageColor': const Color(0xFFE0E7FF),
+            'icon': Icons.event_rounded,
+          };
+        })
+        .toList();
   }
 
   void _setFilter(String filter) {
@@ -697,20 +700,19 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                               constraints.maxWidth;
                                           final crossAxisCount =
                                               availableWidth > 800
-                                                  ? 3
-                                                  : (availableWidth > 400
-                                                        ? 2
-                                                        : 1);
+                                              ? 3
+                                              : (availableWidth > 400 ? 2 : 1);
 
                                           return GridView.builder(
                                             itemCount: _filteredEvents.length,
                                             gridDelegate:
                                                 SliverGridDelegateWithFixedCrossAxisCount(
-                                              crossAxisCount: crossAxisCount,
-                                              crossAxisSpacing: 16,
-                                              mainAxisSpacing: 16,
-                                              childAspectRatio: 0.72,
-                                            ),
+                                                  crossAxisCount:
+                                                      crossAxisCount,
+                                                  crossAxisSpacing: 16,
+                                                  mainAxisSpacing: 16,
+                                                  childAspectRatio: 0.72,
+                                                ),
                                             shrinkWrap: true,
                                             physics:
                                                 const NeverScrollableScrollPhysics(),
@@ -718,188 +720,197 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                               final event =
                                                   _filteredEvents[index];
                                               return Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius:
-                                                    BorderRadius.circular(22),
-                                                border: Border.all(
-                                                  color: const Color(
-                                                    0xFFE5E7EB,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius:
+                                                      BorderRadius.circular(22),
+                                                  border: Border.all(
+                                                    color: const Color(
+                                                      0xFFE5E7EB,
+                                                    ),
                                                   ),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.black
+                                                          .withOpacity(0.04),
+                                                      blurRadius: 16,
+                                                      offset: const Offset(
+                                                        0,
+                                                        8,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.black
-                                                        .withOpacity(0.04),
-                                                    blurRadius: 16,
-                                                    offset: const Offset(0, 8),
-                                                  ),
-                                                ],
-                                              ),
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Expanded(
-                                                    flex: 2,
-                                                    child: Container(
-                                                      width: double.infinity,
-                                                      decoration: BoxDecoration(
-                                                        color:
-                                                            event['imageColor']
-                                                                as Color,
-                                                        borderRadius:
-                                                            const BorderRadius.vertical(
-                                                              top:
-                                                                  Radius.circular(
-                                                                    22,
-                                                                  ),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Expanded(
+                                                      flex: 2,
+                                                      child: Container(
+                                                        width: double.infinity,
+                                                        decoration: BoxDecoration(
+                                                          color:
+                                                              event['imageColor']
+                                                                  as Color,
+                                                          borderRadius:
+                                                              const BorderRadius.vertical(
+                                                                top:
+                                                                    Radius.circular(
+                                                                      22,
+                                                                    ),
+                                                              ),
+                                                        ),
+                                                        child:
+                                                            _buildEventCardImage(
+                                                              event,
                                                             ),
                                                       ),
-                                                      child:
-                                                          _buildEventCardImage(
-                                                            event,
-                                                          ),
                                                     ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                          18,
-                                                        ),
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text(
-                                                          event['title']
-                                                              as String,
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow.ellipsis,
-                                                          style:
-                                                              const TextStyle(
-                                                                fontSize: 18,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w700,
-                                                                color: Color(
-                                                                  0xFF1A1F36,
-                                                                ),
-                                                              ),
-                                                        ),
-                                                        const SizedBox(
-                                                          height: 8,
-                                                        ),
-                                                        Text(
-                                                          event['date']
-                                                              as String,
-                                                          style:
-                                                              const TextStyle(
-                                                                fontSize: 14,
-                                                                color: Color(
-                                                                  0xFF6B7280,
-                                                                ),
-                                                              ),
-                                                        ),
-                                                        const SizedBox(
-                                                          height: 4,
-                                                        ),
-                                                        Text(
-                                                          event['location']
-                                                              as String,
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow.ellipsis,
-                                                          style:
-                                                              const TextStyle(
-                                                                fontSize: 14,
-                                                                color: Color(
-                                                                  0xFF6B7280,
-                                                                ),
-                                                              ),
-                                                        ),
-                                                        const SizedBox(
-                                                          height: 4,
-                                                        ),
-                                                        Text(
-                                                          'By ${event['organizer']?.toString() ?? 'UniSphere'}',
-                                                          style:
-                                                              const TextStyle(
-                                                                fontSize: 12,
-                                                                color: Color(
-                                                                  0xFF9CA3AF,
-                                                                ),
-                                                                fontStyle:
-                                                                    FontStyle
-                                                                        .italic,
-                                                              ),
-                                                        ),
-                                                        const SizedBox(
-                                                          height: 14,
-                                                        ),
-                                                        Row(
-                                                          children: [
-                                                            Container(
-                                                              padding:
-                                                                  const EdgeInsets.symmetric(
-                                                                    horizontal:
-                                                                        10,
-                                                                    vertical: 6,
-                                                                  ),
-                                                              decoration: BoxDecoration(
-                                                                color:
-                                                                    const Color(
-                                                                      0xFFEEF2FF,
-                                                                    ),
-                                                                borderRadius:
-                                                                    BorderRadius.circular(
-                                                                      999,
-                                                                    ),
-                                                              ),
-                                                              child: Text(
-                                                                event['category']
-                                                                    as String,
-                                                                style: const TextStyle(
-                                                                  fontSize: 12,
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                            18,
+                                                          ),
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            event['title']
+                                                                as String,
+                                                            maxLines: 1,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            style:
+                                                                const TextStyle(
+                                                                  fontSize: 18,
                                                                   fontWeight:
                                                                       FontWeight
-                                                                          .w600,
+                                                                          .w700,
                                                                   color: Color(
-                                                                    0xFF4F46E5,
+                                                                    0xFF1A1F36,
+                                                                  ),
+                                                                ),
+                                                          ),
+                                                          const SizedBox(
+                                                            height: 8,
+                                                          ),
+                                                          Text(
+                                                            event['date']
+                                                                as String,
+                                                            style:
+                                                                const TextStyle(
+                                                                  fontSize: 14,
+                                                                  color: Color(
+                                                                    0xFF6B7280,
+                                                                  ),
+                                                                ),
+                                                          ),
+                                                          const SizedBox(
+                                                            height: 4,
+                                                          ),
+                                                          Text(
+                                                            event['location']
+                                                                as String,
+                                                            maxLines: 1,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            style:
+                                                                const TextStyle(
+                                                                  fontSize: 14,
+                                                                  color: Color(
+                                                                    0xFF6B7280,
+                                                                  ),
+                                                                ),
+                                                          ),
+                                                          const SizedBox(
+                                                            height: 4,
+                                                          ),
+                                                          Text(
+                                                            'By ${event['organizer']?.toString() ?? 'UniSphere'}',
+                                                            style:
+                                                                const TextStyle(
+                                                                  fontSize: 12,
+                                                                  color: Color(
+                                                                    0xFF9CA3AF,
+                                                                  ),
+                                                                  fontStyle:
+                                                                      FontStyle
+                                                                          .italic,
+                                                                ),
+                                                          ),
+                                                          const SizedBox(
+                                                            height: 14,
+                                                          ),
+                                                          Row(
+                                                            children: [
+                                                              Container(
+                                                                padding:
+                                                                    const EdgeInsets.symmetric(
+                                                                      horizontal:
+                                                                          10,
+                                                                      vertical:
+                                                                          6,
+                                                                    ),
+                                                                decoration: BoxDecoration(
+                                                                  color: const Color(
+                                                                    0xFFEEF2FF,
+                                                                  ),
+                                                                  borderRadius:
+                                                                      BorderRadius.circular(
+                                                                        999,
+                                                                      ),
+                                                                ),
+                                                                child: Text(
+                                                                  event['category']
+                                                                      as String,
+                                                                  style: const TextStyle(
+                                                                    fontSize:
+                                                                        12,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                    color: Color(
+                                                                      0xFF4F46E5,
+                                                                    ),
                                                                   ),
                                                                 ),
                                                               ),
-                                                            ),
-                                                            const Spacer(),
-                                                            TextButton(
-                                                              onPressed: () {
-                                                                Navigator.push(
-                                                                  context,
-                                                                  MaterialPageRoute(
-                                                                    builder: (_) =>
-                                                                        EventDetailsScreen(
-                                                                          event:
-                                                                              event,
-                                                                        ),
-                                                                  ),
-                                                                );
-                                                              },
-                                                              child: const Text(
-                                                                'Details',
+                                                              const Spacer(),
+                                                              TextButton(
+                                                                onPressed: () {
+                                                                  Navigator.push(
+                                                                    context,
+                                                                    MaterialPageRoute(
+                                                                      builder: (_) =>
+                                                                          EventDetailsScreen(
+                                                                            event:
+                                                                                event,
+                                                                          ),
+                                                                    ),
+                                                                  );
+                                                                },
+                                                                child:
+                                                                    const Text(
+                                                                      'Details',
+                                                                    ),
                                                               ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ],
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-                                          },
-                                        );
-                                      },
-                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            },
+                                          );
+                                        },
+                                      ),
                                   ],
                                 ),
                               ),
