@@ -255,8 +255,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         SnackBar(
           backgroundColor: Colors.green.shade600,
           behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           content: Row(
             children: [
               const Icon(Icons.check_circle_outline, color: Colors.white),
@@ -908,7 +909,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                                 duration: const Duration(
                                                   milliseconds: 200,
                                                 ),
-                                                margin: const EdgeInsets.only(right: 8),
+                                                margin: const EdgeInsets.only(
+                                                  right: 8,
+                                                ),
                                                 padding:
                                                     const EdgeInsets.symmetric(
                                                       vertical: 12,
