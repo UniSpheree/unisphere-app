@@ -439,7 +439,8 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                                           context: context,
                                           builder: (dialogContext) => AlertDialog(
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(20),
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
                                             ),
                                             title: const Text('Delete ticket'),
                                             content: const Text(
@@ -447,13 +448,21 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                                             ),
                                             actions: [
                                               TextButton(
-                                                onPressed: () => Navigator.pop(dialogContext, false),
+                                                onPressed: () => Navigator.pop(
+                                                  dialogContext,
+                                                  false,
+                                                ),
                                                 child: const Text('Cancel'),
                                               ),
                                               FilledButton(
-                                                onPressed: () => Navigator.pop(dialogContext, true),
+                                                onPressed: () => Navigator.pop(
+                                                  dialogContext,
+                                                  true,
+                                                ),
                                                 style: FilledButton.styleFrom(
-                                                  backgroundColor: const Color(0xFFDC2626),
+                                                  backgroundColor: const Color(
+                                                    0xFFDC2626,
+                                                  ),
                                                   foregroundColor: Colors.white,
                                                 ),
                                                 child: const Text('Delete'),
@@ -463,11 +472,14 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                                         );
 
                                         if (confirmed != true) return;
-                                        final ok = await SqliteBackend().deleteTicket(
-                                          ticket.id?.toString() ?? '',
-                                        );
+                                        final ok = await SqliteBackend()
+                                            .deleteTicket(
+                                              ticket.id?.toString() ?? '',
+                                            );
                                         if (!mounted) return;
-                                        ScaffoldMessenger.of(context).showSnackBar(
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
                                           SnackBar(
                                             content: Text(
                                               ok
