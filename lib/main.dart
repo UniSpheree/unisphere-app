@@ -13,9 +13,15 @@ import 'screens/privacy_page.dart';
 import 'screens/my_tickets_screen.dart';
 import 'screens/my_events_page.dart';
 import 'screens/calendar_page.dart';
-import 'utils/mock_backend.dart';
+import 'services/sqlite_backend.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize backend
+  final backend = SqliteBackend();
+  await backend.initializeDatabase();
+
   runApp(const MyApp());
 }
 
@@ -38,7 +44,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (_) => const LandingPage(),
         '/logged-in': (_) {
-          final user = MockBackend().currentUser;
+          final user = SqliteBackend().currentUser;
           return PersonalizedLandingPage(
             userName: user?.fullName ?? 'Guest',
             role: user?.role ?? 'Attendee',

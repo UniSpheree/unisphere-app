@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../utils/mock_backend.dart';
+import '../services/sqlite_backend.dart';
 import '../widgets/header.dart';
 import '../widgets/app_footer.dart';
 
@@ -31,7 +31,7 @@ class _CalendarPageState extends State<CalendarPage> {
 
   @override
   Widget build(BuildContext context) {
-    final user = MockBackend().currentUser;
+    final user = SqliteBackend().currentUser;
     final isOrganiser = user?.isOrganiser ?? false;
 
     return Scaffold(
@@ -47,12 +47,18 @@ class _CalendarPageState extends State<CalendarPage> {
                   Column(
                     children: [
                       AppHeader(
-                        onHostEventTap: () => Navigator.pushNamed(context, '/create-event'),
-                        onFindEventsTap: () => Navigator.pushNamed(context, '/discover'),
-                        onCreateEventsTap: () => Navigator.pushNamed(context, '/create-event'),
-                        onMyTicketsTap: () => Navigator.pushNamed(context, '/my-tickets'),
-                        onAboutTap: () => Navigator.pushNamed(context, '/about'),
-                        onSignInTap: () => Navigator.pushNamed(context, '/login'),
+                        onHostEventTap: () =>
+                            Navigator.pushNamed(context, '/create-event'),
+                        onFindEventsTap: () =>
+                            Navigator.pushNamed(context, '/discover'),
+                        onCreateEventsTap: () =>
+                            Navigator.pushNamed(context, '/create-event'),
+                        onMyTicketsTap: () =>
+                            Navigator.pushNamed(context, '/my-tickets'),
+                        onAboutTap: () =>
+                            Navigator.pushNamed(context, '/about'),
+                        onSignInTap: () =>
+                            Navigator.pushNamed(context, '/login'),
                       ),
                       if (!isOrganiser)
                         _buildLockedState(context)
@@ -162,8 +168,10 @@ class _CalendarPageState extends State<CalendarPage> {
     final hours = List.generate(24, (i) => i);
     final isMobile = constraints.maxWidth < 800;
 
-    final email = MockBackend().currentUser?.email;
-    final userEvents = MockBackend().events.where((e) => e['organizerEmail']?.toString() == email).toList();
+    final email = SqliteBackend().currentUser?.email;
+    final userEvents = SqliteBackend().events
+        .where((e) => e['organizerEmail']?.toString() == email)
+        .toList();
 
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -193,18 +201,12 @@ class _CalendarPageState extends State<CalendarPage> {
                     onTap: () => Navigator.pop(context),
                     child: const Text(
                       'Back',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.grey, fontSize: 14),
                     ),
                   ),
                   const Text(
                     '  /  ',
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Colors.grey, fontSize: 14),
                   ),
                   const Flexible(
                     child: Text(
@@ -291,7 +293,7 @@ class _CalendarPageState extends State<CalendarPage> {
                       ),
                     ),
                     const Divider(height: 1, color: Color(0xFFE5E7EB)),
-                    
+
                     // Days Row
                     Container(
                       color: const Color(0xFFF9FAFB),
@@ -299,8 +301,9 @@ class _CalendarPageState extends State<CalendarPage> {
                       child: Row(
                         children: List.generate(7, (i) {
                           // Check if "today" is in this week for highlight
-                          final now = DateTime.now();
-                          final isToday = weekDates[i].day == 20 && weekDates[i].month == 5; // Hardcoded mock today
+                          final isToday =
+                              weekDates[i].day == 20 &&
+                              weekDates[i].month == 5; // Hardcoded mock today
                           return Expanded(
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -316,7 +319,9 @@ class _CalendarPageState extends State<CalendarPage> {
                                     style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
-                                      color: isToday ? const Color(0xFF4F46E5) : Colors.grey.shade500,
+                                      color: isToday
+                                          ? const Color(0xFF4F46E5)
+                                          : Colors.grey.shade500,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
@@ -324,7 +329,9 @@ class _CalendarPageState extends State<CalendarPage> {
                                     width: 32,
                                     height: 32,
                                     decoration: BoxDecoration(
-                                      color: isToday ? const Color(0xFF4F46E5) : Colors.transparent,
+                                      color: isToday
+                                          ? const Color(0xFF4F46E5)
+                                          : Colors.transparent,
                                       shape: BoxShape.circle,
                                     ),
                                     child: Center(
@@ -332,8 +339,12 @@ class _CalendarPageState extends State<CalendarPage> {
                                         '${weekDates[i].day}',
                                         style: TextStyle(
                                           fontSize: 15,
-                                          fontWeight: isToday ? FontWeight.bold : FontWeight.w600,
-                                          color: isToday ? Colors.white : const Color(0xFF111827),
+                                          fontWeight: isToday
+                                              ? FontWeight.bold
+                                              : FontWeight.w600,
+                                          color: isToday
+                                              ? Colors.white
+                                              : const Color(0xFF111827),
                                         ),
                                       ),
                                     ),
@@ -346,7 +357,7 @@ class _CalendarPageState extends State<CalendarPage> {
                       ),
                     ),
                     const Divider(height: 1, color: Color(0xFFE5E7EB)),
-                    
+
                     // Hours Grid
                     SizedBox(
                       height: 600,
@@ -363,7 +374,10 @@ class _CalendarPageState extends State<CalendarPage> {
                                   child: Align(
                                     alignment: Alignment.topRight,
                                     child: Padding(
-                                      padding: const EdgeInsets.only(top: 8, right: 12),
+                                      padding: const EdgeInsets.only(
+                                        top: 8,
+                                        right: 12,
+                                      ),
                                       child: Text(
                                         '${hour.toString().padLeft(2, '0')}:00',
                                         style: TextStyle(
@@ -377,19 +391,31 @@ class _CalendarPageState extends State<CalendarPage> {
                                 ),
                                 ...List.generate(7, (dayIdx) {
                                   final dayDate = weekDates[dayIdx];
-                                  
+
                                   final matchingEvents = userEvents.where((e) {
                                     try {
-                                      final start = DateTime.parse(e['date'].toString());
-                                      final end = e['endDate'] != null 
-                                          ? DateTime.parse(e['endDate'].toString())
+                                      final start = DateTime.parse(
+                                        e['date'].toString(),
+                                      );
+                                      final end = e['endDate'] != null
+                                          ? DateTime.parse(
+                                              e['endDate'].toString(),
+                                            )
                                           : start.add(const Duration(hours: 1));
-                                      
+
                                       // Check if this hour/day slot falls within start and end
-                                      final slotStart = DateTime(dayDate.year, dayDate.month, dayDate.day, hour);
-                                      final slotEnd = slotStart.add(const Duration(hours: 1));
-                                      
-                                      return (start.isBefore(slotEnd) && end.isAfter(slotStart));
+                                      final slotStart = DateTime(
+                                        dayDate.year,
+                                        dayDate.month,
+                                        dayDate.day,
+                                        hour,
+                                      );
+                                      final slotEnd = slotStart.add(
+                                        const Duration(hours: 1),
+                                      );
+
+                                      return (start.isBefore(slotEnd) &&
+                                          end.isAfter(slotStart));
                                     } catch (_) {
                                       return false;
                                     }
@@ -399,13 +425,21 @@ class _CalendarPageState extends State<CalendarPage> {
                                     child: Container(
                                       decoration: const BoxDecoration(
                                         border: Border(
-                                          left: BorderSide(color: Color(0xFFF3F4F6)),
-                                          bottom: BorderSide(color: Color(0xFFF3F4F6)),
+                                          left: BorderSide(
+                                            color: Color(0xFFF3F4F6),
+                                          ),
+                                          bottom: BorderSide(
+                                            color: Color(0xFFF3F4F6),
+                                          ),
                                         ),
                                       ),
                                       child: Stack(
                                         children: matchingEvents.map((ev) {
-                                          return _buildEventBlock(ev, hour, dayDate);
+                                          return _buildEventBlock(
+                                            ev,
+                                            hour,
+                                            dayDate,
+                                          );
                                         }).toList(),
                                       ),
                                     ),
@@ -427,7 +461,11 @@ class _CalendarPageState extends State<CalendarPage> {
     );
   }
 
-  Widget _buildEventBlock(Map<String, dynamic> event, int currentHour, DateTime currentDay) {
+  Widget _buildEventBlock(
+    Map<String, dynamic> event,
+    int currentHour,
+    DateTime currentDay,
+  ) {
     // Precise positioning would require calculating offset if it starts mid-hour
     // For now, we'll just show it in the slots it overlaps
     return Padding(
@@ -458,10 +496,7 @@ class _CalendarPageState extends State<CalendarPage> {
                 event['location'].toString(),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 10,
-                  color: Color(0xFF4F46E5),
-                ),
+                style: const TextStyle(fontSize: 10, color: Color(0xFF4F46E5)),
               ),
           ],
         ),
@@ -471,8 +506,19 @@ class _CalendarPageState extends State<CalendarPage> {
 
   String _monthName(int month) {
     const months = [
-      '', 'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      '',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     return months[month];
   }

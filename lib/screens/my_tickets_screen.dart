@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
 import 'package:unisphere_app/screens/event_details_screen.dart';
-import 'package:unisphere_app/utils/mock_backend.dart';
+import 'package:unisphere_app/services/sqlite_backend.dart';
+import 'package:unisphere_app/models/database_models.dart';
 import 'package:unisphere_app/widgets/header.dart';
 import 'package:unisphere_app/widgets/app_footer.dart';
 
@@ -21,7 +23,13 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
     super.dispose();
   }
 
-  Map<String, dynamic> _ticketToEvent(PurchasedTicket ticket) {
+  Map<String, dynamic> _ticketToEvent(DbPurchasedTicket ticket) {
+    // Find the actual event by matching title
+    final matchingEvent = SqliteBackend().events.firstWhere(
+      (event) => event['title']?.toString() == ticket.title,
+      orElse: () => {},
+    );
+
     return {
       'title': ticket.title,
       'date': ticket.date,
@@ -30,14 +38,22 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
       'price': ticket.price,
       'description':
           'Ticket details for ${ticket.title}. You can review the event information and keep this ticket handy for check-in.',
-      'organizer': 'Event Organiser',
+      'organizer': matchingEvent.isNotEmpty
+          ? (matchingEvent['organizer']?.toString() ?? 'UniSphere')
+          : 'UniSphere',
+      'organizerEmail': matchingEvent.isNotEmpty
+          ? matchingEvent['organizerEmail']?.toString()
+          : null,
+      'bannerImageData': matchingEvent.isNotEmpty
+          ? matchingEvent['bannerImageData']
+          : null,
       'capacity': null,
       'tags': <String>['Purchased ticket'],
       'color': const Color(0xFF4F46E5),
     };
   }
 
-  bool _matchesQuery(PurchasedTicket ticket) {
+  bool _matchesQuery(DbPurchasedTicket ticket) {
     final query = _query.trim().toLowerCase();
     if (query.isEmpty) return true;
 
@@ -65,19 +81,26 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                   Column(
                     children: [
                       AppHeader(
-                        onHostEventTap: () => Navigator.pushNamed(context, '/create-event'),
-                        onFindEventsTap: () => Navigator.pushNamed(context, '/discover'),
-                        onCreateEventsTap: () => Navigator.pushNamed(context, '/create-event'),
+                        onHostEventTap: () =>
+                            Navigator.pushNamed(context, '/create-event'),
+                        onFindEventsTap: () =>
+                            Navigator.pushNamed(context, '/discover'),
+                        onCreateEventsTap: () =>
+                            Navigator.pushNamed(context, '/create-event'),
                         onMyTicketsTap: () {},
-                        onAboutTap: () => Navigator.pushNamed(context, '/about'),
-                        onSignInTap: () => Navigator.pushNamed(context, '/login'),
+                        onAboutTap: () =>
+                            Navigator.pushNamed(context, '/about'),
+                        onSignInTap: () =>
+                            Navigator.pushNamed(context, '/login'),
                       ),
                       SafeArea(
                         child: AnimatedBuilder(
-                          animation: MockBackend(),
+                          animation: SqliteBackend(),
                           builder: (context, _) {
-                            final tickets = MockBackend().purchasedTickets;
-                            final filteredTickets = tickets.where(_matchesQuery).toList();
+                            final tickets = SqliteBackend().purchasedTickets;
+                            final filteredTickets = tickets
+                                .where((t) => _matchesQuery(t) && t.title.toLowerCase() != 'demo event')
+                                .toList();
 
                             final List<Widget> children = [];
 
@@ -130,330 +153,420 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                               ),
                             );
 
-                  children.add(
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF4F46E5), Color(0xFF6D79FF)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(18),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF4F46E5).withOpacity(0.22),
-                            blurRadius: 18,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'My Tickets',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            tickets.isEmpty
-                                ? 'You have not bought any tickets yet.'
-                                : 'Search and open any ticket in seconds.',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.white.withOpacity(0.88),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.14),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.16),
-                              ),
-                            ),
-                            child: TextField(
-                              controller: _searchController,
-                              onChanged: (value) {
-                                setState(() => _query = value);
-                              },
-                              style: const TextStyle(color: Colors.white),
-                              decoration: InputDecoration(
-                                hintText:
-                                    'Search by event, date, venue, or category',
-                                hintStyle: TextStyle(
-                                  color: Colors.white.withOpacity(0.72),
+                            children.add(
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(18),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFF4F46E5),
+                                      Color(0xFF6D79FF),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(18),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(
+                                        0xFF4F46E5,
+                                      ).withOpacity(0.22),
+                                      blurRadius: 18,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
                                 ),
-                                prefixIcon: Icon(
-                                  Icons.search_rounded,
-                                  color: Colors.white.withOpacity(0.78),
-                                ),
-                                suffixIcon: _query.isEmpty
-                                    ? null
-                                    : IconButton(
-                                        onPressed: () {
-                                          _searchController.clear();
-                                          setState(() => _query = '');
-                                        },
-                                        icon: Icon(
-                                          Icons.close_rounded,
-                                          color: Colors.white.withOpacity(0.78),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'My Tickets',
+                                      style: TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.w800,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      tickets.isEmpty
+                                          ? 'You have not bought any tickets yet.'
+                                          : 'Search and open any ticket in seconds.',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.white.withOpacity(0.88),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.14),
+                                        borderRadius: BorderRadius.circular(14),
+                                        border: Border.all(
+                                          color: Colors.white.withOpacity(0.16),
                                         ),
                                       ),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 14,
+                                      child: TextField(
+                                        controller: _searchController,
+                                        onChanged: (value) {
+                                          setState(() => _query = value);
+                                        },
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                        decoration: InputDecoration(
+                                          hintText:
+                                              'Search by event, date, venue, or category',
+                                          hintStyle: TextStyle(
+                                            color: Colors.white.withOpacity(
+                                              0.72,
+                                            ),
+                                          ),
+                                          prefixIcon: Icon(
+                                            Icons.search_rounded,
+                                            color: Colors.white.withOpacity(
+                                              0.78,
+                                            ),
+                                          ),
+                                          suffixIcon: _query.isEmpty
+                                              ? null
+                                              : IconButton(
+                                                  onPressed: () {
+                                                    _searchController.clear();
+                                                    setState(() => _query = '');
+                                                  },
+                                                  icon: Icon(
+                                                    Icons.close_rounded,
+                                                    color: Colors.white
+                                                        .withOpacity(0.78),
+                                                  ),
+                                                ),
+                                          border: InputBorder.none,
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                horizontal: 16,
+                                                vertical: 14,
+                                              ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
+                            );
 
-                  children.add(const SizedBox(height: 14));
+                            children.add(const SizedBox(height: 14));
 
-                  if (tickets.isNotEmpty) {
-                    children.add(
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: Text(
-                          _query.trim().isEmpty
-                              ? '${tickets.length} ticket${tickets.length == 1 ? '' : 's'} available'
-                              : '${filteredTickets.length} match${filteredTickets.length == 1 ? '' : 'es'} found',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF6B7280),
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-
-                  if (tickets.isEmpty) {
-                    children.add(
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.confirmation_number_outlined,
-                                size: 40,
-                                color: const Color(0xFF4F46E5).withOpacity(0.5),
-                              ),
-                              const SizedBox(height: 12),
-                              const Text(
-                                'No tickets saved yet',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              const Text(
-                                'Go back and browse events to buy one.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Color(0xFF6B7280),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  } else if (filteredTickets.isEmpty) {
-                    children.add(
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.search_off_rounded,
-                              size: 40,
-                              color: const Color(0xFF4F46E5).withOpacity(0.5),
-                            ),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'No matching tickets',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            const Text(
-                              'Try a different keyword, venue, or category.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF6B7280),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  } else {
-                    for (final ticket in filteredTickets) {
-                      children.add(
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: _SavedTicketCard(
-                            ticket: ticket,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => EventDetailsScreen(
-                                    event: _ticketToEvent(ticket),
-                                    allowPurchase: false,
+                            if (tickets.isNotEmpty) {
+                              children.add(
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: Text(
+                                    _query.trim().isEmpty
+                                        ? '${tickets.length} ticket${tickets.length == 1 ? '' : 's'} available'
+                                        : '${filteredTickets.length} match${filteredTickets.length == 1 ? '' : 'es'} found',
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF6B7280),
+                                    ),
                                   ),
                                 ),
                               );
-                            },
-                          ),
-                        ),
-                      );
-                    }
-                  }
+                            }
 
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 16,
-                    ),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 860),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: children,
+                            if (tickets.isEmpty) {
+                              children.add(
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(20),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.04),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Center(
+                                    child: Column(
+                                      children: [
+                                        Icon(
+                                          Icons.confirmation_number_outlined,
+                                          size: 40,
+                                          color: const Color(
+                                            0xFF4F46E5,
+                                          ).withOpacity(0.5),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        const Text(
+                                          'No tickets saved yet',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        const Text(
+                                          'Go back and browse events to buy one.',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: Color(0xFF6B7280),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            } else if (filteredTickets.isEmpty) {
+                              children.add(
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(20),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.04),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        Icons.search_off_rounded,
+                                        size: 40,
+                                        color: const Color(
+                                          0xFF4F46E5,
+                                        ).withOpacity(0.5),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      const Text(
+                                        'No matching tickets',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      const Text(
+                                        'Try a different keyword, venue, or category.',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Color(0xFF6B7280),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            } else {
+                              for (final ticket in filteredTickets) {
+                                children.add(
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 10),
+                                    child: _SavedTicketCard(
+                                      ticket: ticket,
+                                      eventData: _ticketToEvent(ticket),
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => EventDetailsScreen(
+                                              event: _ticketToEvent(ticket),
+                                              allowPurchase: false,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                );
+                              }
+                            }
+
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 16,
+                              ),
+                              child: Center(
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(
+                                    maxWidth: 860,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: children,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
-                    ),
-                  );
-                },
+                    ],
+                  ),
+                  const AppFooter(),
+                ],
               ),
             ),
-          ],
-        ),
-        const AppFooter(),
-      ],
-    ),
-  ),
-);
-},
-),
-);
-}
+          );
+        },
+      ),
+    );
+  }
 }
 
 class _SavedTicketCard extends StatelessWidget {
-  final PurchasedTicket ticket;
+  final DbPurchasedTicket ticket;
+  final Map<String, dynamic> eventData;
   final VoidCallback onTap;
 
-  const _SavedTicketCard({required this.ticket, required this.onTap});
+  const _SavedTicketCard({
+    required this.ticket,
+    required this.eventData,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      elevation: 2,
-      child: ListTile(
-        onTap: onTap,
-        isThreeLine: true,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
-        ),
-        leading: Container(
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-            color: const Color(0xFF4F46E5).withOpacity(0.12),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Icon(
-            Icons.confirmation_number_outlined,
-            color: Color(0xFF4F46E5),
-            size: 26,
-          ),
-        ),
-        title: Text(
-          ticket.title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 6),
-            Text('${ticket.date} • ${ticket.location}'),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF4F46E5).withOpacity(0.10),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                ticket.category,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF4F46E5),
-                ),
-              ),
+    final bannerData = eventData['bannerImageData'];
+    final Uint8List? bannerBytes = bannerData is Uint8List ? bannerData : null;
+    final organizer = eventData['organizer']?.toString() ?? 'UniSphere';
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
-        trailing: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.end,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              ticket.price,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            // Leading image
+            bannerBytes != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.memory(
+                      bannerBytes,
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        width: 60,
+                        height: 60,
+                        color: Colors.grey[200],
+                        child: const Icon(Icons.broken_image, color: Colors.grey),
+                      ),
+                    ),
+                  )
+                : Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4F46E5).withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.confirmation_number_outlined,
+                      color: Color(0xFF4F46E5),
+                      size: 28,
+                    ),
+                  ),
+            const SizedBox(width: 16),
+            // Content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    ticket.title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '${ticket.date} • ${ticket.location}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'By $organizer',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[500],
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4F46E5).withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      ticket.category,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF4F46E5),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 6),
-            const Icon(Icons.chevron_right_rounded, color: Color(0xFF9CA3AF)),
+            const SizedBox(width: 12),
+            // Trailing price
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  ticket.price,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 14,
+                  color: Colors.grey,
+                ),
+              ],
+            ),
           ],
         ),
       ),

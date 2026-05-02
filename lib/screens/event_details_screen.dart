@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:unisphere_app/utils/mock_backend.dart';
-import 'my_tickets_screen.dart';
-import 'register_screen.dart';
+import 'dart:typed_data';
+import 'package:unisphere_app/services/sqlite_backend.dart';
+import 'package:unisphere_app/models/database_models.dart';
 import '../widgets/header.dart';
 import '../widgets/app_footer.dart';
 
@@ -21,15 +21,19 @@ class EventDetailsScreen extends StatelessWidget {
     final description =
         event['description'] as String? ??
         'No extra description provided for this event.';
+    final bannerImageData = event['bannerImageData'];
+    final Uint8List? bannerBytes = bannerImageData is Uint8List
+        ? bannerImageData
+        : null;
 
     final organizer =
-      event['organizer'] as String? ?? 'Organizer not specified';
+        event['organizer'] as String? ?? 'Organizer not specified';
     final capacity = event['capacity'] != null ? '${event['capacity']}' : null;
     final tags = (event['tags'] as List<dynamic>?)?.cast<String>() ?? [];
     final price = (event['price'] as String?)?.trim();
 
     final isOrganizerViewing =
-      MockBackend().currentUser?.email ==
+        SqliteBackend().currentUser?.email ==
         (event['organizerEmail']?.toString() ?? '');
 
     return Scaffold(
@@ -46,7 +50,10 @@ class EventDetailsScreen extends StatelessWidget {
                     children: [
                       const AppHeader(),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 24,
+                        ),
                         child: Center(
                           child: ConstrainedBox(
                             constraints: const BoxConstraints(maxWidth: 900),
@@ -113,8 +120,28 @@ class EventDetailsScreen extends StatelessWidget {
                                     ],
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
+                                      if (bannerBytes != null) ...[
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            18,
+                                          ),
+                                          child: Image.memory(
+                                            bannerBytes,
+                                            width: double.infinity,
+                                            height: 240,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) => Container(
+                                              height: 240,
+                                              color: Colors.grey[200],
+                                              child: const Icon(Icons.broken_image, size: 48, color: Colors.grey),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 24),
+                                      ],
                                       Text(
                                         event['title'] as String,
                                         style: const TextStyle(
@@ -134,7 +161,10 @@ class EventDetailsScreen extends StatelessWidget {
                                           const SizedBox(width: 8),
                                           Text(
                                             event['date'] as String,
-                                            style: TextStyle(color: Colors.grey[700], fontSize: 15),
+                                            style: TextStyle(
+                                              color: Colors.grey[700],
+                                              fontSize: 15,
+                                            ),
                                           ),
                                           const SizedBox(width: 24),
                                           Icon(
@@ -146,7 +176,10 @@ class EventDetailsScreen extends StatelessWidget {
                                           Expanded(
                                             child: Text(
                                               event['location'] as String,
-                                              style: TextStyle(color: Colors.grey[700], fontSize: 15),
+                                              style: TextStyle(
+                                                color: Colors.grey[700],
+                                                fontSize: 15,
+                                              ),
                                             ),
                                           ),
                                         ],
@@ -163,7 +196,8 @@ class EventDetailsScreen extends StatelessWidget {
                                             ),
                                             decoration: BoxDecoration(
                                               color: color.withOpacity(0.10),
-                                              borderRadius: BorderRadius.circular(12),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
                                             ),
                                             child: Text(
                                               event['category'] as String,
@@ -177,14 +211,18 @@ class EventDetailsScreen extends StatelessWidget {
                                           if (tags.isNotEmpty)
                                             ...tags.map(
                                               (t) => Container(
-                                                padding: const EdgeInsets.symmetric(
-                                                  horizontal: 14,
-                                                  vertical: 8,
-                                                ),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 14,
+                                                      vertical: 8,
+                                                    ),
                                                 decoration: BoxDecoration(
                                                   color: Colors.grey.shade100,
-                                                  borderRadius: BorderRadius.circular(12),
-                                                  border: Border.all(color: Colors.grey.shade200),
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  border: Border.all(
+                                                    color: Colors.grey.shade200,
+                                                  ),
                                                 ),
                                                 child: Text(
                                                   t,
@@ -202,20 +240,33 @@ class EventDetailsScreen extends StatelessWidget {
                                         children: [
                                           CircleAvatar(
                                             radius: 18,
-                                            backgroundColor: color.withOpacity(0.1),
-                                            child: Icon(Icons.person_outline, size: 20, color: color),
+                                            backgroundColor: color.withOpacity(
+                                              0.1,
+                                            ),
+                                            child: Icon(
+                                              Icons.person_outline,
+                                              size: 20,
+                                              color: color,
+                                            ),
                                           ),
                                           const SizedBox(width: 12),
                                           Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 'Organizer',
-                                                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey[500],
+                                                ),
                                               ),
                                               Text(
                                                 organizer,
-                                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 15,
+                                                ),
                                               ),
                                             ],
                                           ),
@@ -229,7 +280,10 @@ class EventDetailsScreen extends StatelessWidget {
                                             const SizedBox(width: 8),
                                             Text(
                                               'Capacity: $capacity',
-                                              style: TextStyle(color: Colors.grey[700], fontSize: 15),
+                                              style: TextStyle(
+                                                color: Colors.grey[700],
+                                                fontSize: 15,
+                                              ),
                                             ),
                                           ],
                                         ],
@@ -256,7 +310,8 @@ class EventDetailsScreen extends StatelessWidget {
                                     ],
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       const Text(
                                         'About this event',
@@ -296,15 +351,20 @@ class EventDetailsScreen extends StatelessWidget {
                                       ],
                                     ),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         if (price != null && price.isNotEmpty)
                                           Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 'Price per ticket',
-                                                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey[500],
+                                                ),
                                               ),
                                               Text(
                                                 price,
@@ -318,53 +378,90 @@ class EventDetailsScreen extends StatelessWidget {
                                           ),
                                         FilledButton(
                                           onPressed: () {
-                                            if (MockBackend().currentUser == null) {
-                                              final pending = PurchasedTicket(
+                                            if (SqliteBackend().currentUser ==
+                                                null) {
+                                              final pending = DbPurchasedTicket(
+                                                userEmail: '',
                                                 title: event['title'] as String,
                                                 date: event['date'] as String,
-                                                location: event['location'] as String,
-                                                category: event['category'] as String,
+                                                location:
+                                                    event['location'] as String,
+                                                category:
+                                                    event['category'] as String,
                                                 price: price ?? '',
+                                                purchasedAt: DateTime.now(),
                                               );
-                                              MockBackend().setPendingPurchase(pending);
-                                              ScaffoldMessenger.of(context).showSnackBar(
+                                              SqliteBackend()
+                                                  .setPendingPurchase(pending);
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
                                                 const SnackBar(
                                                   content: Text(
                                                     'Please register or sign in to complete your purchase.',
                                                   ),
-                                                  behavior: SnackBarBehavior.floating,
+                                                  behavior:
+                                                      SnackBarBehavior.floating,
                                                 ),
                                               );
-                                              Navigator.pushNamed(context, '/register');
+                                              Navigator.pushNamed(
+                                                context,
+                                                '/register',
+                                              );
                                               return;
                                             }
 
-                                            MockBackend().purchaseTicket(
-                                              PurchasedTicket(
+                                            SqliteBackend().purchaseTicket(
+                                              DbPurchasedTicket(
+                                                userEmail:
+                                                    SqliteBackend()
+                                                        .currentUser
+                                                        ?.email ??
+                                                    '',
                                                 title: event['title'] as String,
                                                 date: event['date'] as String,
-                                                location: event['location'] as String,
-                                                category: event['category'] as String,
+                                                location:
+                                                    event['location'] as String,
+                                                category:
+                                                    event['category'] as String,
                                                 price: price ?? '',
+                                                purchasedAt: DateTime.now(),
                                               ),
                                             );
-                                            ScaffoldMessenger.of(context).showSnackBar(
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
                                               SnackBar(
-                                                content: Text('Ticket purchased for ${event['title']}'),
-                                                behavior: SnackBarBehavior.floating,
+                                                content: Text(
+                                                  'Ticket purchased for ${event['title']}',
+                                                ),
+                                                behavior:
+                                                    SnackBarBehavior.floating,
                                               ),
                                             );
-                                            Navigator.pushNamed(context, '/my-tickets');
+                                            Navigator.pushNamed(
+                                              context,
+                                              '/my-tickets',
+                                            );
                                           },
                                           style: FilledButton.styleFrom(
                                             backgroundColor: color,
                                             foregroundColor: Colors.white,
-                                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 40,
+                                              vertical: 20,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                            ),
                                           ),
                                           child: const Text(
                                             'Buy ticket now',
-                                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -377,11 +474,17 @@ class EventDetailsScreen extends StatelessWidget {
                                     decoration: BoxDecoration(
                                       color: color.withOpacity(0.06),
                                       borderRadius: BorderRadius.circular(24),
-                                      border: Border.all(color: color.withOpacity(0.12)),
+                                      border: Border.all(
+                                        color: color.withOpacity(0.12),
+                                      ),
                                     ),
                                     child: Row(
                                       children: [
-                                        Icon(Icons.event_available_outlined, color: color, size: 28),
+                                        Icon(
+                                          Icons.event_available_outlined,
+                                          color: color,
+                                          size: 28,
+                                        ),
                                         const SizedBox(width: 16),
                                         const Expanded(
                                           child: Text(
@@ -403,11 +506,17 @@ class EventDetailsScreen extends StatelessWidget {
                                     decoration: BoxDecoration(
                                       color: Colors.green.withOpacity(0.08),
                                       borderRadius: BorderRadius.circular(24),
-                                      border: Border.all(color: Colors.green.withOpacity(0.18)),
+                                      border: Border.all(
+                                        color: Colors.green.withOpacity(0.18),
+                                      ),
                                     ),
                                     child: Row(
                                       children: [
-                                        const Icon(Icons.verified_rounded, color: Colors.green, size: 28),
+                                        const Icon(
+                                          Icons.verified_rounded,
+                                          color: Colors.green,
+                                          size: 28,
+                                        ),
                                         const SizedBox(width: 16),
                                         const Expanded(
                                           child: Text(

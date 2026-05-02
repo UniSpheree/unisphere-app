@@ -3,7 +3,7 @@ import 'package:flutter/gestures.dart';
 import '../utils/validators.dart';
 import '../widgets/auth_text_field.dart';
 import '../utils/unis.dart';
-import '../utils/mock_backend.dart';
+import '../services/sqlite_backend.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -64,7 +64,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final email = _emailController.text.trim().toLowerCase();
     final password = _passwordController.text;
     final university = _universityFieldController.text.trim();
-    final success = await MockBackend().register(
+    final success = await SqliteBackend().register(
       email: email,
       password: password,
       firstName: firstName,

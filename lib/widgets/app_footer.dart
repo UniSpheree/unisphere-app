@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:unisphere_app/utils/mock_backend.dart';
+import 'package:unisphere_app/services/sqlite_backend.dart';
 
 class AppFooter extends StatelessWidget {
   final String brandName;
@@ -81,7 +81,10 @@ class AppFooter extends StatelessWidget {
                       children: [
                         Text(
                           copyrightText,
-                          style: const TextStyle(color: Colors.white54, fontSize: 13),
+                          style: const TextStyle(
+                            color: Colors.white54,
+                            fontSize: 13,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         Row(
@@ -89,28 +92,49 @@ class AppFooter extends StatelessWidget {
                             InkWell(
                               onTap: () {
                                 Future.microtask(() {
-                                  if (context.mounted) Navigator.pushNamed(context, '/about');
+                                  if (context.mounted)
+                                    Navigator.pushNamed(context, '/about');
                                 });
                               },
-                              child: const Text('About', style: TextStyle(color: Colors.white54, fontSize: 13)),
+                              child: const Text(
+                                'About',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 13,
+                                ),
+                              ),
                             ),
                             const SizedBox(width: 16),
                             InkWell(
                               onTap: () {
                                 Future.microtask(() {
-                                  if (context.mounted) Navigator.pushNamed(context, '/privacy');
+                                  if (context.mounted)
+                                    Navigator.pushNamed(context, '/privacy');
                                 });
                               },
-                              child: const Text('Privacy', style: TextStyle(color: Colors.white54, fontSize: 13)),
+                              child: const Text(
+                                'Privacy',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 13,
+                                ),
+                              ),
                             ),
                             const SizedBox(width: 16),
                             InkWell(
                               onTap: () {
                                 Future.microtask(() {
-                                  if (context.mounted) Navigator.pushNamed(context, '/terms');
+                                  if (context.mounted)
+                                    Navigator.pushNamed(context, '/terms');
                                 });
                               },
-                              child: const Text('Terms', style: TextStyle(color: Colors.white54, fontSize: 13)),
+                              child: const Text(
+                                'Terms',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 13,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -123,35 +147,59 @@ class AppFooter extends StatelessWidget {
                     children: [
                       Text(
                         copyrightText,
-                        style: const TextStyle(color: Colors.white54, fontSize: 13),
+                        style: const TextStyle(
+                          color: Colors.white54,
+                          fontSize: 13,
+                        ),
                       ),
                       Row(
                         children: [
                           InkWell(
                             onTap: () {
                               Future.microtask(() {
-                                if (context.mounted) Navigator.pushNamed(context, '/about');
+                                if (context.mounted)
+                                  Navigator.pushNamed(context, '/about');
                               });
                             },
-                            child: const Text('About', style: TextStyle(color: Colors.white54, fontSize: 13)),
+                            child: const Text(
+                              'About',
+                              style: TextStyle(
+                                color: Colors.white54,
+                                fontSize: 13,
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 24),
                           InkWell(
                             onTap: () {
                               Future.microtask(() {
-                                if (context.mounted) Navigator.pushNamed(context, '/privacy');
+                                if (context.mounted)
+                                  Navigator.pushNamed(context, '/privacy');
                               });
                             },
-                            child: const Text('Privacy', style: TextStyle(color: Colors.white54, fontSize: 13)),
+                            child: const Text(
+                              'Privacy',
+                              style: TextStyle(
+                                color: Colors.white54,
+                                fontSize: 13,
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 24),
                           InkWell(
                             onTap: () {
                               Future.microtask(() {
-                                if (context.mounted) Navigator.pushNamed(context, '/terms');
+                                if (context.mounted)
+                                  Navigator.pushNamed(context, '/terms');
                               });
                             },
-                            child: const Text('Terms', style: TextStyle(color: Colors.white54, fontSize: 13)),
+                            child: const Text(
+                              'Terms',
+                              style: TextStyle(
+                                color: Colors.white54,
+                                fontSize: 13,
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -189,33 +237,38 @@ class _FooterColumn extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          ...links.map((linkData) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: InkWell(
-              onTap: () {
-                final route = linkData['route'];
-                if (route != null) {
-                  Future.microtask(() {
-                    if (context.mounted) {
-                      final requiresAuth = ['/create-event', '/profile', '/calendar', '/my-events'].contains(route);
-                      if (requiresAuth && MockBackend().currentUser == null) {
-                        Navigator.pushNamed(context, '/register');
-                      } else {
-                        Navigator.pushNamed(context, route);
+          ...links.map(
+            (linkData) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: InkWell(
+                onTap: () {
+                  final route = linkData['route'];
+                  if (route != null) {
+                    Future.microtask(() {
+                      if (context.mounted) {
+                        final requiresAuth = [
+                          '/create-event',
+                          '/profile',
+                          '/calendar',
+                          '/my-events',
+                        ].contains(route);
+                        if (requiresAuth &&
+                            SqliteBackend().currentUser == null) {
+                          Navigator.pushNamed(context, '/register');
+                        } else {
+                          Navigator.pushNamed(context, route);
+                        }
                       }
-                    }
-                  });
-                }
-              },
-              child: Text(
-                linkData['label'] ?? '',
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
+                    });
+                  }
+                },
+                child: Text(
+                  linkData['label'] ?? '',
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
                 ),
               ),
             ),
-          )),
+          ),
         ],
       ),
     );
