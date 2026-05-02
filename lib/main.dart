@@ -30,6 +30,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final startRoute = SqliteBackend().currentUser != null ? '/logged-in' : '/';
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'UniSphere',
@@ -40,7 +42,7 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Roboto',
       ),
       // ── Initial route (landing page as the app entry point)
-      initialRoute: '/',
+      initialRoute: startRoute,
       routes: {
         '/': (_) => const LandingPage(),
         '/logged-in': (_) {
