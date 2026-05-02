@@ -335,10 +335,15 @@ class _Brand extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Always navigate to the initial welcome page
+        final user = SqliteBackend().currentUser;
         Future.microtask(() {
-          if (context.mounted)
-            Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+          if (context.mounted) {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              user != null ? '/logged-in' : '/',
+              (route) => false,
+            );
+          }
         });
       },
       child: Row(

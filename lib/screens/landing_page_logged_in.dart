@@ -4,6 +4,7 @@ import 'package:unisphere_app/widgets/app_footer.dart';
 import 'package:unisphere_app/widgets/header.dart';
 import 'event_details_screen.dart';
 import 'package:unisphere_app/services/sqlite_backend.dart';
+import 'package:unisphere_app/utils/event_categories.dart';
 import 'create_event_screen.dart';
 import 'my_tickets_screen.dart';
 import 'my_events_page.dart';
@@ -212,6 +213,7 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
             'icon': Icons.event_rounded,
             'bannerImageData': event['bannerImageData'],
             'organizer': event['organizer'] ?? 'UniSphere',
+            'organizerEmail': event['organizerEmail'],
           },
         )
         .toList();
@@ -463,28 +465,60 @@ class _DiscoverSection extends StatelessWidget {
           onFilterChanged: onFilterChanged,
         ),
         const SizedBox(height: 24),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final isSmall = constraints.maxWidth < 800;
-            final crossAxisCount = isSmall ? 1 : 2;
+        if (filteredEvents.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: PersonalizedLandingPage.border),
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.event_busy_outlined,
+                  size: 34,
+                  color: PersonalizedLandingPage.primary.withOpacity(0.7),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  selectedFilter == 'All'
+                      ? 'No events available right now.'
+                      : 'No ${selectedFilter.toLowerCase()} events available right now.',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: PersonalizedLandingPage.text,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isSmall = constraints.maxWidth < 800;
+              final crossAxisCount = isSmall ? 1 : 2;
 
-            return GridView.builder(
-              itemCount: filteredEvents.length,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: crossAxisCount,
-                crossAxisSpacing: 18,
-                mainAxisSpacing: 18,
-                childAspectRatio: isSmall ? 1.6 : 0.85,
-              ),
-              itemBuilder: (context, index) {
-                final event = filteredEvents[index];
-                return _DiscoverEventCard(event: event);
-              },
-            );
-          },
-        ),
+              return GridView.builder(
+                itemCount: filteredEvents.length,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  crossAxisSpacing: 18,
+                  mainAxisSpacing: 18,
+                  childAspectRatio: isSmall ? 1.6 : 0.85,
+                ),
+                itemBuilder: (context, index) {
+                  final event = filteredEvents[index];
+                  return _DiscoverEventCard(event: event);
+                },
+              );
+            },
+          ),
       ],
     );
   }
@@ -801,15 +835,7 @@ class _CategoryChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final chips = [
-      'All',
-      'Technology',
-      'Music',
-      'Entertainment',
-      'Career',
-      'Sports',
-      'Workshops',
-    ];
+    final chips = kEventFilterCategories;
 
     return Wrap(
       spacing: 10,

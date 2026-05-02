@@ -5,7 +5,7 @@ import 'package:unisphere_app/models/database_models.dart';
 import '../widgets/header.dart';
 import '../widgets/app_footer.dart';
 
-class EventDetailsScreen extends StatelessWidget {
+class EventDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> event;
   final bool allowPurchase;
 
@@ -16,7 +16,88 @@ class EventDetailsScreen extends StatelessWidget {
   });
 
   @override
+  State<EventDetailsScreen> createState() => _EventDetailsScreenState();
+}
+
+class _EventDetailsScreenState extends State<EventDetailsScreen> {
+  void _onBackendChanged() {
+    if (!mounted) return;
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    SqliteBackend().addListener(_onBackendChanged);
+  }
+
+  @override
+  void dispose() {
+    SqliteBackend().removeListener(_onBackendChanged);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final currentEventId = widget.event['id']?.toString();
+    final latestEvent = currentEventId == null
+        ? widget.event
+        : SqliteBackend().events.firstWhere(
+            (e) => e['id']?.toString() == currentEventId,
+            orElse: () => widget.event,
+          );
+    final isDeleted = currentEventId != null &&
+        !SqliteBackend().events.any((e) => e['id']?.toString() == currentEventId);
+
+    if (isDeleted) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF0F2F8),
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: Container(
+              margin: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(28),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 24,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.event_busy, size: 56, color: Colors.redAccent),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'This event was deleted',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'The event is no longer available.',
+                    style: TextStyle(color: Colors.grey[700]),
+                  ),
+                  const SizedBox(height: 20),
+                  FilledButton(
+                    onPressed: () => Navigator.maybePop(context),
+                    child: const Text('Go back'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final event = latestEvent;
+    final allowPurchase = widget.allowPurchase;
     final color = event['color'] as Color? ?? const Color(0xFF4F46E5);
     final description =
         event['description'] as String? ??
@@ -32,9 +113,20 @@ class EventDetailsScreen extends StatelessWidget {
     final tags = (event['tags'] as List<dynamic>?)?.cast<String>() ?? [];
     final price = (event['price'] as String?)?.trim();
 
+    final eventId = int.tryParse(event['id']?.toString() ?? '');
+    final canonicalEvent = SqliteBackend().events.cast<Map<String, dynamic>?>().firstWhere(
+      (e) =>
+        e != null &&
+        int.tryParse(e['id']?.toString() ?? '') == eventId,
+      orElse: () => null,
+    );
+    final organizerEmail =
+      (canonicalEvent?['organizerEmail'] ?? event['organizerEmail'])
+        ?.toString() ??
+      '';
+
     final isOrganizerViewing =
-        SqliteBackend().currentUser?.email ==
-        (event['organizerEmail']?.toString() ?? '');
+      SqliteBackend().currentUser?.email == organizerEmail;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
@@ -426,6 +518,9 @@ class EventDetailsScreen extends StatelessWidget {
                                                     event['category'] as String,
                                                 price: price ?? '',
                                                 purchasedAt: DateTime.now(),
+                                                eventId: int.tryParse(
+                                                  event['id']?.toString() ?? '',
+                                                ),
                                               ),
                                             );
                                             ScaffoldMessenger.of(

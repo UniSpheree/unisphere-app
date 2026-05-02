@@ -17,6 +17,30 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _query = '';
 
+  Map<String, dynamic>? _findMatchingEvent(DbPurchasedTicket ticket) {
+    for (final event in SqliteBackend().events) {
+      final eventId = int.tryParse(event['id']?.toString() ?? '');
+      if (ticket.eventId != null && eventId == ticket.eventId) {
+        return event;
+      }
+    }
+
+    for (final event in SqliteBackend().events) {
+      final sameTitle = event['title']?.toString() == ticket.title;
+      final sameDate = event['date']?.toString() == ticket.date;
+      final sameLocation = event['location']?.toString() == ticket.location;
+      if (sameTitle && sameDate && sameLocation) {
+        return event;
+      }
+    }
+
+    return null;
+  }
+
+  bool _hasExistingEvent(DbPurchasedTicket ticket) {
+    return _findMatchingEvent(ticket) != null;
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -24,13 +48,10 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
   }
 
   Map<String, dynamic> _ticketToEvent(DbPurchasedTicket ticket) {
-    // Find the actual event by matching title
-    final matchingEvent = SqliteBackend().events.firstWhere(
-      (event) => event['title']?.toString() == ticket.title,
-      orElse: () => {},
-    );
+    final matchingEvent = _findMatchingEvent(ticket);
 
     return {
+      'id': matchingEvent?['id'],
       'title': ticket.title,
       'date': ticket.date,
       'location': ticket.location,
@@ -38,14 +59,14 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
       'price': ticket.price,
       'description':
           'Ticket details for ${ticket.title}. You can review the event information and keep this ticket handy for check-in.',
-      'organizer': matchingEvent.isNotEmpty
-          ? (matchingEvent['organizer']?.toString() ?? 'UniSphere')
+      'organizer': matchingEvent != null
+        ? (matchingEvent['organizer']?.toString() ?? 'UniSphere')
           : 'UniSphere',
-      'organizerEmail': matchingEvent.isNotEmpty
-          ? matchingEvent['organizerEmail']?.toString()
+      'organizerEmail': matchingEvent != null
+        ? matchingEvent['organizerEmail']?.toString()
           : null,
-      'bannerImageData': matchingEvent.isNotEmpty
-          ? matchingEvent['bannerImageData']
+      'bannerImageData': matchingEvent != null
+        ? matchingEvent['bannerImageData']
           : null,
       'capacity': null,
       'tags': <String>['Purchased ticket'],
@@ -97,7 +118,10 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                         child: AnimatedBuilder(
                           animation: SqliteBackend(),
                           builder: (context, _) {
-                            final tickets = SqliteBackend().purchasedTickets;
+                            final tickets = SqliteBackend()
+                              .purchasedTickets
+                              .where(_hasExistingEvent)
+                              .toList();
                             final filteredTickets = tickets
                                 .where((t) => _matchesQuery(t) && t.title.toLowerCase() != 'demo event')
                                 .toList();
