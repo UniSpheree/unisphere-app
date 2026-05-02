@@ -142,8 +142,9 @@ class AppFooter extends StatelessWidget {
                     );
                   }
 
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  return Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Text(
                         copyrightText,
@@ -152,56 +153,60 @@ class AppFooter extends StatelessWidget {
                           fontSize: 13,
                         ),
                       ),
-                      Row(
-                        children: [
-                          InkWell(
-                            onTap: () {
-                              Future.microtask(() {
-                                if (context.mounted)
-                                  Navigator.pushNamed(context, '/about');
-                              });
-                            },
-                            child: const Text(
-                              'About',
-                              style: TextStyle(
-                                color: Colors.white54,
-                                fontSize: 13,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                Future.microtask(() {
+                                  if (context.mounted)
+                                    Navigator.pushNamed(context, '/about');
+                                });
+                              },
+                              child: const Text(
+                                'About',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 13,
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 24),
-                          InkWell(
-                            onTap: () {
-                              Future.microtask(() {
-                                if (context.mounted)
-                                  Navigator.pushNamed(context, '/privacy');
-                              });
-                            },
-                            child: const Text(
-                              'Privacy',
-                              style: TextStyle(
-                                color: Colors.white54,
-                                fontSize: 13,
+                            const SizedBox(width: 24),
+                            InkWell(
+                              onTap: () {
+                                Future.microtask(() {
+                                  if (context.mounted)
+                                    Navigator.pushNamed(context, '/privacy');
+                                });
+                              },
+                              child: const Text(
+                                'Privacy',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 13,
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 24),
-                          InkWell(
-                            onTap: () {
-                              Future.microtask(() {
-                                if (context.mounted)
-                                  Navigator.pushNamed(context, '/terms');
-                              });
-                            },
-                            child: const Text(
-                              'Terms',
-                              style: TextStyle(
-                                color: Colors.white54,
-                                fontSize: 13,
+                            const SizedBox(width: 24),
+                            InkWell(
+                              onTap: () {
+                                Future.microtask(() {
+                                  if (context.mounted)
+                                    Navigator.pushNamed(context, '/terms');
+                                });
+                              },
+                              child: const Text(
+                                'Terms',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 13,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   );
