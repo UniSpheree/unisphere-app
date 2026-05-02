@@ -17,6 +17,7 @@ fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 const db = new Database(DB_PATH);
 
 db.pragma("journal_mode = WAL");
+db.pragma("foreign_keys = ON");
 
 db.exec(`
 CREATE TABLE IF NOT EXISTS users (
@@ -55,9 +56,31 @@ CREATE TABLE IF NOT EXISTS tickets (
   location TEXT NOT NULL,
   category TEXT NOT NULL,
   price TEXT NOT NULL DEFAULT '',
-  purchased_at TEXT NOT NULL DEFAULT (datetime('now'))
+  event_id INTEGER,
+  purchased_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
 );
 `);
+
+// Migration: Add visibility column if it doesn't exist
+try {
+  db.prepare("ALTER TABLE events ADD COLUMN visibility TEXT NOT NULL DEFAULT 'Public'").run();
+  console.log('✓ Added visibility column to events table');
+} catch (err) {
+  if (!err.message.includes('duplicate column name')) {
+    console.log('Note: visibility column already exists or migration skipped');
+  }
+}
+
+// Migration: Add event_id column to tickets table
+try {
+  db.prepare("ALTER TABLE tickets ADD COLUMN event_id INTEGER").run();
+  console.log('✓ Added event_id column to tickets table');
+} catch (err) {
+  if (!err.message.includes('duplicate column name')) {
+    console.log('Note: event_id column already exists or migration skipped');
+  }
+}
 
 app.use(cors());
 app.use(express.json({ limit: "25mb" }));
@@ -119,6 +142,7 @@ function toTicketOut(row) {
     category: row.category,
     price: row.price,
     purchasedAt: row.purchased_at,
+    eventId: row.event_id,
   };
 }
 
@@ -201,6 +225,15 @@ app.post("/auth/reset-password", (req, res) => {
     email
   );
   res.json({ ok: true });
+});
+
+app.get("/profiles/:email", (req, res) => {
+  const email = normalizeEmail(req.params.email);
+  const user = db.prepare("SELECT * FROM users WHERE email = ?").get(email);
+  if (!user) {
+    return res.status(404).json({ detail: "User not found" });
+  }
+  res.json(toUserOut(user));
 });
 
 app.put("/profiles/:email", (req, res) => {
@@ -380,6 +413,12 @@ app.delete("/events/:id", (req, res) => {
       fs.unlinkSync(row.banner_image_path);
     } catch (_) {}
   }
+  // Cascade delete: remove linked tickets, including legacy rows without event_id
+  db
+    .prepare(
+      "DELETE FROM tickets WHERE event_id = ? OR (event_id IS NULL AND title = ? AND date = ? AND location = ?)"
+    )
+    .run(id, row.title, row.date, row.location);
   db.prepare("DELETE FROM events WHERE id = ?").run(id);
   res.json({ ok: true });
 });
@@ -395,8 +434,8 @@ app.post("/tickets", (req, res) => {
   }
 
   const stmt = db.prepare(`
-    INSERT INTO tickets (user_email, title, date, location, category, price)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO tickets (user_email, title, date, location, category, price, event_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
   const info = stmt.run(
     userEmail,
@@ -404,7 +443,8 @@ app.post("/tickets", (req, res) => {
     String(body.date || ""),
     String(body.location || "").trim(),
     String(body.category || "").trim(),
-    String(body.price || "").trim()
+    String(body.price || "").trim(),
+    body.eventId ? Number(body.eventId) : null
   );
   const row = db
     .prepare("SELECT * FROM tickets WHERE id = ?")
@@ -414,6 +454,35 @@ app.post("/tickets", (req, res) => {
 
 app.get("/tickets/:email", (req, res) => {
   const email = normalizeEmail(req.params.email);
+
+  db
+    .prepare(
+      `
+      DELETE FROM tickets
+      WHERE user_email = ?
+        AND event_id IS NOT NULL
+        AND event_id NOT IN (SELECT id FROM events)
+    `
+    )
+    .run(email);
+
+  db
+    .prepare(
+      `
+      DELETE FROM tickets
+      WHERE user_email = ?
+        AND event_id IS NULL
+        AND NOT EXISTS (
+          SELECT 1
+          FROM events
+          WHERE events.title = tickets.title
+            AND events.date = tickets.date
+            AND events.location = tickets.location
+        )
+    `
+    )
+    .run(email);
+
   const rows = db
     .prepare(
       "SELECT * FROM tickets WHERE user_email = ? ORDER BY purchased_at DESC"
