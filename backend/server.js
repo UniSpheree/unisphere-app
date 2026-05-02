@@ -425,6 +425,51 @@ app.delete("/events/:id", (req, res) => {
   res.json({ ok: true });
 });
 
+// Delete a user and all their data (events, tickets, stored banners)
+app.delete('/auth/users/:email', (req, res) => {
+  try {
+    const email = normalizeEmail(req.params.email || '');
+    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Delete tickets owned by this user
+    db.prepare('DELETE FROM tickets WHERE user_email = ?').run(email);
+
+    // Find events created by this user and delete associated banner files
+    const events = db.prepare('SELECT * FROM events WHERE organizer_email = ?').all(email);
+    for (const ev of events) {
+      if (ev.banner_image_path) {
+        try {
+          if (fs.existsSync(ev.banner_image_path)) {
+            fs.unlinkSync(ev.banner_image_path);
+          }
+        } catch (e) {
+          console.error('Failed to delete banner:', ev.banner_image_path, e);
+        }
+      }
+
+      // Delete any tickets associated to this event (by event_id or legacy match)
+      if (ev.id) {
+        db.prepare('DELETE FROM tickets WHERE event_id = ?').run(ev.id);
+      }
+      db.prepare('DELETE FROM tickets WHERE title = ? AND date = ? AND location = ?').run(ev.title, ev.date, ev.location);
+    }
+
+    // Delete events created by the user
+    db.prepare('DELETE FROM events WHERE organizer_email = ?').run(email);
+
+    // Finally delete the user record
+    db.prepare('DELETE FROM users WHERE email = ?').run(email);
+
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('Error deleting user:', e);
+    res.status(500).json({ error: 'Failed to delete user' });
+  }
+});
+
 app.post("/tickets", (req, res) => {
   const body = req.body || {};
   const userEmail = normalizeEmail(body.userEmail);
@@ -452,6 +497,26 @@ app.post("/tickets", (req, res) => {
     .prepare("SELECT * FROM tickets WHERE id = ?")
     .get(info.lastInsertRowid);
   res.status(201).json(toTicketOut(row));
+});
+
+app.delete('/tickets/:email/:id', (req, res) => {
+  try {
+    const email = normalizeEmail(req.params.email || '');
+    const ticketId = Number(req.params.id);
+    const ticket = db
+      .prepare('SELECT * FROM tickets WHERE id = ? AND user_email = ?')
+      .get(ticketId, email);
+
+    if (!ticket) {
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+
+    db.prepare('DELETE FROM tickets WHERE id = ?').run(ticketId);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('Error deleting ticket:', e);
+    res.status(500).json({ error: 'Failed to delete ticket' });
+  }
 });
 
 app.get("/tickets/:email", (req, res) => {
