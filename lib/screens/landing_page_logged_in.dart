@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import 'package:unisphere_app/widgets/app_footer.dart';
 import 'package:unisphere_app/widgets/header.dart';
+import 'package:unisphere_app/widgets/pagination_controls.dart';
 import 'event_details_screen.dart';
 import 'package:unisphere_app/services/sqlite_backend.dart';
 import 'package:unisphere_app/utils/event_categories.dart';
+import 'package:unisphere_app/utils/event_date_filters.dart';
+import 'package:unisphere_app/utils/pagination.dart';
 import 'create_event_screen.dart';
 import 'my_tickets_screen.dart';
 import 'my_events_page.dart';
@@ -95,6 +98,45 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
     });
   }
 
+  DateTime? _tryParseDate(dynamic value) {
+    if (value == null) return null;
+    final raw = value.toString().trim();
+    if (raw.isEmpty) return null;
+    try {
+      return DateTime.parse(raw);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  List<Map<String, dynamic>> _sortUpcomingEvents(
+    List<Map<String, dynamic>> events,
+  ) {
+    final now = DateTime.now();
+    final limit = now.add(const Duration(days: 30));
+
+    final upcoming = <Map<String, dynamic>>[];
+    for (final event in events) {
+      final eventDate = _tryParseDate(event['date']);
+      if (eventDate == null) continue;
+      if (eventDate.isBefore(now) || eventDate.isAfter(limit)) continue;
+      final copy = Map<String, dynamic>.from(event);
+      copy['eventDate'] = eventDate;
+      upcoming.add(copy);
+    }
+
+    upcoming.sort((a, b) {
+      final aDate = a['eventDate'] as DateTime?;
+      final bDate = b['eventDate'] as DateTime?;
+      if (aDate == null && bDate == null) return 0;
+      if (aDate == null) return 1;
+      if (bDate == null) return -1;
+      return aDate.compareTo(bDate);
+    });
+
+    return upcoming;
+  }
+
   List<Map<String, dynamic>> get _organiserLiveEvents {
     final email = SqliteBackend().currentUser?.email;
     if (email == null) return [];
@@ -115,34 +157,57 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
         widget.role.toLowerCase() == 'organiser';
 
     if (isOrganiser) {
-      return _organiserLiveEvents;
+      return _applyDateFiltersToEvents(_sortUpcomingEvents(_organiserLiveEvents));
     }
 
-    return SqliteBackend().purchasedTickets
-        .where((t) => t.title.toLowerCase() != 'demo event')
-        .map((ticket) {
-          // Find the actual event by matching title
-          final matchingEvent = SqliteBackend().events.firstWhere(
-            (event) => event['title']?.toString() == ticket.title,
-            orElse: () => {},
-          );
+    final upcoming = <Map<String, dynamic>>[];
+    for (final ticket in SqliteBackend().purchasedTickets) {
+      if (ticket.title.toLowerCase() == 'demo event') continue;
 
-          return {
-            'title': ticket.title,
-            'date': ticket.date,
-            'eventDate': DateTime.now().add(const Duration(days: 10)),
-            'location': ticket.location,
-            'category': ticket.category,
-            'icon': Icons.confirmation_number_outlined,
-            'color': const Color(0xFF4F46E5),
-            'bannerImageData': matchingEvent.isNotEmpty
-                ? matchingEvent['bannerImageData']
-                : null,
-            'organizer': matchingEvent.isNotEmpty
-                ? (matchingEvent['organizer']?.toString() ?? 'UniSphere')
-                : 'UniSphere',
-          };
-        })
+      final matchingEvent = SqliteBackend().events.firstWhere(
+        (event) {
+          final eventId = int.tryParse(event['id']?.toString() ?? '');
+          if (ticket.eventId != null && eventId == ticket.eventId) {
+            return true;
+          }
+          return event['title']?.toString() == ticket.title &&
+              event['date']?.toString() == ticket.date &&
+              event['location']?.toString() == ticket.location;
+        },
+        orElse: () => {},
+      );
+
+      final eventDate = _tryParseDate(matchingEvent['date'] ?? ticket.date);
+      if (eventDate == null) continue;
+
+      upcoming.add({
+        'title': ticket.title,
+        'date': matchingEvent.isNotEmpty
+            ? matchingEvent['date']?.toString() ?? ticket.date
+            : ticket.date,
+        'eventDate': eventDate,
+        'location': ticket.location,
+        'category': ticket.category,
+        'icon': Icons.confirmation_number_outlined,
+        'color': const Color(0xFF4F46E5),
+        'bannerImageData': matchingEvent.isNotEmpty
+            ? matchingEvent['bannerImageData']
+            : null,
+        'organizer': matchingEvent.isNotEmpty
+            ? (matchingEvent['organizer']?.toString() ?? 'UniSphere')
+            : 'UniSphere',
+      });
+    }
+
+    return _applyDateFiltersToEvents(_sortUpcomingEvents(upcoming));
+  }
+
+  List<Map<String, dynamic>> _applyDateFiltersToEvents(
+    List<Map<String, dynamic>> events,
+  ) {
+    if (!hasActiveDateFilters(_dateFilters)) return events;
+    return events
+        .where((event) => matchesDateFilters(event['date'], _dateFilters))
         .toList();
   }
 
@@ -230,18 +295,22 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
               .toList();
 
     if (_searchQuery.isEmpty) {
-      return baseEvents;
+      return _applyDateFiltersToEvents(baseEvents);
     }
 
     final query = _searchQuery.toLowerCase();
-    return baseEvents.where((event) {
+    final searched = baseEvents.where((event) {
       final category = (event['category'] as String).toLowerCase();
       final title = (event['title'] as String).toLowerCase();
       final titleWords = title.split(' ');
+      final location = (event['location'] as String).toLowerCase();
 
       return category.startsWith(query) ||
-          titleWords.any((word) => word.contains(query));
+          titleWords.any((word) => word.contains(query)) ||
+          location.contains(query);
     }).toList();
+
+    return _applyDateFiltersToEvents(searched);
   }
 
   @override
@@ -470,60 +539,12 @@ class _DiscoverSection extends StatelessWidget {
           onFilterChanged: onFilterChanged,
         ),
         const SizedBox(height: 24),
-        if (filteredEvents.isEmpty)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(22),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: PersonalizedLandingPage.border),
-            ),
-            child: Column(
-              children: [
-                Icon(
-                  Icons.event_busy_outlined,
-                  size: 34,
-                  color: PersonalizedLandingPage.primary.withOpacity(0.7),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  selectedFilter == 'All'
-                      ? 'No events available right now.'
-                      : 'No ${selectedFilter.toLowerCase()} events available right now.',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: PersonalizedLandingPage.text,
-                  ),
-                ),
-              ],
-            ),
-          )
-        else
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isSmall = constraints.maxWidth < 800;
-              final crossAxisCount = isSmall ? 1 : 2;
-
-              return GridView.builder(
-                itemCount: filteredEvents.length,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossAxisCount,
-                  crossAxisSpacing: 18,
-                  mainAxisSpacing: 18,
-                  childAspectRatio: isSmall ? 1.6 : 0.85,
-                ),
-                itemBuilder: (context, index) {
-                  final event = filteredEvents[index];
-                  return _DiscoverEventCard(event: event);
-                },
-              );
-            },
-          ),
+        _PaginatedEventGrid(
+          events: filteredEvents,
+          emptyMessage: selectedFilter == 'All'
+              ? 'No events available right now.'
+              : 'No ${selectedFilter.toLowerCase()} events available right now.',
+        ),
       ],
     );
   }
@@ -729,97 +750,74 @@ class _SearchAndFilters extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final isWide = constraints.maxWidth > 440;
-                    final itemWidth =
-                        (constraints.maxWidth - (isWide ? 32 : 24)) /
-                        (isWide ? 3 : 2);
-
-                    return Wrap(
+                    Wrap(
                       spacing: 12,
                       runSpacing: 10,
-                      children:
-                          [
-                            'today',
-                            'tomorrow',
-                            'this week',
-                            'next week',
-                            'this month',
-                            'next month',
-                          ].map((filter) {
-                            return SizedBox(
-                              width: itemWidth,
-                              child: GestureDetector(
-                                onTap: () => onDateFilterChanged(
-                                  filter,
-                                  !dateFilters[filter]!,
-                                ),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 10,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: dateFilters[filter]!
-                                        ? PersonalizedLandingPage.primary
-                                              .withOpacity(0.12)
-                                        : Colors.white,
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: dateFilters[filter]!
-                                          ? PersonalizedLandingPage.primary
-                                          : PersonalizedLandingPage.border,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 18,
-                                        height: 18,
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                            color: dateFilters[filter]!
-                                                ? PersonalizedLandingPage
-                                                      .primary
-                                                : PersonalizedLandingPage
-                                                      .border,
-                                            width: 2,
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            4,
-                                          ),
-                                          color: dateFilters[filter]!
-                                              ? PersonalizedLandingPage.primary
-                                              : Colors.white,
-                                        ),
-                                        child: dateFilters[filter]!
-                                            ? const Icon(
-                                                Icons.check,
-                                                size: 12,
-                                                color: Colors.white,
-                                              )
-                                            : null,
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: Text(
-                                          filter,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: PersonalizedLandingPage.text,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                      children: kEventDateFilters.map((filter) {
+                        final isSelected = dateFilters[filter] ?? false;
+                        return GestureDetector(
+                          onTap: () => onDateFilterChanged(filter, !isSelected),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 180),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? PersonalizedLandingPage.primary
+                                      .withOpacity(0.10)
+                                  : const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isSelected
+                                    ? PersonalizedLandingPage.primary
+                                    : PersonalizedLandingPage.border,
                               ),
-                            );
-                          }).toList(),
-                    );
-                  },
-                ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 18,
+                                  height: 18,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? PersonalizedLandingPage.primary
+                                          : const Color(0xFFD1D5DB),
+                                      width: 2,
+                                    ),
+                                    borderRadius: BorderRadius.circular(5),
+                                    color: isSelected
+                                        ? PersonalizedLandingPage.primary
+                                        : Colors.white,
+                                  ),
+                                  child: isSelected
+                                      ? const Icon(
+                                          Icons.check,
+                                          size: 12,
+                                          color: Colors.white,
+                                        )
+                                      : null,
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  filter,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: isSelected
+                                        ? PersonalizedLandingPage.primary
+                                        : PersonalizedLandingPage.text,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
               ],
             ),
           ),
@@ -1268,85 +1266,8 @@ class _DashboardPanel extends StatelessWidget {
               ),
             ),
           )
-        else ...[
-          if (upcomingEvents.isNotEmpty &&
-              upcomingEvents.first['bannerImageData'] != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 20),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(18),
-                child: Stack(
-                  children: [
-                    Image.memory(
-                      upcomingEvents.first['bannerImageData'],
-                      height: 160,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          Container(height: 160, color: Colors.grey[200]),
-                    ),
-                    Positioned.fill(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withOpacity(0.7),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 16,
-                      left: 16,
-                      right: 16,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF4F46E5),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: const Text(
-                              'NEXT EVENT',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            upcomingEvents.first['title'],
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ...upcomingEvents.map(
-            (event) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _UpcomingEventCard(event: event),
-            ),
-          ),
-        ],
+        else
+          _PaginatedUpcomingEventsList(upcomingEvents: upcomingEvents),
       ],
     );
   }
@@ -1427,6 +1348,262 @@ String _formatCompactCount(int value) {
   }
 
   return '${thousands}.${(remainder / 100).floor()}K';
+}
+
+class _PaginatedEventGrid extends StatefulWidget {
+  final List<Map<String, dynamic>> events;
+  final String emptyMessage;
+
+  const _PaginatedEventGrid({
+    required this.events,
+    required this.emptyMessage,
+  });
+
+  @override
+  State<_PaginatedEventGrid> createState() => _PaginatedEventGridState();
+}
+
+class _PaginatedEventGridState extends State<_PaginatedEventGrid> {
+  int _currentPage = 0;
+
+  @override
+  void didUpdateWidget(covariant _PaginatedEventGrid oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.events.length != widget.events.length ||
+        oldWidget.emptyMessage != widget.emptyMessage) {
+      _currentPage = 0;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.events.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(22),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: PersonalizedLandingPage.border),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              Icons.event_busy_outlined,
+              size: 34,
+              color: PersonalizedLandingPage.primary.withOpacity(0.7),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              widget.emptyMessage,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: PersonalizedLandingPage.text,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isSmall = constraints.maxWidth < 800;
+        final crossAxisCount = isSmall ? 1 : 2;
+        final itemsPerPage = eventsPerPageForWidth(constraints.maxWidth);
+        final totalPages = totalPagesForLength(widget.events.length, itemsPerPage);
+        final pageIndex = clampPageIndex(_currentPage, totalPages);
+        final pageEvents = paginateItems(widget.events, pageIndex, itemsPerPage);
+
+        if (totalPages > 0 && pageIndex != _currentPage) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            setState(() => _currentPage = pageIndex);
+          });
+        }
+
+        return Column(
+          children: [
+            GridView.builder(
+              itemCount: pageEvents.length,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                crossAxisSpacing: 18,
+                mainAxisSpacing: 18,
+                childAspectRatio: isSmall ? 1.6 : 0.85,
+              ),
+              itemBuilder: (context, index) {
+                final event = pageEvents[index];
+                return _DiscoverEventCard(event: event);
+              },
+            ),
+            PaginationControls(
+              currentPage: pageIndex,
+              totalPages: totalPages,
+              onPrevious: () {
+                setState(() {
+                  _currentPage -= 1;
+                });
+              },
+              onNext: () {
+                setState(() {
+                  _currentPage += 1;
+                });
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _PaginatedUpcomingEventsList extends StatefulWidget {
+  final List<Map<String, dynamic>> upcomingEvents;
+
+  const _PaginatedUpcomingEventsList({required this.upcomingEvents});
+
+  @override
+  State<_PaginatedUpcomingEventsList> createState() =>
+      _PaginatedUpcomingEventsListState();
+}
+
+class _PaginatedUpcomingEventsListState
+    extends State<_PaginatedUpcomingEventsList> {
+  int _currentPage = 0;
+
+  @override
+  void didUpdateWidget(covariant _PaginatedUpcomingEventsList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.upcomingEvents.length != widget.upcomingEvents.length) {
+      _currentPage = 0;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final events = widget.upcomingEvents;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final itemsPerPage = eventsPerPageForWidth(constraints.maxWidth);
+        final totalPages = totalPagesForLength(events.length, itemsPerPage);
+        final pageIndex = clampPageIndex(_currentPage, totalPages);
+        final pageEvents = paginateItems(events, pageIndex, itemsPerPage);
+
+        if (totalPages > 0 && pageIndex != _currentPage) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            setState(() => _currentPage = pageIndex);
+          });
+        }
+
+        if (pageEvents.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (pageEvents.first['bannerImageData'] != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: Stack(
+                    children: [
+                      Image.memory(
+                        pageEvents.first['bannerImageData'],
+                        height: 160,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Container(height: 160, color: Colors.grey[200]),
+                      ),
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withOpacity(0.7),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 16,
+                        left: 16,
+                        right: 16,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF4F46E5),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                'NEXT EVENT',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              pageEvents.first['title'],
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ...pageEvents.map(
+              (event) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _UpcomingEventCard(event: event),
+              ),
+            ),
+            PaginationControls(
+              currentPage: pageIndex,
+              totalPages: totalPages,
+              onPrevious: () {
+                setState(() {
+                  _currentPage -= 1;
+                });
+              },
+              onNext: () {
+                setState(() {
+                  _currentPage += 1;
+                });
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
 
 class _UpcomingEventCard extends StatelessWidget {
