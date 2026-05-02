@@ -36,28 +36,14 @@ class AppHeader extends StatelessWidget {
       color: Colors.white.withOpacity(0.96),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       child: Center(
-        child: ConstrainedBox(
+        child: Container(
           constraints: const BoxConstraints(maxWidth: _HeaderSpacing.maxWidth),
           child: isMobile
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ? Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (showBackButton) ...[
-                          IconButton(
-                            onPressed: () => Navigator.maybePop(context),
-                            icon: const Icon(
-                              Icons.arrow_back_rounded,
-                              color: _HeaderColors.text,
-                            ),
-                            tooltip: 'Back',
-                          ),
-                        ],
-                        const _Brand(),
-                      ],
-                    ),
+                    const _Brand(),
                     PopupMenuButton<String>(
                       icon: const Icon(
                         Icons.menu_rounded,
@@ -113,8 +99,6 @@ class AppHeader extends StatelessWidget {
                             onSignInTap?.call();
                             break;
                           case 'host':
-                            // If a specific register callback is provided use it,
-                            // otherwise fall back to host callback or default to '/register'.
                             if (onRegisterTap != null) {
                               onRegisterTap!.call();
                             } else if (onHostEventTap != null) {
@@ -152,7 +136,6 @@ class AppHeader extends StatelessWidget {
                             child: Text('About us'),
                           ),
                           const PopupMenuDivider(),
-                          // Only show Sign In and Register if not logged in
                           if (!isLoggedIn) ...[
                             const PopupMenuItem(
                               value: 'signin',
@@ -180,11 +163,12 @@ class AppHeader extends StatelessWidget {
                     ),
                   ],
                 )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              : Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         if (showBackButton) ...[
                           IconButton(
@@ -199,7 +183,8 @@ class AppHeader extends StatelessWidget {
                         const _Brand(),
                       ],
                     ),
-                    Row(
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         _NavItem(
                           label: 'Find Events',
@@ -243,47 +228,51 @@ class AppHeader extends StatelessWidget {
                               },
                         ),
                         const SizedBox(width: 12),
-                        // Only show Sign In button if not logged in
                         if (SqliteBackend().currentUser == null)
-                          OutlinedButton(
-                            onPressed: onSignInTap,
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: _HeaderColors.primary,
-                              side: const BorderSide(
-                                color: _HeaderColors.border,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: OutlinedButton(
+                              onPressed: onSignInTap,
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: _HeaderColors.primary,
+                                side: const BorderSide(
+                                  color: _HeaderColors.border,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                  vertical: 16,
+                                ),
                               ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 18,
-                                vertical: 16,
-                              ),
+                              child: const Text('Sign In'),
                             ),
-                            child: const Text('Sign In'),
                           ),
                         const SizedBox(width: 12),
-                        // Only show Register button if not logged in
                         if (SqliteBackend().currentUser == null)
-                          FilledButton(
-                            onPressed:
-                                onRegisterTap ??
-                                onHostEventTap ??
-                                () {
-                                  Navigator.pushNamed(context, '/register');
-                                },
-                            style: FilledButton.styleFrom(
-                              backgroundColor: _HeaderColors.primary,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: FilledButton(
+                              onPressed:
+                                  onRegisterTap ??
+                                  onHostEventTap ??
+                                  () {
+                                    Navigator.pushNamed(context, '/register');
+                                  },
+                              style: FilledButton.styleFrom(
+                                backgroundColor: _HeaderColors.primary,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                  vertical: 16,
+                                ),
                               ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 18,
-                                vertical: 16,
-                              ),
+                              child: const Text('Register'),
                             ),
-                            child: const Text('Register'),
                           ),
                         const SizedBox(width: 12),
                         if (showProfile)
@@ -341,17 +330,12 @@ class _Brand extends StatelessWidget {
             Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
         });
       },
-      child: Row(
+      child: Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          // Use the bundled asset but visually scale the image so it appears larger
-          // without increasing the header's layout height: keep the container fixed
-          // and scale the image inside it.
           SizedBox(
             width: 48,
             height: 48,
-            // Allow the image to render larger than the boxed layout without
-            // clipping by using an OverflowBox. We intentionally avoid ClipRRect
-            // here so the scaled image isn't cropped by the container bounds.
             child: DecoratedBox(
               decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
               child: Center(
