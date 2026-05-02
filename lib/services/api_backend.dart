@@ -60,7 +60,10 @@ class SqliteBackend extends ChangeNotifier {
         await prefs.remove(_kCurrentUserKey);
         return;
       }
-      await prefs.setString(_kCurrentUserKey, jsonEncode(_currentUser!.toMap()));
+      await prefs.setString(
+        _kCurrentUserKey,
+        jsonEncode(_currentUser!.toMap()),
+      );
     } catch (e) {
       print('Error saving current user: $e');
     }
@@ -298,9 +301,7 @@ class SqliteBackend extends ChangeNotifier {
     final response = await _post('/events', payload);
     if (response.statusCode != 200 && response.statusCode != 201) {
       throw Exception(
-        response.body.isNotEmpty
-            ? response.body
-            : 'Failed to create event',
+        response.body.isNotEmpty ? response.body : 'Failed to create event',
       );
     }
 

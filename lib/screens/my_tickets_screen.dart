@@ -60,13 +60,13 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
       'description':
           'Ticket details for ${ticket.title}. You can review the event information and keep this ticket handy for check-in.',
       'organizer': matchingEvent != null
-        ? (matchingEvent['organizer']?.toString() ?? 'UniSphere')
+          ? (matchingEvent['organizer']?.toString() ?? 'UniSphere')
           : 'UniSphere',
       'organizerEmail': matchingEvent != null
-        ? matchingEvent['organizerEmail']?.toString()
+          ? matchingEvent['organizerEmail']?.toString()
           : null,
       'bannerImageData': matchingEvent != null
-        ? matchingEvent['bannerImageData']
+          ? matchingEvent['bannerImageData']
           : null,
       'capacity': null,
       'tags': <String>['Purchased ticket'],
@@ -118,12 +118,15 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                         child: AnimatedBuilder(
                           animation: SqliteBackend(),
                           builder: (context, _) {
-                            final tickets = SqliteBackend()
-                              .purchasedTickets
-                              .where(_hasExistingEvent)
-                              .toList();
+                            final tickets = SqliteBackend().purchasedTickets
+                                .where(_hasExistingEvent)
+                                .toList();
                             final filteredTickets = tickets
-                                .where((t) => _matchesQuery(t) && t.title.toLowerCase() != 'demo event')
+                                .where(
+                                  (t) =>
+                                      _matchesQuery(t) &&
+                                      t.title.toLowerCase() != 'demo event',
+                                )
                                 .toList();
 
                             final List<Widget> children = [];
@@ -502,7 +505,10 @@ class _SavedTicketCard extends StatelessWidget {
                         width: 60,
                         height: 60,
                         color: Colors.grey[200],
-                        child: const Icon(Icons.broken_image, color: Colors.grey),
+                        child: const Icon(
+                          Icons.broken_image,
+                          color: Colors.grey,
+                        ),
                       ),
                     ),
                   )
@@ -536,10 +542,7 @@ class _SavedTicketCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     '${ticket.date} • ${ticket.location}',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -552,7 +555,10 @@ class _SavedTicketCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF4F46E5).withOpacity(0.08),
                       borderRadius: BorderRadius.circular(8),

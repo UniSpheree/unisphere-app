@@ -46,8 +46,11 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             (e) => e['id']?.toString() == currentEventId,
             orElse: () => widget.event,
           );
-    final isDeleted = currentEventId != null &&
-        !SqliteBackend().events.any((e) => e['id']?.toString() == currentEventId);
+    final isDeleted =
+        currentEventId != null &&
+        !SqliteBackend().events.any(
+          (e) => e['id']?.toString() == currentEventId,
+        );
 
     if (isDeleted) {
       return Scaffold(
@@ -72,7 +75,11 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.event_busy, size: 56, color: Colors.redAccent),
+                  const Icon(
+                    Icons.event_busy,
+                    size: 56,
+                    color: Colors.redAccent,
+                  ),
                   const SizedBox(height: 16),
                   const Text(
                     'This event was deleted',
@@ -114,19 +121,20 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     final price = (event['price'] as String?)?.trim();
 
     final eventId = int.tryParse(event['id']?.toString() ?? '');
-    final canonicalEvent = SqliteBackend().events.cast<Map<String, dynamic>?>().firstWhere(
-      (e) =>
-        e != null &&
-        int.tryParse(e['id']?.toString() ?? '') == eventId,
-      orElse: () => null,
-    );
+    final canonicalEvent = SqliteBackend().events
+        .cast<Map<String, dynamic>?>()
+        .firstWhere(
+          (e) =>
+              e != null && int.tryParse(e['id']?.toString() ?? '') == eventId,
+          orElse: () => null,
+        );
     final organizerEmail =
-      (canonicalEvent?['organizerEmail'] ?? event['organizerEmail'])
-        ?.toString() ??
-      '';
+        (canonicalEvent?['organizerEmail'] ?? event['organizerEmail'])
+            ?.toString() ??
+        '';
 
     final isOrganizerViewing =
-      SqliteBackend().currentUser?.email == organizerEmail;
+        SqliteBackend().currentUser?.email == organizerEmail;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
@@ -225,11 +233,17 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                                             width: double.infinity,
                                             height: 240,
                                             fit: BoxFit.cover,
-                                            errorBuilder: (context, error, stackTrace) => Container(
-                                              height: 240,
-                                              color: Colors.grey[200],
-                                              child: const Icon(Icons.broken_image, size: 48, color: Colors.grey),
-                                            ),
+                                            errorBuilder:
+                                                (context, error, stackTrace) =>
+                                                    Container(
+                                                      height: 240,
+                                                      color: Colors.grey[200],
+                                                      child: const Icon(
+                                                        Icons.broken_image,
+                                                        size: 48,
+                                                        color: Colors.grey,
+                                                      ),
+                                                    ),
                                           ),
                                         ),
                                         const SizedBox(height: 24),

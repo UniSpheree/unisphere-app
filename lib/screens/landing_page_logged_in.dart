@@ -100,9 +100,11 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
     if (email == null) return [];
 
     return SqliteBackend().events
-        .where((event) => 
-            event['organizerEmail']?.toString() == email && 
-            event['title']?.toString().toLowerCase() != 'demo event')
+        .where(
+          (event) =>
+              event['organizerEmail']?.toString() == email &&
+              event['title']?.toString().toLowerCase() != 'demo event',
+        )
         .map(_toDashboardEvent)
         .toList();
   }
@@ -119,28 +121,29 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
     return SqliteBackend().purchasedTickets
         .where((t) => t.title.toLowerCase() != 'demo event')
         .map((ticket) {
-      // Find the actual event by matching title
-      final matchingEvent = SqliteBackend().events.firstWhere(
-        (event) => event['title']?.toString() == ticket.title,
-        orElse: () => {},
-      );
+          // Find the actual event by matching title
+          final matchingEvent = SqliteBackend().events.firstWhere(
+            (event) => event['title']?.toString() == ticket.title,
+            orElse: () => {},
+          );
 
-      return {
-        'title': ticket.title,
-        'date': ticket.date,
-        'eventDate': DateTime.now().add(const Duration(days: 10)),
-        'location': ticket.location,
-        'category': ticket.category,
-        'icon': Icons.confirmation_number_outlined,
-        'color': const Color(0xFF4F46E5),
-        'bannerImageData': matchingEvent.isNotEmpty
-            ? matchingEvent['bannerImageData']
-            : null,
-        'organizer': matchingEvent.isNotEmpty
-            ? (matchingEvent['organizer']?.toString() ?? 'UniSphere')
-            : 'UniSphere',
-      };
-    }).toList();
+          return {
+            'title': ticket.title,
+            'date': ticket.date,
+            'eventDate': DateTime.now().add(const Duration(days: 10)),
+            'location': ticket.location,
+            'category': ticket.category,
+            'icon': Icons.confirmation_number_outlined,
+            'color': const Color(0xFF4F46E5),
+            'bannerImageData': matchingEvent.isNotEmpty
+                ? matchingEvent['bannerImageData']
+                : null,
+            'organizer': matchingEvent.isNotEmpty
+                ? (matchingEvent['organizer']?.toString() ?? 'UniSphere')
+                : 'UniSphere',
+          };
+        })
+        .toList();
   }
 
   Map<String, dynamic> _toDashboardEvent(Map<String, dynamic> event) {
@@ -198,9 +201,11 @@ class _PersonalizedLandingPageState extends State<PersonalizedLandingPage> {
 
   List<Map<String, dynamic>> get _filteredEvents {
     final backendEvents = SqliteBackend().events
-        .where((e) =>
-            e['title']?.toString().toLowerCase() != 'demo event' &&
-            e['visibility']?.toString() != 'Private')
+        .where(
+          (e) =>
+              e['title']?.toString().toLowerCase() != 'demo event' &&
+              e['visibility']?.toString() != 'Private',
+        )
         .map(
           (event) => {
             'id': event['id'],
@@ -1264,7 +1269,8 @@ class _DashboardPanel extends StatelessWidget {
             ),
           )
         else ...[
-          if (upcomingEvents.isNotEmpty && upcomingEvents.first['bannerImageData'] != null)
+          if (upcomingEvents.isNotEmpty &&
+              upcomingEvents.first['bannerImageData'] != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 20),
               child: ClipRRect(
@@ -1276,10 +1282,8 @@ class _DashboardPanel extends StatelessWidget {
                       height: 160,
                       width: double.infinity,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        height: 160,
-                        color: Colors.grey[200],
-                      ),
+                      errorBuilder: (context, error, stackTrace) =>
+                          Container(height: 160, color: Colors.grey[200]),
                     ),
                     Positioned.fill(
                       child: Container(
@@ -1303,7 +1307,10 @@ class _DashboardPanel extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFF4F46E5),
                               borderRadius: BorderRadius.circular(6),
