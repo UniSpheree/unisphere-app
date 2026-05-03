@@ -251,10 +251,7 @@ class _StepEmail extends StatelessWidget {
               height: 80,
               margin: const EdgeInsets.only(bottom: 24),
               alignment: Alignment.center,
-              child: Image.asset(
-                'assets/image.png',
-                fit: BoxFit.contain,
-              ),
+              child: Image.asset('assets/image.png', fit: BoxFit.contain),
             ),
           ),
 
@@ -367,10 +364,7 @@ class _StepCode extends StatelessWidget {
               height: 80,
               margin: const EdgeInsets.only(bottom: 24),
               alignment: Alignment.center,
-              child: Image.asset(
-                'assets/image.png',
-                fit: BoxFit.contain,
-              ),
+              child: Image.asset('assets/image.png', fit: BoxFit.contain),
             ),
           ),
 
@@ -545,10 +539,7 @@ class _StepNewPassword extends StatelessWidget {
               height: 80,
               margin: const EdgeInsets.only(bottom: 24),
               alignment: Alignment.center,
-              child: Image.asset(
-                'assets/image.png',
-                fit: BoxFit.contain,
-              ),
+              child: Image.asset('assets/image.png', fit: BoxFit.contain),
             ),
           ),
 
