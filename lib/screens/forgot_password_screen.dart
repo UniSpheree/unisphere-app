@@ -138,7 +138,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
-      appBar: const AuthHeader(),
+      appBar: null,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
@@ -239,20 +239,22 @@ class _StepEmail extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Icon
-          Container(
-            width: 56,
-            height: 56,
-            margin: const EdgeInsets.only(bottom: 16),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: const Color(0xFFEEF0FB),
-              borderRadius: BorderRadius.circular(14),
+          // Logo - Clickable
+          GestureDetector(
+            onTap: () => Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/landing',
+              (route) => false,
             ),
-            child: const Icon(
-              Icons.lock_reset_outlined,
-              color: Color(0xFF2D3A8C),
-              size: 28,
+            child: Container(
+              width: 80,
+              height: 80,
+              margin: const EdgeInsets.only(bottom: 24),
+              alignment: Alignment.center,
+              child: Image.asset(
+                'assets/image.png',
+                fit: BoxFit.contain,
+              ),
             ),
           ),
 
@@ -353,19 +355,22 @@ class _StepCode extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            width: 56,
-            height: 56,
-            margin: const EdgeInsets.only(bottom: 16),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: const Color(0xFFEEF0FB),
-              borderRadius: BorderRadius.circular(14),
+          // Logo - Clickable
+          GestureDetector(
+            onTap: () => Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/landing',
+              (route) => false,
             ),
-            child: const Icon(
-              Icons.mark_email_read_outlined,
-              color: Color(0xFF2D3A8C),
-              size: 28,
+            child: Container(
+              width: 80,
+              height: 80,
+              margin: const EdgeInsets.only(bottom: 24),
+              alignment: Alignment.center,
+              child: Image.asset(
+                'assets/image.png',
+                fit: BoxFit.contain,
+              ),
             ),
           ),
 
@@ -528,19 +533,22 @@ class _StepNewPassword extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            width: 56,
-            height: 56,
-            margin: const EdgeInsets.only(bottom: 16),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: const Color(0xFFEEF0FB),
-              borderRadius: BorderRadius.circular(14),
+          // Logo - Clickable
+          GestureDetector(
+            onTap: () => Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/landing',
+              (route) => false,
             ),
-            child: const Icon(
-              Icons.lock_outline,
-              color: Color(0xFF2D3A8C),
-              size: 28,
+            child: Container(
+              width: 80,
+              height: 80,
+              margin: const EdgeInsets.only(bottom: 24),
+              alignment: Alignment.center,
+              child: Image.asset(
+                'assets/image.png',
+                fit: BoxFit.contain,
+              ),
             ),
           ),
 
