@@ -1,8 +1,14 @@
-import 'package:flutter/material.dart';
 import 'dart:typed_data';
-import 'package:unisphere_app/widgets/app_footer.dart';
-import 'package:unisphere_app/widgets/header.dart';
-import 'package:unisphere_app/services/sqlite_backend.dart';
+
+import 'package:flutter/material.dart';
+
+import '../services/sqlite_backend.dart';
+import '../utils/event_categories.dart';
+import '../utils/event_date_filters.dart';
+import '../utils/pagination.dart';
+import '../widgets/app_footer.dart';
+import '../widgets/header.dart';
+import '../widgets/pagination_controls.dart';
 import 'event_details_screen.dart';
 
 class DiscoverEventScreen extends StatefulWidget {
@@ -16,82 +22,20 @@ class DiscoverEventScreen extends StatefulWidget {
 
 class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
   bool _showFiltersDropdown = false;
-
-  final Map<String, bool> _dateFilters = {
-    'today': false,
-    'tomorrow': false,
-    'this week': false,
-    'next week': false,
-    'this month': false,
-    'next month': false,
-  };
-
-  final Map<String, bool> _priceFilters = {'free': false, 'paid': false};
-
-  void _toggleFiltersDropdown() {
-    setState(() {
-      _showFiltersDropdown = !_showFiltersDropdown;
-    });
-  }
-
-  void _setDateFilter(String key, bool value) {
-    setState(() {
-      _dateFilters[key] = value;
-    });
-  }
-
-  void _setPriceFilter(String key, bool value) {
-    setState(() {
-      _priceFilters[key] = value;
-    });
-  }
-
   String _selectedFilter = 'All';
-  late TextEditingController _searchController;
+  late final TextEditingController _searchController;
   String _submittedSearchQuery = '';
+  late Map<String, bool> _dateFilters;
 
-  static const List<String> _filterChips = [
-    'All',
-    'Technology',
-    'Music',
-    'Entertainment',
-    'Career',
-    'Sports',
-    'Workshops',
-  ];
-
-  List<Map<String, dynamic>> get _discoverEvents {
-    return SqliteBackend().events
-        .where((e) =>
-            e['title']?.toString().toLowerCase() != 'demo event' &&
-            e['visibility']?.toString() != 'Private')
-        .map((event) {
-      return {
-        'id': event['id'],
-        'title': event['title'] ?? 'Untitled Event',
-        'date': event['date'] ?? '',
-        'location': event['location'] ?? 'TBA',
-        'category': event['category'] ?? 'Other',
-        'description': event['description'] ?? '',
-        'bannerImageData': event['bannerImageData'],
-        'organizer': event['organizer'] ?? 'UniSphere',
-        'imageColor': const Color(0xFFE0E7FF),
-        'icon': Icons.event_rounded,
-      };
-    }).toList();
-  }
-
-  void _setFilter(String filter) {
-    setState(() {
-      _selectedFilter = filter;
-    });
-  }
+  static const List<String> _filterChips = kEventFilterCategories;
 
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController();
+    _dateFilters = {for (final item in kEventDateFilters) item: false};
     SqliteBackend().addListener(_onBackendChanged);
+
     if (widget.initialSearchQuery != null &&
         widget.initialSearchQuery!.isNotEmpty) {
       _submittedSearchQuery = widget.initialSearchQuery!;
@@ -111,52 +55,67 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
     super.dispose();
   }
 
+  void _setFilter(String filter) {
+    setState(() {
+      _selectedFilter = filter;
+    });
+  }
+
+  void _setDateFilter(String filter, bool value) {
+    setState(() {
+      _dateFilters[filter] = value;
+    });
+  }
+
+  List<Map<String, dynamic>> get _discoverEvents {
+    return SqliteBackend().events
+        .where(
+          (e) =>
+              e['title']?.toString().toLowerCase() != 'demo event' &&
+              e['visibility']?.toString() != 'Private',
+        )
+        .map((event) {
+          return {
+            'id': event['id'],
+            'title': event['title']?.toString() ?? 'Untitled Event',
+            'date': event['date']?.toString() ?? '',
+            'location': event['location']?.toString() ?? 'TBA',
+            'category': event['category']?.toString() ?? 'Other',
+            'description': event['description']?.toString() ?? '',
+            'bannerImageData': event['bannerImageData'],
+            'organizer': event['organizer']?.toString() ?? 'UniSphere',
+            'organizerEmail': event['organizerEmail']?.toString(),
+            'imageColor': const Color(0xFFE0E7FF),
+            'icon': Icons.event_rounded,
+          };
+        })
+        .toList();
+  }
+
   List<Map<String, dynamic>> get _filteredEvents {
-    List<Map<String, dynamic>> events = _selectedFilter == 'All'
+    final baseEvents = _selectedFilter == 'All'
         ? _discoverEvents
         : _discoverEvents
               .where((event) => event['category'] == _selectedFilter)
               .toList();
 
+    final dateFiltered = baseEvents
+        .where((event) => matchesDateFilters(event['date'], _dateFilters))
+        .toList();
+
     if (_submittedSearchQuery.isEmpty) {
-      return events;
+      return dateFiltered;
     }
 
-    final searchLower = _submittedSearchQuery.toLowerCase();
-
-    return events.where((event) {
-      final titleLower = (event['title'] as String).toLowerCase();
-      final categoryLower = (event['category'] as String).toLowerCase();
-      return titleLower.contains(searchLower) ||
-          categoryLower.contains(searchLower);
+    final query = _submittedSearchQuery.toLowerCase();
+    return dateFiltered.where((event) {
+      final title = (event['title'] as String).toLowerCase();
+      final category = (event['category'] as String).toLowerCase();
+      final location = (event['location'] as String).toLowerCase();
+      return title.contains(query) ||
+          category.contains(query) ||
+          location.contains(query);
     }).toList();
-  }
-
-  Widget _buildEventCardImage(Map<String, dynamic> event) {
-    final bannerData = event['bannerImageData'];
-    final Uint8List? bannerBytes = bannerData is Uint8List ? bannerData : null;
-
-    if (bannerBytes != null) {
-      return ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
-        child: Image.memory(
-          bannerBytes,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => Container(
-            color: Colors.grey[200],
-            child: const Icon(Icons.broken_image, color: Colors.grey),
-          ),
-        ),
-      );
-    } else {
-      return Center(
-        child: Icon(
-          event['icon'] as IconData,
-          size: 42,
-          color: const Color(0xFF4F46E5),
-        ),
-      );
-    }
   }
 
   @override
@@ -174,32 +133,24 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                   Column(
                     children: [
                       AppHeader(
-                        onHostEventTap: () {
-                          Navigator.pushNamed(context, '/create-event');
-                        },
-                        onRegisterTap: () {
-                          Navigator.pushNamed(context, '/register');
-                        },
-                        onFindEventsTap: () {
-                          // already on this page
-                        },
-                        onCreateEventsTap: () {
-                          Navigator.pushNamed(context, '/create-event');
-                        },
-                        onMyTicketsTap: () {
-                          Navigator.pushNamed(context, '/my-tickets');
-                        },
-                        onAboutTap: () {
-                          Navigator.pushNamed(context, '/about');
-                        },
-                        onSignInTap: () {
-                          Navigator.pushNamed(context, '/login');
-                        },
+                        onHostEventTap: () =>
+                            Navigator.pushNamed(context, '/create-event'),
+                        onRegisterTap: () =>
+                            Navigator.pushNamed(context, '/register'),
+                        onFindEventsTap: () {},
+                        onCreateEventsTap: () =>
+                            Navigator.pushNamed(context, '/create-event'),
+                        onMyTicketsTap: () =>
+                            Navigator.pushNamed(context, '/my-tickets'),
+                        onAboutTap: () =>
+                            Navigator.pushNamed(context, '/about'),
+                        onSignInTap: () =>
+                            Navigator.pushNamed(context, '/login'),
                         showProfile: true,
                       ),
                       LayoutBuilder(
                         builder: (context, constraints) {
-                          final isMobile = constraints.maxWidth < 600;
+                          final isMobile = constraints.maxWidth < 900;
                           return Center(
                             child: Padding(
                               padding: EdgeInsets.symmetric(
@@ -208,7 +159,7 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                               ),
                               child: ConstrainedBox(
                                 constraints: const BoxConstraints(
-                                  maxWidth: 860,
+                                  maxWidth: 1100,
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -288,7 +239,9 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                             child: TextField(
                                               controller: _searchController,
                                               onChanged: (value) {
-                                                setState(() {});
+                                                setState(() {
+                                                  _submittedSearchQuery = value;
+                                                });
                                               },
                                               onSubmitted: (value) {
                                                 setState(() {
@@ -348,7 +301,10 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                           ),
                                           child: IconButton(
                                             onPressed: () {
-                                              _toggleFiltersDropdown();
+                                              setState(() {
+                                                _showFiltersDropdown =
+                                                    !_showFiltersDropdown;
+                                              });
                                             },
                                             icon: const Icon(
                                               Icons.tune_rounded,
@@ -391,21 +347,20 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                               'Date',
                                               style: TextStyle(
                                                 fontSize: 16,
-                                                fontWeight: FontWeight.w600,
+                                                fontWeight: FontWeight.w700,
                                                 color: Color(0xFF1A1F36),
                                               ),
                                             ),
                                             const SizedBox(height: 16),
-
                                             Wrap(
                                               spacing: 12,
                                               runSpacing: 10,
-                                              children: _dateFilters.keys.map((
+                                              children: kEventDateFilters.map((
                                                 filter,
                                               ) {
                                                 final isSelected =
-                                                    _dateFilters[filter]!;
-
+                                                    _dateFilters[filter] ??
+                                                    false;
                                                 return GestureDetector(
                                                   onTap: () => _setDateFilter(
                                                     filter,
@@ -414,15 +369,17 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                                   child: Container(
                                                     padding:
                                                         const EdgeInsets.symmetric(
-                                                          horizontal: 12,
+                                                          horizontal: 14,
                                                           vertical: 10,
                                                         ),
                                                     decoration: BoxDecoration(
                                                       color: isSelected
                                                           ? const Color(
                                                               0xFF4F46E5,
-                                                            ).withOpacity(0.12)
-                                                          : Colors.white,
+                                                            ).withOpacity(0.10)
+                                                          : const Color(
+                                                              0xFFF8FAFC,
+                                                            ),
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                             16,
@@ -451,13 +408,13 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                                                       0xFF4F46E5,
                                                                     )
                                                                   : const Color(
-                                                                      0xFFE5E7EB,
+                                                                      0xFFD1D5DB,
                                                                     ),
                                                               width: 2,
                                                             ),
                                                             borderRadius:
                                                                 BorderRadius.circular(
-                                                                  4,
+                                                                  5,
                                                                 ),
                                                             color: isSelected
                                                                 ? const Color(
@@ -477,107 +434,21 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                                         const SizedBox(
                                                           width: 10,
                                                         ),
-                                                        Text(filter),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                );
-                                              }).toList(),
-                                            ),
-
-                                            const SizedBox(height: 28),
-
-                                            const Text(
-                                              'Price',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
-                                                color: Color(0xFF1A1F36),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 16),
-
-                                            Wrap(
-                                              spacing: 12,
-                                              runSpacing: 10,
-                                              children: _priceFilters.keys.map((
-                                                filter,
-                                              ) {
-                                                final isSelected =
-                                                    _priceFilters[filter]!;
-
-                                                return GestureDetector(
-                                                  onTap: () => _setPriceFilter(
-                                                    filter,
-                                                    !isSelected,
-                                                  ),
-                                                  child: Container(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 12,
-                                                          vertical: 10,
-                                                        ),
-                                                    decoration: BoxDecoration(
-                                                      color: isSelected
-                                                          ? const Color(
-                                                              0xFF4F46E5,
-                                                            ).withOpacity(0.12)
-                                                          : Colors.white,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            16,
-                                                          ),
-                                                      border: Border.all(
-                                                        color: isSelected
-                                                            ? const Color(
-                                                                0xFF4F46E5,
-                                                              )
-                                                            : const Color(
-                                                                0xFFE5E7EB,
-                                                              ),
-                                                      ),
-                                                    ),
-                                                    child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: [
-                                                        Container(
-                                                          width: 18,
-                                                          height: 18,
-                                                          decoration: BoxDecoration(
-                                                            border: Border.all(
-                                                              color: isSelected
-                                                                  ? const Color(
-                                                                      0xFF4F46E5,
-                                                                    )
-                                                                  : const Color(
-                                                                      0xFFE5E7EB,
-                                                                    ),
-                                                              width: 2,
-                                                            ),
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  4,
-                                                                ),
+                                                        Text(
+                                                          filter,
+                                                          style: TextStyle(
+                                                            fontSize: 14,
+                                                            fontWeight:
+                                                                FontWeight.w600,
                                                             color: isSelected
                                                                 ? const Color(
                                                                     0xFF4F46E5,
                                                                   )
-                                                                : Colors.white,
+                                                                : const Color(
+                                                                    0xFF1A1F36,
+                                                                  ),
                                                           ),
-                                                          child: isSelected
-                                                              ? const Icon(
-                                                                  Icons.check,
-                                                                  size: 12,
-                                                                  color: Colors
-                                                                      .white,
-                                                                )
-                                                              : null,
                                                         ),
-                                                        const SizedBox(
-                                                          width: 10,
-                                                        ),
-                                                        Text(filter),
                                                       ],
                                                     ),
                                                   ),
@@ -588,283 +459,65 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
                                         ),
                                       ),
                                     ],
-                                    if (_submittedSearchQuery.isEmpty)
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const SizedBox(height: 20),
-                                          Wrap(
-                                            spacing: 10,
-                                            runSpacing: 10,
-                                            children: _filterChips.map((chip) {
-                                              final isSelected =
-                                                  chip == _selectedFilter;
-                                              return GestureDetector(
-                                                onTap: () => _setFilter(chip),
-                                                child: Container(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 14,
-                                                        vertical: 10,
-                                                      ),
-                                                  decoration: BoxDecoration(
-                                                    color: isSelected
-                                                        ? const Color(
-                                                            0xFF4F46E5,
-                                                          )
-                                                        : Colors.white,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          999,
-                                                        ),
-                                                    border: Border.all(
-                                                      color: isSelected
-                                                          ? const Color(
-                                                              0xFF4F46E5,
-                                                            )
-                                                          : const Color(
-                                                              0xFFE5E7EB,
-                                                            ),
-                                                    ),
+                                    if (_submittedSearchQuery.isEmpty) ...[
+                                      const SizedBox(height: 20),
+                                      Wrap(
+                                        spacing: 10,
+                                        runSpacing: 10,
+                                        children: _filterChips.map((chip) {
+                                          final isSelected =
+                                              chip == _selectedFilter;
+                                          return GestureDetector(
+                                            onTap: () => _setFilter(chip),
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 14,
+                                                    vertical: 10,
                                                   ),
-                                                  child: Text(
-                                                    chip,
-                                                    style: TextStyle(
-                                                      color: isSelected
-                                                          ? Colors.white
-                                                          : const Color(
-                                                              0xFF1A1F36,
-                                                            ),
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                    ),
-                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: isSelected
+                                                    ? const Color(0xFF4F46E5)
+                                                    : Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(999),
+                                                border: Border.all(
+                                                  color: isSelected
+                                                      ? const Color(0xFF4F46E5)
+                                                      : const Color(0xFFE5E7EB),
                                                 ),
-                                              );
-                                            }).toList(),
-                                          ),
-                                        ],
+                                              ),
+                                              child: Text(
+                                                chip,
+                                                style: TextStyle(
+                                                  color: isSelected
+                                                      ? Colors.white
+                                                      : const Color(0xFF1A1F36),
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        }).toList(),
                                       ),
+                                    ],
                                     if (_submittedSearchQuery.isNotEmpty)
                                       Padding(
                                         padding: const EdgeInsets.only(top: 16),
                                         child: Text(
-                                          'Showing results for \'$_submittedSearchQuery\'',
+                                          'Showing results for "$_submittedSearchQuery"',
                                           style: const TextStyle(
                                             fontSize: 13,
                                             color: Color(0xFF9CA3AF),
-                                            fontWeight: FontWeight.w400,
                                           ),
                                         ),
                                       ),
                                     const SizedBox(height: 28),
-                                    LayoutBuilder(
-                                      builder: (context, constraints) {
-                                        final availableWidth =
-                                            constraints.maxWidth;
-                                        final crossAxisCount =
-                                            availableWidth > 800
-                                                ? 3
-                                                : (availableWidth > 400 ? 2 : 1);
-
-                                        return GridView.builder(
-                                          itemCount: _filteredEvents.length,
-                                          gridDelegate:
-                                              SliverGridDelegateWithFixedCrossAxisCount(
-                                            crossAxisCount: crossAxisCount,
-                                            crossAxisSpacing: 16,
-                                            mainAxisSpacing: 16,
-                                            childAspectRatio: 0.72,
-                                          ),
-                                          shrinkWrap: true,
-                                          physics:
-                                              const NeverScrollableScrollPhysics(),
-                                          itemBuilder: (context, index) {
-                                            final event =
-                                                _filteredEvents[index];
-                                            return Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius:
-                                                    BorderRadius.circular(22),
-                                                border: Border.all(
-                                                  color: const Color(
-                                                    0xFFE5E7EB,
-                                                  ),
-                                                ),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.black
-                                                        .withOpacity(0.04),
-                                                    blurRadius: 16,
-                                                    offset: const Offset(0, 8),
-                                                  ),
-                                                ],
-                                              ),
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Expanded(
-                                                    flex: 2,
-                                                    child: Container(
-                                                      width: double.infinity,
-                                                      decoration: BoxDecoration(
-                                                        color:
-                                                            event['imageColor']
-                                                                as Color,
-                                                        borderRadius:
-                                                            const BorderRadius.vertical(
-                                                              top:
-                                                                  Radius.circular(
-                                                                    22,
-                                                                  ),
-                                                            ),
-                                                      ),
-                                                      child:
-                                                          _buildEventCardImage(
-                                                            event,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                          18,
-                                                        ),
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text(
-                                                          event['title']
-                                                              as String,
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow.ellipsis,
-                                                          style:
-                                                              const TextStyle(
-                                                                fontSize: 18,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w700,
-                                                                color: Color(
-                                                                  0xFF1A1F36,
-                                                                ),
-                                                              ),
-                                                        ),
-                                                        const SizedBox(
-                                                          height: 8,
-                                                        ),
-                                                        Text(
-                                                          event['date']
-                                                              as String,
-                                                          style:
-                                                              const TextStyle(
-                                                                fontSize: 14,
-                                                                color: Color(
-                                                                  0xFF6B7280,
-                                                                ),
-                                                              ),
-                                                        ),
-                                                        const SizedBox(
-                                                          height: 4,
-                                                        ),
-                                                        Text(
-                                                          event['location']
-                                                              as String,
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow.ellipsis,
-                                                          style:
-                                                              const TextStyle(
-                                                                fontSize: 14,
-                                                                color: Color(
-                                                                  0xFF6B7280,
-                                                                ),
-                                                              ),
-                                                        ),
-                                                        const SizedBox(
-                                                          height: 4,
-                                                        ),
-                                                        Text(
-                                                          'By ${event['organizer']?.toString() ?? 'UniSphere'}',
-                                                          style:
-                                                              const TextStyle(
-                                                                fontSize: 12,
-                                                                color: Color(
-                                                                  0xFF9CA3AF,
-                                                                ),
-                                                                fontStyle:
-                                                                    FontStyle
-                                                                        .italic,
-                                                              ),
-                                                        ),
-                                                        const SizedBox(
-                                                          height: 14,
-                                                        ),
-                                                        Row(
-                                                          children: [
-                                                            Container(
-                                                              padding:
-                                                                  const EdgeInsets.symmetric(
-                                                                    horizontal:
-                                                                        10,
-                                                                    vertical: 6,
-                                                                  ),
-                                                              decoration: BoxDecoration(
-                                                                color:
-                                                                    const Color(
-                                                                      0xFFEEF2FF,
-                                                                    ),
-                                                                borderRadius:
-                                                                    BorderRadius.circular(
-                                                                      999,
-                                                                    ),
-                                                              ),
-                                                              child: Text(
-                                                                event['category']
-                                                                    as String,
-                                                                style: const TextStyle(
-                                                                  fontSize: 12,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  color: Color(
-                                                                    0xFF4F46E5,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            const Spacer(),
-                                                            TextButton(
-                                                              onPressed: () {
-                                                                Navigator.push(
-                                                                  context,
-                                                                  MaterialPageRoute(
-                                                                    builder: (_) =>
-                                                                        EventDetailsScreen(
-                                                                          event:
-                                                                              event,
-                                                                        ),
-                                                                  ),
-                                                                );
-                                                              },
-                                                              child: const Text(
-                                                                'Details',
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-                                          },
-                                        );
-                                      },
+                                    _PaginatedDiscoverGrid(
+                                      events: _filteredEvents,
+                                      emptyMessage: _selectedFilter == 'All'
+                                          ? 'No events available right now.'
+                                          : 'No ${_selectedFilter.toLowerCase()} events available right now.',
                                     ),
                                   ],
                                 ),
@@ -881,6 +534,275 @@ class _DiscoverEventScreenState extends State<DiscoverEventScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _PaginatedDiscoverGrid extends StatefulWidget {
+  final List<Map<String, dynamic>> events;
+  final String emptyMessage;
+
+  const _PaginatedDiscoverGrid({
+    required this.events,
+    required this.emptyMessage,
+  });
+
+  @override
+  State<_PaginatedDiscoverGrid> createState() => _PaginatedDiscoverGridState();
+}
+
+class _PaginatedDiscoverGridState extends State<_PaginatedDiscoverGrid> {
+  int _currentPage = 0;
+
+  @override
+  void didUpdateWidget(covariant _PaginatedDiscoverGrid oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.events.length != widget.events.length ||
+        oldWidget.emptyMessage != widget.emptyMessage) {
+      _currentPage = 0;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.events.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              Icons.event_busy_outlined,
+              size: 36,
+              color: const Color(0xFF4F46E5).withOpacity(0.65),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              widget.emptyMessage,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF374151),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth;
+        final crossAxisCount = availableWidth > 800
+            ? 3
+            : (availableWidth > 400 ? 2 : 1);
+        final itemsPerPage = eventsPerPageForWidth(availableWidth);
+        final totalPages = totalPagesForLength(
+          widget.events.length,
+          itemsPerPage,
+        );
+        final pageIndex = clampPageIndex(_currentPage, totalPages);
+        final pageEvents = paginateItems(
+          widget.events,
+          pageIndex,
+          itemsPerPage,
+        );
+
+        if (totalPages > 0 && pageIndex != _currentPage) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            setState(() => _currentPage = pageIndex);
+          });
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GridView.builder(
+              itemCount: pageEvents.length,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 0.72,
+              ),
+              itemBuilder: (context, index) =>
+                  _DiscoverEventCard(event: pageEvents[index]),
+            ),
+            PaginationControls(
+              currentPage: pageIndex,
+              totalPages: totalPages,
+              onPrevious: () {
+                setState(() {
+                  _currentPage -= 1;
+                });
+              },
+              onNext: () {
+                setState(() {
+                  _currentPage += 1;
+                });
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _DiscoverEventCard extends StatelessWidget {
+  final Map<String, dynamic> event;
+
+  const _DiscoverEventCard({required this.event});
+
+  @override
+  Widget build(BuildContext context) {
+    final bannerData = event['bannerImageData'];
+    final Uint8List? bannerBytes = bannerData is Uint8List ? bannerData : null;
+    final icon = event['icon'] as IconData? ?? Icons.event_rounded;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: event['imageColor'] as Color? ?? const Color(0xFFE0E7FF),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(22),
+                ),
+              ),
+              child: bannerBytes != null
+                  ? ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(22),
+                      ),
+                      child: Image.memory(
+                        bannerBytes,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Center(
+                          child: Icon(
+                            icon,
+                            size: 42,
+                            color: const Color(0xFF4F46E5),
+                          ),
+                        ),
+                      ),
+                    )
+                  : Center(
+                      child: Icon(
+                        icon,
+                        size: 42,
+                        color: const Color(0xFF4F46E5),
+                      ),
+                    ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  event['title']?.toString() ?? 'Untitled Event',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1A1F36),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  event['date']?.toString() ?? '',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  event['location']?.toString() ?? 'TBA',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'By ${event['organizer']?.toString() ?? 'UniSphere'}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF9CA3AF),
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEEF2FF),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        event['category']?.toString() ?? 'Other',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF4F46E5),
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => EventDetailsScreen(event: event),
+                          ),
+                        );
+                      },
+                      child: const Text('Details'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

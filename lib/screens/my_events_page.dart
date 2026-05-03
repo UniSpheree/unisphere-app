@@ -1,13 +1,28 @@
-import 'package:flutter/material.dart';
 import 'dart:typed_data';
+import 'package:flutter/material.dart';
 import '../services/sqlite_backend.dart';
 import 'create_event_screen.dart';
 import 'event_details_screen.dart';
+import '../utils/pagination.dart';
 import '../widgets/header.dart';
 import '../widgets/app_footer.dart';
+import '../widgets/pagination_controls.dart';
 
-class MyEventsPage extends StatelessWidget {
+class MyEventsPage extends StatefulWidget {
   const MyEventsPage({super.key});
+
+  @override
+  State<MyEventsPage> createState() => _MyEventsPageState();
+}
+
+class _MyEventsPageState extends State<MyEventsPage> {
+  int _currentPage = 0;
+
+  void _changePage(int nextPage) {
+    setState(() {
+      _currentPage = nextPage;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -147,10 +162,23 @@ class MyEventsPage extends StatelessWidget {
       builder: (context, _) {
         final email = SqliteBackend().currentUser?.email;
         final myEvents = SqliteBackend().events
-            .where((event) => 
-                event['organizerEmail']?.toString() == email && 
-                event['title']?.toString().toLowerCase() != 'demo event')
+            .where(
+              (event) =>
+                  event['organizerEmail']?.toString() == email &&
+                  event['title']?.toString().toLowerCase() != 'demo event',
+            )
             .toList();
+        final itemsPerPage = eventsPerPageForWidth(constraints.maxWidth);
+        final totalPages = totalPagesForLength(myEvents.length, itemsPerPage);
+        final pageIndex = clampPageIndex(_currentPage, totalPages);
+        final pageEvents = paginateItems(myEvents, pageIndex, itemsPerPage);
+
+        if (totalPages > 0 && pageIndex != _currentPage) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            setState(() => _currentPage = pageIndex);
+          });
+        }
 
         return Padding(
           padding: EdgeInsets.symmetric(
@@ -239,15 +267,25 @@ class MyEventsPage extends StatelessWidget {
                   if (myEvents.isEmpty)
                     _buildEmptyState(context)
                   else
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: myEvents.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 20),
-                      itemBuilder: (context, index) {
-                        return _buildEventCard(context, myEvents[index]);
-                      },
+                    Column(
+                      children: [
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: pageEvents.length,
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: 20),
+                          itemBuilder: (context, index) {
+                            return _buildEventCard(context, pageEvents[index]);
+                          },
+                        ),
+                        PaginationControls(
+                          currentPage: pageIndex,
+                          totalPages: totalPages,
+                          onPrevious: () => _changePage(_currentPage - 1),
+                          onNext: () => _changePage(_currentPage + 1),
+                        ),
+                      ],
                     ),
                 ],
               ),

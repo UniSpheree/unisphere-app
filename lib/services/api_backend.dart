@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/database_models.dart';
 
@@ -28,6 +29,8 @@ class SqliteBackend extends ChangeNotifier {
 
   String _baseUrl = _defaultBaseUrl;
 
+  static const String _kCurrentUserKey = 'current_user';
+
   DbUser? get currentUser => _currentUser;
   List<DbPurchasedTicket> get purchasedTickets =>
       List.unmodifiable(_purchasedTickets);
@@ -50,8 +53,45 @@ class SqliteBackend extends ChangeNotifier {
         body: jsonEncode(body),
       );
 
+  Future<void> _saveCurrentUserToPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (_currentUser == null) {
+        await prefs.remove(_kCurrentUserKey);
+        return;
+      }
+      await prefs.setString(
+        _kCurrentUserKey,
+        jsonEncode(_currentUser!.toMap()),
+      );
+    } catch (e) {
+      print('Error saving current user: $e');
+    }
+  }
+
+  Future<void> _loadSavedUser() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_kCurrentUserKey);
+      if (raw == null || raw.isEmpty) return;
+      _currentUser = DbUser.fromMap(jsonDecode(raw) as Map<String, dynamic>);
+    } catch (e) {
+      print('Error loading saved user: $e');
+    }
+  }
+
+  Future<void> _clearSavedUserFromPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_kCurrentUserKey);
+    } catch (e) {
+      print('Error clearing saved user: $e');
+    }
+  }
+
   Future<void> initializeDatabase() async {
     try {
+      await _loadSavedUser();
       final response = await _get('/health');
       if (response.statusCode != 200) {
         throw Exception('Backend not available');
@@ -82,10 +122,38 @@ class SqliteBackend extends ChangeNotifier {
       _cachedEvents
         ..clear()
         ..addAll(loaded);
+
+      _pruneStalePurchasedTickets();
       notifyListeners();
     } catch (e) {
       print('Error loading events: $e');
     }
+  }
+
+  void _pruneStalePurchasedTickets() {
+    if (_purchasedTickets.isEmpty) return;
+
+    bool eventExistsForTicket(DbPurchasedTicket ticket) {
+      for (final event in _cachedEvents) {
+        final eventId = int.tryParse(event['id']?.toString() ?? '');
+        if (ticket.eventId != null && eventId == ticket.eventId) {
+          return true;
+        }
+      }
+
+      for (final event in _cachedEvents) {
+        final sameTitle = event['title']?.toString() == ticket.title;
+        final sameDate = event['date']?.toString() == ticket.date;
+        final sameLocation = event['location']?.toString() == ticket.location;
+        if (sameTitle && sameDate && sameLocation) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    _purchasedTickets.removeWhere((ticket) => !eventExistsForTicket(ticket));
   }
 
   Future<Map<String, dynamic>> _mapEventFromApi(
@@ -172,6 +240,7 @@ class SqliteBackend extends ChangeNotifier {
       purchasedAt: DateTime.parse(
         json['purchasedAt']?.toString() ?? DateTime.now().toIso8601String(),
       ),
+      eventId: json['eventId'] as int?,
     );
   }
 
@@ -194,6 +263,7 @@ class SqliteBackend extends ChangeNotifier {
       'location': ticket.location,
       'category': ticket.category,
       'price': ticket.price,
+      'eventId': ticket.eventId,
     };
 
     final response = await _post('/tickets', payload);
@@ -230,7 +300,9 @@ class SqliteBackend extends ChangeNotifier {
 
     final response = await _post('/events', payload);
     if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('Failed to create event');
+      throw Exception(
+        response.body.isNotEmpty ? response.body : 'Failed to create event',
+      );
     }
 
     final event = jsonDecode(response.body) as Map<String, dynamic>;
@@ -295,6 +367,7 @@ class SqliteBackend extends ChangeNotifier {
       _currentUser = _userFromApi(
         jsonDecode(response.body) as Map<String, dynamic>,
       );
+      await _saveCurrentUserToPrefs();
       await _loadEventsFromApi();
       await _completePendingPurchaseInternal();
       await _completePendingEventInternal();
@@ -322,6 +395,9 @@ class SqliteBackend extends ChangeNotifier {
       _currentUser = _userFromApi(
         jsonDecode(response.body) as Map<String, dynamic>,
       );
+      await _saveCurrentUserToPrefs();
+      // Load events first so we can validate purchased tickets against them
+      await _loadEventsFromApi();
       final ticketsResponse = await _get(
         '/tickets/${Uri.encodeComponent(_currentUser!.email)}',
       );
@@ -332,7 +408,8 @@ class SqliteBackend extends ChangeNotifier {
             (item) => _ticketFromApi(Map<String, dynamic>.from(item as Map)),
           ),
         );
-      await _loadEventsFromApi();
+      // Prune any tickets that do not match loaded events
+      _pruneStalePurchasedTickets();
       await _completePendingPurchaseInternal();
       await _completePendingEventInternal();
       notifyListeners();
@@ -397,6 +474,7 @@ class SqliteBackend extends ChangeNotifier {
       _currentUser = _userFromApi(
         jsonDecode(response.body) as Map<String, dynamic>,
       );
+      await _saveCurrentUserToPrefs();
       notifyListeners();
       return _currentUser;
     } catch (e) {
@@ -418,6 +496,7 @@ class SqliteBackend extends ChangeNotifier {
       _currentUser = _userFromApi(
         jsonDecode(response.body) as Map<String, dynamic>,
       );
+      await _saveCurrentUserToPrefs();
       notifyListeners();
       return _currentUser;
     } catch (e) {
@@ -463,6 +542,31 @@ class SqliteBackend extends ChangeNotifier {
     }
   }
 
+  Future<bool> deleteTicket(String ticketId) async {
+    final current = _currentUser;
+    if (current == null) return false;
+
+    try {
+      final response = await _delete(
+        '/tickets/${Uri.encodeComponent(current.email)}/$ticketId',
+      );
+      if (response.statusCode != 200) {
+        print('Delete ticket failed: ${response.statusCode} ${response.body}');
+        return false;
+      }
+
+      _purchasedTickets.removeWhere(
+        (ticket) => ticket.id?.toString() == ticketId,
+      );
+      _pruneStalePurchasedTickets();
+      notifyListeners();
+      return true;
+    } catch (e) {
+      print('Error deleting ticket: $e');
+      return false;
+    }
+  }
+
   void purchaseTicket(DbPurchasedTicket ticket) {
     if (_currentUser == null) {
       _pendingPurchase = ticket;
@@ -492,7 +596,31 @@ class SqliteBackend extends ChangeNotifier {
     _purchasedTickets.clear();
     _pendingPurchase = null;
     _pendingEvent = null;
+    _clearSavedUserFromPrefs();
     notifyListeners();
+  }
+
+  Future<bool> deleteAccount() async {
+    final current = _currentUser;
+    if (current == null) return false;
+    try {
+      final response = await _delete(
+        '/auth/users/${Uri.encodeComponent(current.email)}',
+      );
+      if (response.statusCode == 200) {
+        _currentUser = null;
+        _purchasedTickets.clear();
+        _cachedEvents.clear();
+        await _clearSavedUserFromPrefs();
+        notifyListeners();
+        return true;
+      }
+      print('Delete account failed: ${response.statusCode} ${response.body}');
+      return false;
+    } catch (e) {
+      print('Error deleting account: $e');
+      return false;
+    }
   }
 
   Future<void> clear() async {

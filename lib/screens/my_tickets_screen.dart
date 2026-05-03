@@ -3,8 +3,10 @@ import 'dart:typed_data';
 import 'package:unisphere_app/screens/event_details_screen.dart';
 import 'package:unisphere_app/services/sqlite_backend.dart';
 import 'package:unisphere_app/models/database_models.dart';
+import 'package:unisphere_app/utils/pagination.dart';
 import 'package:unisphere_app/widgets/header.dart';
 import 'package:unisphere_app/widgets/app_footer.dart';
+import 'package:unisphere_app/widgets/pagination_controls.dart';
 
 class MyTicketsScreen extends StatefulWidget {
   const MyTicketsScreen({super.key});
@@ -16,6 +18,31 @@ class MyTicketsScreen extends StatefulWidget {
 class _MyTicketsScreenState extends State<MyTicketsScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _query = '';
+  int _currentPage = 0;
+
+  Map<String, dynamic>? _findMatchingEvent(DbPurchasedTicket ticket) {
+    for (final event in SqliteBackend().events) {
+      final eventId = int.tryParse(event['id']?.toString() ?? '');
+      if (ticket.eventId != null && eventId == ticket.eventId) {
+        return event;
+      }
+    }
+
+    for (final event in SqliteBackend().events) {
+      final sameTitle = event['title']?.toString() == ticket.title;
+      final sameDate = event['date']?.toString() == ticket.date;
+      final sameLocation = event['location']?.toString() == ticket.location;
+      if (sameTitle && sameDate && sameLocation) {
+        return event;
+      }
+    }
+
+    return null;
+  }
+
+  bool _hasExistingEvent(DbPurchasedTicket ticket) {
+    return _findMatchingEvent(ticket) != null;
+  }
 
   @override
   void dispose() {
@@ -24,13 +51,10 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
   }
 
   Map<String, dynamic> _ticketToEvent(DbPurchasedTicket ticket) {
-    // Find the actual event by matching title
-    final matchingEvent = SqliteBackend().events.firstWhere(
-      (event) => event['title']?.toString() == ticket.title,
-      orElse: () => {},
-    );
+    final matchingEvent = _findMatchingEvent(ticket);
 
     return {
+      'id': matchingEvent?['id'],
       'title': ticket.title,
       'date': ticket.date,
       'location': ticket.location,
@@ -38,13 +62,13 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
       'price': ticket.price,
       'description':
           'Ticket details for ${ticket.title}. You can review the event information and keep this ticket handy for check-in.',
-      'organizer': matchingEvent.isNotEmpty
+      'organizer': matchingEvent != null
           ? (matchingEvent['organizer']?.toString() ?? 'UniSphere')
           : 'UniSphere',
-      'organizerEmail': matchingEvent.isNotEmpty
+      'organizerEmail': matchingEvent != null
           ? matchingEvent['organizerEmail']?.toString()
           : null,
-      'bannerImageData': matchingEvent.isNotEmpty
+      'bannerImageData': matchingEvent != null
           ? matchingEvent['bannerImageData']
           : null,
       'capacity': null,
@@ -97,10 +121,39 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                         child: AnimatedBuilder(
                           animation: SqliteBackend(),
                           builder: (context, _) {
-                            final tickets = SqliteBackend().purchasedTickets;
-                            final filteredTickets = tickets
-                                .where((t) => _matchesQuery(t) && t.title.toLowerCase() != 'demo event')
+                            final tickets = SqliteBackend().purchasedTickets
+                                .where(_hasExistingEvent)
                                 .toList();
+                            final filteredTickets = tickets
+                                .where(
+                                  (t) =>
+                                      _matchesQuery(t) &&
+                                      t.title.toLowerCase() != 'demo event',
+                                )
+                                .toList();
+                            final itemsPerPage = eventsPerPageForWidth(
+                              constraints.maxWidth,
+                            );
+                            final totalPages = totalPagesForLength(
+                              filteredTickets.length,
+                              itemsPerPage,
+                            );
+                            final pageIndex = clampPageIndex(
+                              _currentPage,
+                              totalPages,
+                            );
+                            final pageTickets = paginateItems(
+                              filteredTickets,
+                              pageIndex,
+                              itemsPerPage,
+                            );
+
+                            if (totalPages > 0 && pageIndex != _currentPage) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (!mounted) return;
+                                setState(() => _currentPage = pageIndex);
+                              });
+                            }
 
                             final List<Widget> children = [];
 
@@ -210,7 +263,10 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                                       child: TextField(
                                         controller: _searchController,
                                         onChanged: (value) {
-                                          setState(() => _query = value);
+                                          setState(() {
+                                            _query = value;
+                                            _currentPage = 0;
+                                          });
                                         },
                                         style: const TextStyle(
                                           color: Colors.white,
@@ -371,13 +427,69 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                                 ),
                               );
                             } else {
-                              for (final ticket in filteredTickets) {
+                              for (final ticket in pageTickets) {
                                 children.add(
                                   Padding(
                                     padding: const EdgeInsets.only(bottom: 10),
                                     child: _SavedTicketCard(
                                       ticket: ticket,
                                       eventData: _ticketToEvent(ticket),
+                                      onDelete: () async {
+                                        final confirmed = await showDialog<bool>(
+                                          context: context,
+                                          builder: (dialogContext) => AlertDialog(
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            title: const Text('Delete ticket'),
+                                            content: const Text(
+                                              'Remove this ticket from your account? You can buy it again later if needed.',
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () => Navigator.pop(
+                                                  dialogContext,
+                                                  false,
+                                                ),
+                                                child: const Text('Cancel'),
+                                              ),
+                                              FilledButton(
+                                                onPressed: () => Navigator.pop(
+                                                  dialogContext,
+                                                  true,
+                                                ),
+                                                style: FilledButton.styleFrom(
+                                                  backgroundColor: const Color(
+                                                    0xFFDC2626,
+                                                  ),
+                                                  foregroundColor: Colors.white,
+                                                ),
+                                                child: const Text('Delete'),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+
+                                        if (confirmed != true) return;
+                                        final ok = await SqliteBackend()
+                                            .deleteTicket(
+                                              ticket.id?.toString() ?? '',
+                                            );
+                                        if (!mounted) return;
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              ok
+                                                  ? 'Ticket removed.'
+                                                  : 'Could not remove ticket.',
+                                            ),
+                                            behavior: SnackBarBehavior.floating,
+                                          ),
+                                        );
+                                      },
                                       onTap: () {
                                         Navigator.push(
                                           context,
@@ -393,6 +505,23 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                                   ),
                                 );
                               }
+
+                              children.add(
+                                PaginationControls(
+                                  currentPage: pageIndex,
+                                  totalPages: totalPages,
+                                  onPrevious: () {
+                                    setState(() {
+                                      _currentPage -= 1;
+                                    });
+                                  },
+                                  onNext: () {
+                                    setState(() {
+                                      _currentPage += 1;
+                                    });
+                                  },
+                                ),
+                              );
                             }
 
                             return Padding(
@@ -432,11 +561,13 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
 class _SavedTicketCard extends StatelessWidget {
   final DbPurchasedTicket ticket;
   final Map<String, dynamic> eventData;
+  final VoidCallback onDelete;
   final VoidCallback onTap;
 
   const _SavedTicketCard({
     required this.ticket,
     required this.eventData,
+    required this.onDelete,
     required this.onTap,
   });
 
@@ -478,7 +609,10 @@ class _SavedTicketCard extends StatelessWidget {
                         width: 60,
                         height: 60,
                         color: Colors.grey[200],
-                        child: const Icon(Icons.broken_image, color: Colors.grey),
+                        child: const Icon(
+                          Icons.broken_image,
+                          color: Colors.grey,
+                        ),
                       ),
                     ),
                   )
@@ -512,10 +646,7 @@ class _SavedTicketCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     '${ticket.date} • ${ticket.location}',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -528,7 +659,10 @@ class _SavedTicketCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF4F46E5).withOpacity(0.08),
                       borderRadius: BorderRadius.circular(8),
@@ -547,7 +681,7 @@ class _SavedTicketCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            // Trailing price
+            // Trailing price and actions
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -560,10 +694,29 @@ class _SavedTicketCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 14,
-                  color: Colors.grey,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: onDelete,
+                      icon: const Icon(Icons.delete_outline_rounded),
+                      color: const Color(0xFFDC2626),
+                      tooltip: 'Remove ticket',
+                      visualDensity: VisualDensity.compact,
+                      style: IconButton.styleFrom(
+                        backgroundColor: const Color(0xFFFEF2F2),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 14,
+                      color: Colors.grey,
+                    ),
+                  ],
                 ),
               ],
             ),

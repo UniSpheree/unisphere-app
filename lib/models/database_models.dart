@@ -190,6 +190,7 @@ class DbPurchasedTicket {
   final String category;
   final String price;
   final DateTime purchasedAt;
+  final int? eventId;
 
   DbPurchasedTicket({
     this.id,
@@ -200,6 +201,7 @@ class DbPurchasedTicket {
     required this.category,
     required this.price,
     required this.purchasedAt,
+    this.eventId,
   });
 
   Map<String, dynamic> toMap() {
@@ -212,6 +214,7 @@ class DbPurchasedTicket {
       'category': category,
       'price': price,
       'purchasedAt': purchasedAt.toIso8601String(),
+      'eventId': eventId,
     };
   }
 
@@ -225,6 +228,7 @@ class DbPurchasedTicket {
       category: map['category'] as String,
       price: map['price'] as String,
       purchasedAt: DateTime.parse(map['purchasedAt'] as String),
+      eventId: map['eventId'] as int?,
     );
   }
 }
