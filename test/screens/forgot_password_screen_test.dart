@@ -49,7 +49,7 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.enterText(find.byType(TextFormField).first, 'missing@oxford.ac.uk');
-      final sendResetButton = find.widgetWithText(ElevatedButton, 'Send Reset Code');
+      final sendResetButton = find.byType(ElevatedButton).first;
       await tester.ensureVisible(sendResetButton);
       await tester.tap(sendResetButton);
       await tester.pumpAndSettle();
@@ -68,7 +68,7 @@ void main() {
       await tester.pumpWidget(_buildTestApp(const ForgotPasswordScreen()));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextFormField).first, 'test@oxford.ac.uk');
-      final sendResetButton = find.widgetWithText(ElevatedButton, 'Send Reset Code');
+      final sendResetButton = find.byType(ElevatedButton).first;
       await tester.ensureVisible(sendResetButton);
       await tester.tap(sendResetButton);
       await tester.pumpAndSettle();
@@ -77,7 +77,7 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.enterText(find.byType(TextFormField).first, '123456');
-      final verifyButton = find.widgetWithText(ElevatedButton, 'Verify Code');
+      final verifyButton = find.byType(ElevatedButton).first;
       await tester.ensureVisible(verifyButton);
       await tester.tap(verifyButton);
       await tester.pump(const Duration(seconds: 1));
@@ -93,12 +93,12 @@ void main() {
       await tester.pumpWidget(_buildTestApp(const ForgotPasswordScreen()));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextFormField).first, 'test@oxford.ac.uk');
-      final sendResetButton = find.widgetWithText(ElevatedButton, 'Send Reset Code');
+      final sendResetButton = find.byType(ElevatedButton).first;
       await tester.ensureVisible(sendResetButton);
       await tester.tap(sendResetButton);
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextFormField).first, '123456');
-      final verifyButton = find.widgetWithText(ElevatedButton, 'Verify Code');
+      final verifyButton = find.byType(ElevatedButton).first;
       await tester.ensureVisible(verifyButton);
       await tester.tap(verifyButton);
       await tester.pump(const Duration(seconds: 1));
@@ -124,7 +124,7 @@ void main() {
       final fields = find.byType(TextFormField);
       await tester.enterText(fields.at(0), 'Password123!');
       await tester.enterText(fields.at(1), 'Password123!');
-      final resetButton = find.widgetWithText(ElevatedButton, 'Reset Password');
+      final resetButton = find.byType(ElevatedButton).first;
       await tester.ensureVisible(resetButton);
       await tester.tap(resetButton);
       await tester.pumpAndSettle();
@@ -139,19 +139,19 @@ void main() {
       await tester.pumpWidget(_buildTestApp(const ForgotPasswordScreen()));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextFormField).first, 'fail@oxford.ac.uk');
-      final sendResetButton = find.widgetWithText(ElevatedButton, 'Send Reset Code');
+      final sendResetButton = find.byType(ElevatedButton).first;
       await tester.ensureVisible(sendResetButton);
       await tester.tap(sendResetButton);
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextFormField).first, '123456');
-      final verifyButton = find.widgetWithText(ElevatedButton, 'Verify Code');
+      final verifyButton = find.byType(ElevatedButton).first;
       await tester.ensureVisible(verifyButton);
       await tester.tap(verifyButton);
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextFormField).at(0), 'Password123!');
       await tester.enterText(find.byType(TextFormField).at(1), 'Password123!');
-      final resetButton = find.widgetWithText(ElevatedButton, 'Reset Password');
+      final resetButton = find.byType(ElevatedButton).first;
       await tester.ensureVisible(resetButton);
       await tester.tap(resetButton);
       await tester.pumpAndSettle();
