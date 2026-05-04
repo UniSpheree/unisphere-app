@@ -92,8 +92,9 @@ class AppFooter extends StatelessWidget {
                             InkWell(
                               onTap: () {
                                 Future.microtask(() {
-                                  if (context.mounted)
+                                  if (context.mounted) {
                                     Navigator.pushNamed(context, '/about');
+                                  }
                                 });
                               },
                               child: const Text(
@@ -108,8 +109,9 @@ class AppFooter extends StatelessWidget {
                             InkWell(
                               onTap: () {
                                 Future.microtask(() {
-                                  if (context.mounted)
+                                  if (context.mounted) {
                                     Navigator.pushNamed(context, '/privacy');
+                                  }
                                 });
                               },
                               child: const Text(
@@ -124,8 +126,9 @@ class AppFooter extends StatelessWidget {
                             InkWell(
                               onTap: () {
                                 Future.microtask(() {
-                                  if (context.mounted)
+                                  if (context.mounted) {
                                     Navigator.pushNamed(context, '/terms');
+                                  }
                                 });
                               },
                               child: const Text(
@@ -161,8 +164,9 @@ class AppFooter extends StatelessWidget {
                             InkWell(
                               onTap: () {
                                 Future.microtask(() {
-                                  if (context.mounted)
+                                  if (context.mounted) {
                                     Navigator.pushNamed(context, '/about');
+                                  }
                                 });
                               },
                               child: const Text(
@@ -177,8 +181,9 @@ class AppFooter extends StatelessWidget {
                             InkWell(
                               onTap: () {
                                 Future.microtask(() {
-                                  if (context.mounted)
+                                  if (context.mounted) {
                                     Navigator.pushNamed(context, '/privacy');
+                                  }
                                 });
                               },
                               child: const Text(
@@ -193,8 +198,9 @@ class AppFooter extends StatelessWidget {
                             InkWell(
                               onTap: () {
                                 Future.microtask(() {
-                                  if (context.mounted)
+                                  if (context.mounted) {
                                     Navigator.pushNamed(context, '/terms');
+                                  }
                                 });
                               },
                               child: const Text(

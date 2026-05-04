@@ -59,8 +59,9 @@ class AppHeader extends StatelessWidget {
                               onFindEventsTap!.call();
                             } else {
                               Future.microtask(() {
-                                if (context.mounted)
+                                if (context.mounted) {
                                   Navigator.pushNamed(context, '/discover');
+                                }
                               });
                             }
                             break;
@@ -90,8 +91,9 @@ class AppHeader extends StatelessWidget {
                               onAboutTap!.call();
                             } else {
                               Future.microtask(() {
-                                if (context.mounted)
+                                if (context.mounted) {
                                   Navigator.pushNamed(context, '/about');
+                                }
                               });
                             }
                             break;
@@ -326,8 +328,9 @@ class _Brand extends StatelessWidget {
       onTap: () {
         // Always navigate to the initial welcome page
         Future.microtask(() {
-          if (context.mounted)
+          if (context.mounted) {
             Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+          }
         });
       },
       child: Wrap(

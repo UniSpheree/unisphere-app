@@ -1396,7 +1396,7 @@ String _formatCompactCount(int value) {
     return '${thousands}K';
   }
 
-  return '${thousands}.${(remainder / 100).floor()}K';
+  return '$thousands.${(remainder / 100).floor()}K';
 }
 
 class _UpcomingEventCard extends StatelessWidget {

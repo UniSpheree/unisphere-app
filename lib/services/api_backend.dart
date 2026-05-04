@@ -29,7 +29,7 @@ class SqliteBackend extends ChangeNotifier {
   DbPurchasedTicket? _pendingPurchase;
   Map<String, dynamic>? _pendingEvent;
 
-  String _baseUrl = _defaultBaseUrl;
+  final String _baseUrl = _defaultBaseUrl;
 
   DbUser? get currentUser => _currentUser;
   List<DbPurchasedTicket> get purchasedTickets =>

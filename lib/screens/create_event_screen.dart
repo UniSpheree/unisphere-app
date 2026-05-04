@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:unisphere_app/models/database_models.dart';
 import 'package:unisphere_app/services/sqlite_backend.dart';
 import 'package:unisphere_app/widgets/header.dart';
 import 'package:unisphere_app/widgets/app_footer.dart';
