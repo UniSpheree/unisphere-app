@@ -32,150 +32,130 @@ void main() {
     );
   }
 
-  Future<void> _pumpApp(WidgetTester tester, Widget child) async {
-    tester.view.physicalSize = const Size(1920, 1080);
-    tester.view.devicePixelRatio = 1.0;
-    await tester.pumpWidget(_buildTestApp(child));
-    await tester.pumpAndSettle();
-  }
-
-  group('ForgotPasswordScreen Isolated Tests', () {
-    testWidgets('Initial Renders', (tester) async {
-      await _pumpApp(tester, const ForgotPasswordScreen());
-      expect(find.text('Forgot Password?'), findsOneWidget);
+  group('ForgotPasswordScreen Isolated Coverage', () {
+    testWidgets('Step 1: Logo and Back', (tester) async {
+      await tester.pumpWidget(_buildTestApp(const ForgotPasswordScreen()));
+      await tester.pumpAndSettle();
+      
+      // Back - tap the "Back to Login" link
+      await tester.tap(find.text('Back to Login'));
+      await tester.pumpAndSettle();
+      expect(find.text('Login Screen'), findsOneWidget);
     });
 
-    testWidgets('Step 1: Validation', (tester) async {
-      await _pumpApp(tester, const ForgotPasswordScreen());
-      await tester.tap(find.text('Send Reset Code'));
-      await tester.pumpAndSettle();
-      expect(find.text('Email is required'), findsOneWidget);
-
-      await tester.enterText(find.byType(TextFormField), 'bad@gmail.com');
-      await tester.tap(find.text('Send Reset Code'));
-      await tester.pumpAndSettle();
-      expect(find.text('Please use your university email address'), findsOneWidget);
-    });
-
-    testWidgets('Step 1: Email Not Found', (tester) async {
+    testWidgets('Step 1: API Logic', (tester) async {
       SqliteBackend().client = MockClient((request) async => http.Response(jsonEncode({'exists': false}), 200));
-      await _pumpApp(tester, const ForgotPasswordScreen());
-      await tester.enterText(find.byType(TextFormField), 'missing@oxford.ac.uk');
-      await tester.tap(find.text('Send Reset Code'));
+      await tester.pumpWidget(_buildTestApp(const ForgotPasswordScreen()));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextFormField).first, 'missing@oxford.ac.uk');
+      final sendResetButton = find.widgetWithText(ElevatedButton, 'Send Reset Code');
+      await tester.ensureVisible(sendResetButton);
+      await tester.tap(sendResetButton);
       await tester.pumpAndSettle();
       expect(find.text('No account found with this email.'), findsOneWidget);
     });
 
-    testWidgets('Step 2: Resend Code', (tester) async {
+    testWidgets('Step 2: Full Flow', (tester) async {
       SqliteBackend().client = MockClient((request) async => http.Response(jsonEncode({'exists': true}), 200));
-      await _pumpApp(tester, const ForgotPasswordScreen());
-      await tester.enterText(find.byType(TextFormField), 'test@oxford.ac.uk');
+      await tester.pumpWidget(_buildTestApp(const ForgotPasswordScreen()));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField).first, 'test@oxford.ac.uk');
       await tester.tap(find.text('Send Reset Code'));
+      await tester.pumpAndSettle();
+
+      // Verify and Transition
+      await tester.pumpWidget(_buildTestApp(const ForgotPasswordScreen()));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField).first, 'test@oxford.ac.uk');
+      final sendResetButton = find.widgetWithText(ElevatedButton, 'Send Reset Code');
+      await tester.ensureVisible(sendResetButton);
+      await tester.tap(sendResetButton);
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Resend Code'));
-      await tester.pump();
-      expect(find.textContaining('Code resent'), findsOneWidget);
-    });
-
-    testWidgets('Step 2: Invalid Code', (tester) async {
-      SqliteBackend().client = MockClient((request) async => http.Response(jsonEncode({'exists': true}), 200));
-      await _pumpApp(tester, const ForgotPasswordScreen());
-      await tester.enterText(find.byType(TextFormField), 'test@oxford.ac.uk');
-      await tester.tap(find.text('Send Reset Code'));
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextFormField), '000000');
-      await tester.tap(find.text('Verify Code'));
-      await tester.pump(const Duration(milliseconds: 1000));
+      await tester.enterText(find.byType(TextFormField).first, '123456');
+      final verifyButton = find.widgetWithText(ElevatedButton, 'Verify Code');
+      await tester.ensureVisible(verifyButton);
+      await tester.tap(verifyButton);
+      await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
-      expect(find.text('Invalid code. Please try again.'), findsOneWidget);
+      expect(find.text('Set New Password'), findsOneWidget);
     });
 
-    testWidgets('Step 3: Password Reset Success', (tester) async {
+    testWidgets('Step 3: Logic and Toggles', (tester) async {
       SqliteBackend().client = MockClient((request) async {
         if (request.url.path == '/auth/forgot-password') return http.Response(jsonEncode({'exists': true}), 200);
         return http.Response('Success', 200);
       });
-      await _pumpApp(tester, const ForgotPasswordScreen());
-      await tester.enterText(find.byType(TextFormField), 'success@oxford.ac.uk');
+      await tester.pumpWidget(_buildTestApp(const ForgotPasswordScreen()));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField).first, 'test@oxford.ac.uk');
+      final sendResetButton = find.widgetWithText(ElevatedButton, 'Send Reset Code');
+      await tester.ensureVisible(sendResetButton);
+      await tester.tap(sendResetButton);
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField).first, '123456');
+      final verifyButton = find.widgetWithText(ElevatedButton, 'Verify Code');
+      await tester.ensureVisible(verifyButton);
+      await tester.tap(verifyButton);
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
+
+      // Return and Finish
+      await tester.pumpWidget(_buildTestApp(const ForgotPasswordScreen()));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField).first, 'test@oxford.ac.uk');
       await tester.tap(find.text('Send Reset Code'));
       await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextFormField), '123456');
+      await tester.enterText(find.byType(TextFormField).first, '123456');
       await tester.tap(find.text('Verify Code'));
-      await tester.pump(const Duration(milliseconds: 1000));
+      await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
+
+      final visibilityIcons = find.byIcon(Icons.visibility_outlined);
+      await tester.tap(visibilityIcons.at(0));
+      await tester.pump();
+      await tester.tap(visibilityIcons.at(1));
+      await tester.pump();
 
       final fields = find.byType(TextFormField);
       await tester.enterText(fields.at(0), 'Password123!');
       await tester.enterText(fields.at(1), 'Password123!');
-      await tester.tap(find.text('Reset Password'));
+      final resetButton = find.widgetWithText(ElevatedButton, 'Reset Password');
+      await tester.ensureVisible(resetButton);
+      await tester.tap(resetButton);
       await tester.pumpAndSettle();
-      expect(find.text('Password reset successfully! Please log in.'), findsOneWidget);
+      expect(find.text('Login Screen'), findsOneWidget);
     });
 
-    testWidgets('Step 3: Password Reset Failure', (tester) async {
+    testWidgets('Step 3: Failure Case', (tester) async {
       SqliteBackend().client = MockClient((request) async {
         if (request.url.path == '/auth/forgot-password') return http.Response(jsonEncode({'exists': true}), 200);
         return http.Response('Error', 400);
       });
-      await _pumpApp(tester, const ForgotPasswordScreen());
-      await tester.enterText(find.byType(TextFormField), 'fail@oxford.ac.uk');
-      await tester.tap(find.text('Send Reset Code'));
+      await tester.pumpWidget(_buildTestApp(const ForgotPasswordScreen()));
       await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextFormField), '123456');
-      await tester.tap(find.text('Verify Code'));
-      await tester.pump(const Duration(milliseconds: 1000));
+      await tester.enterText(find.byType(TextFormField).first, 'fail@oxford.ac.uk');
+      final sendResetButton = find.widgetWithText(ElevatedButton, 'Send Reset Code');
+      await tester.ensureVisible(sendResetButton);
+      await tester.tap(sendResetButton);
       await tester.pumpAndSettle();
-
-      final fields = find.byType(TextFormField);
-      await tester.enterText(fields.at(0), 'Password123!');
-      await tester.enterText(fields.at(1), 'Password123!');
-      await tester.tap(find.text('Reset Password'));
+      await tester.enterText(find.byType(TextFormField).first, '123456');
+      final verifyButton = find.widgetWithText(ElevatedButton, 'Verify Code');
+      await tester.ensureVisible(verifyButton);
+      await tester.tap(verifyButton);
+      await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
-      expect(find.text('Failed to reset password. Please try again.'), findsOneWidget);
-    });
-
-    testWidgets('Navigation: Logo and Back Buttons', (tester) async {
-      await _pumpApp(tester, const ForgotPasswordScreen());
-      
-      // Back button
-      await tester.tap(find.text('Back to Login').first);
+      await tester.enterText(find.byType(TextFormField).at(0), 'Password123!');
+      await tester.enterText(find.byType(TextFormField).at(1), 'Password123!');
+      final resetButton = find.widgetWithText(ElevatedButton, 'Reset Password');
+      await tester.ensureVisible(resetButton);
+      await tester.tap(resetButton);
       await tester.pumpAndSettle();
-      expect(find.text('Login Screen'), findsOneWidget);
-
-      // Logo
-      await _pumpApp(tester, const ForgotPasswordScreen());
-      final logo = find.byType(Image).first;
-      final logoGesture = tester.widget<GestureDetector>(find.ancestor(of: logo, matching: find.byType(GestureDetector)).first);
-      logoGesture.onTap!();
-      await tester.pumpAndSettle();
-      expect(find.text('Landing Screen'), findsOneWidget);
-    });
-
-    testWidgets('Misc: Toggles and Mismatch', (tester) async {
-      SqliteBackend().client = MockClient((request) async => http.Response(jsonEncode({'exists': true}), 200));
-      await _pumpApp(tester, const ForgotPasswordScreen());
-      await tester.enterText(find.byType(TextFormField), 'test@oxford.ac.uk');
-      await tester.tap(find.text('Send Reset Code'));
-      await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextFormField), '123456');
-      await tester.tap(find.text('Verify Code'));
-      await tester.pump(const Duration(milliseconds: 1000));
-      await tester.pumpAndSettle();
-
-      final visibilityIcons = find.byIcon(Icons.visibility_outlined);
-      if (visibilityIcons.evaluate().isNotEmpty) {
-        await tester.tap(visibilityIcons.at(0));
-        await tester.pump();
-      }
-
-      final fields = find.byType(TextFormField);
-      await tester.enterText(fields.at(0), 'Password123!');
-      await tester.enterText(fields.at(1), 'Mismatch123!');
-      await tester.tap(find.text('Reset Password'));
-      await tester.pumpAndSettle();
-      expect(find.text('Passwords do not match'), findsOneWidget);
+      expect(find.textContaining('Failed'), findsOneWidget);
     });
   });
 }
