@@ -19,7 +19,10 @@ class SqliteBackend extends ChangeNotifier {
     defaultValue: 'http://127.0.0.1:8000',
   );
 
-  final http.Client _client = http.Client();
+  http.Client _client = http.Client();
+  
+  @visibleForTesting
+  set client(http.Client client) => _client = client;
 
   DbUser? _currentUser;
   final List<DbPurchasedTicket> _purchasedTickets = [];
@@ -35,6 +38,8 @@ class SqliteBackend extends ChangeNotifier {
   List<DbPurchasedTicket> get purchasedTickets =>
       List.unmodifiable(_purchasedTickets);
   List<Map<String, dynamic>> get events => List.unmodifiable(_cachedEvents);
+  DbPurchasedTicket? get pendingPurchase => _pendingPurchase;
+  Map<String, dynamic>? get pendingEvent => _pendingEvent;
 
   Uri _uri(String path) => Uri.parse('$_baseUrl$path');
 
@@ -641,5 +646,19 @@ class SqliteBackend extends ChangeNotifier {
     } catch (e) {
       return 'Error getting diagnostics: $e';
     }
+  }
+
+  @visibleForTesting
+  void injectMockState({
+    DbUser? user,
+    List<Map<String, dynamic>>? mockEvents,
+    bool clearUser = false,
+  }) {
+    if (user != null || clearUser) _currentUser = user;
+    if (mockEvents != null) {
+      _cachedEvents.clear();
+      _cachedEvents.addAll(mockEvents);
+    }
+    notifyListeners();
   }
 }

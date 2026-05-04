@@ -199,8 +199,11 @@ class AppHeader extends StatelessWidget {
                         const _Brand(),
                       ],
                     ),
-                    Row(
-                      children: [
+                    Flexible(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
                         _NavItem(
                           label: 'Find Events',
                           onTap:
@@ -309,6 +312,8 @@ class AppHeader extends StatelessWidget {
                             ),
                           ),
                       ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
