@@ -169,6 +169,9 @@ class SqliteBackend extends ChangeNotifier {
       'category': raw['category']?.toString() ?? '',
       'description': raw['description']?.toString() ?? '',
       'organizerEmail': organizerEmail,
+      'maxAttendees': raw['maxAttendees'] ?? raw['capacity'],
+      'capacity': raw['capacity'] ?? raw['maxAttendees'],
+      'ticketsSold': raw['ticketsSold'] ?? 0,
       'visibility': raw['visibility']?.toString() ?? 'Public',
       'createdAt':
           raw['createdAt']?.toString() ?? DateTime.now().toIso8601String(),
@@ -291,6 +294,7 @@ class SqliteBackend extends ChangeNotifier {
       'location': eventData['location']?.toString() ?? '',
       'category': eventData['category']?.toString() ?? '',
       'description': eventData['description']?.toString() ?? '',
+        'maxAttendees': eventData['maxAttendees'],
       'visibility': eventData['visibility']?.toString() ?? 'Public',
       'organizerEmail': _currentUser!.email,
       'bannerImageBase64': eventData['bannerImageData'] is Uint8List
@@ -514,12 +518,16 @@ class SqliteBackend extends ChangeNotifier {
   Future<bool> updateEvent(String id, Map<String, dynamic> updated) async {
     try {
       final payload = Map<String, dynamic>.from(updated);
+      if (payload['removeBannerImage'] == true) {
+        payload['bannerImageBase64'] = null;
+      }
       if (payload['bannerImageData'] is Uint8List) {
         payload['bannerImageBase64'] = base64Encode(
           payload['bannerImageData'] as Uint8List,
         );
       }
       payload.remove('bannerImageData');
+      payload.remove('removeBannerImage');
       final response = await _put('/events/$id', payload);
       if (response.statusCode != 200) return false;
       await _loadEventsFromApi();
@@ -567,11 +575,11 @@ class SqliteBackend extends ChangeNotifier {
     }
   }
 
-  void purchaseTicket(DbPurchasedTicket ticket) {
+  Future<bool> purchaseTicket(DbPurchasedTicket ticket) async {
     if (_currentUser == null) {
       _pendingPurchase = ticket;
       notifyListeners();
-      return;
+      return true;
     }
 
     final effective = DbPurchasedTicket(
@@ -582,13 +590,18 @@ class SqliteBackend extends ChangeNotifier {
       category: ticket.category,
       price: ticket.price,
       purchasedAt: ticket.purchasedAt,
+      eventId: ticket.eventId,
     );
 
-    Future.microtask(() async {
+    try {
       _pendingPurchase = effective;
       await _completePendingPurchaseInternal();
       await _loadEventsFromApi();
-    });
+      return true;
+    } catch (e) {
+      print('Error purchasing ticket: $e');
+      return false;
+    }
   }
 
   void logout() {
