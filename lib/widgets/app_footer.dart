@@ -58,43 +58,46 @@ class AppFooter extends StatelessWidget {
                   spacing: 80,
                   runSpacing: 40,
                   children: const [
-                  _FooterColumn(
-                    title: 'Use UniSphere',
-                    links: [
-                      {'label': 'About Us', 'route': '/about'},
-                      {'label': 'How it Works', 'route': null},
-                      {'label': 'Pricing', 'route': null},
-                      {'label': 'FAQs', 'route': null},
-                    ],
-                  ),
-                  _FooterColumn(
-                    title: 'Plan Events',
-                    links: [
-                      {'label': 'Create and Set Up', 'route': '/create-event'},
-                      {'label': 'Sell Tickets', 'route': null},
-                      {'label': 'Online RSVPs', 'route': null},
-                      {'label': 'Online Events', 'route': null},
-                    ],
-                  ),
-                  _FooterColumn(
-                    title: 'Find Events',
-                    links: [
-                      {'label': 'Browse Events', 'route': '/discover'},
-                      {'label': 'Discover by Category', 'route': '/discover'},
-                      {'label': 'Local Events', 'route': '/discover'},
-                      {'label': 'Online Events', 'route': '/discover'},
-                    ],
-                  ),
-                  _FooterColumn(
-                    title: 'Connect With Us',
-                    links: [
-                      {'label': 'Contact Support', 'route': null},
-                      {'label': 'Twitter', 'route': null},
-                      {'label': 'Facebook', 'route': null},
-                      {'label': 'LinkedIn', 'route': null},
-                    ],
-                  ),
-                ],
+                    _FooterColumn(
+                      title: 'Use UniSphere',
+                      links: [
+                        {'label': 'About Us', 'route': '/about'},
+                        {'label': 'How it Works', 'route': null},
+                        {'label': 'Pricing', 'route': null},
+                        {'label': 'FAQs', 'route': null},
+                      ],
+                    ),
+                    _FooterColumn(
+                      title: 'Plan Events',
+                      links: [
+                        {
+                          'label': 'Create and Set Up',
+                          'route': '/create-event',
+                        },
+                        {'label': 'Sell Tickets', 'route': null},
+                        {'label': 'Online RSVPs', 'route': null},
+                        {'label': 'Online Events', 'route': null},
+                      ],
+                    ),
+                    _FooterColumn(
+                      title: 'Find Events',
+                      links: [
+                        {'label': 'Browse Events', 'route': '/discover'},
+                        {'label': 'Discover by Category', 'route': '/discover'},
+                        {'label': 'Local Events', 'route': '/discover'},
+                        {'label': 'Online Events', 'route': '/discover'},
+                      ],
+                    ),
+                    _FooterColumn(
+                      title: 'Connect With Us',
+                      links: [
+                        {'label': 'Contact Support', 'route': null},
+                        {'label': 'Twitter', 'route': null},
+                        {'label': 'Facebook', 'route': null},
+                        {'label': 'LinkedIn', 'route': null},
+                      ],
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 60),
                 const Divider(color: Colors.white24),
@@ -182,59 +185,60 @@ class AppFooter extends StatelessWidget {
                             fontSize: 13,
                           ),
                         ),
-                        Row(
-                          children: [
-                            InkWell(
-                              onTap: () {
-                                Future.microtask(() {
-                                  if (context.mounted) {
-                                    Navigator.pushNamed(context, '/about');
-                                  }
-                                });
-                              },
-                              child: const Text(
-                                'About',
-                                style: TextStyle(
-                                  color: Colors.white54,
-                                  fontSize: 13,
+                        Flexible(
+                          child: Wrap(
+                            spacing: 24,
+                            children: [
+                              InkWell(
+                                onTap: () {
+                                  Future.microtask(() {
+                                    if (context.mounted) {
+                                      Navigator.pushNamed(context, '/about');
+                                    }
+                                  });
+                                },
+                                child: const Text(
+                                  'About',
+                                  style: TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 24),
-                            InkWell(
-                              onTap: () {
-                                Future.microtask(() {
-                                  if (context.mounted) {
-                                    Navigator.pushNamed(context, '/privacy');
-                                  }
-                                });
-                              },
-                              child: const Text(
-                                'Privacy',
-                                style: TextStyle(
-                                  color: Colors.white54,
-                                  fontSize: 13,
+                              InkWell(
+                                onTap: () {
+                                  Future.microtask(() {
+                                    if (context.mounted) {
+                                      Navigator.pushNamed(context, '/privacy');
+                                    }
+                                  });
+                                },
+                                child: const Text(
+                                  'Privacy',
+                                  style: TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 24),
-                            InkWell(
-                              onTap: () {
-                                Future.microtask(() {
-                                  if (context.mounted) {
-                                    Navigator.pushNamed(context, '/terms');
-                                  }
-                                });
-                              },
-                              child: const Text(
-                                'Terms',
-                                style: TextStyle(
-                                  color: Colors.white54,
-                                  fontSize: 13,
+                              InkWell(
+                                onTap: () {
+                                  Future.microtask(() {
+                                    if (context.mounted) {
+                                      Navigator.pushNamed(context, '/terms');
+                                    }
+                                  });
+                                },
+                                child: const Text(
+                                  'Terms',
+                                  style: TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     );
