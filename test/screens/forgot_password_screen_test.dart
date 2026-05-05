@@ -108,10 +108,14 @@ void main() {
       await tester.pumpWidget(_buildTestApp(const ForgotPasswordScreen()));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextFormField).first, 'test@oxford.ac.uk');
-      await tester.tap(find.text('Send Reset Code'));
+      final sendResetButtonAgain = find.byType(ElevatedButton).first;
+      await tester.ensureVisible(sendResetButtonAgain);
+      await tester.tap(sendResetButtonAgain);
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextFormField).first, '123456');
-      await tester.tap(find.text('Verify Code'));
+      final verifyButtonAgain = find.byType(ElevatedButton).first;
+      await tester.ensureVisible(verifyButtonAgain);
+      await tester.tap(verifyButtonAgain);
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
 
