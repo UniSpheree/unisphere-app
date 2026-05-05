@@ -623,5 +623,3 @@ class SqliteBackend extends ChangeNotifier {
     }
   }
 }
-
-
