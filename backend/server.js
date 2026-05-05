@@ -626,7 +626,37 @@ function logPersistenceStatus() {
   }
 }
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`UniSphere API running at http://127.0.0.1:${PORT}`);
   logPersistenceStatus();
+});
+
+// Graceful shutdown on Ctrl+C or terminal close
+process.on("SIGINT", () => {
+  console.log("\n\nShutting down gracefully...");
+  server.close(() => {
+    console.log("Server closed");
+    db.close();
+    console.log("Database closed");
+    process.exit(0);
+  });
+  // Force exit after 5 seconds if server doesn't close
+  setTimeout(() => {
+    console.error("Forced shutdown");
+    process.exit(1);
+  }, 5000);
+});
+
+process.on("SIGTERM", () => {
+  console.log("\n\nReceived SIGTERM - shutting down gracefully...");
+  server.close(() => {
+    console.log("Server closed");
+    db.close();
+    console.log("Database closed");
+    process.exit(0);
+  });
+  setTimeout(() => {
+    console.error("Forced shutdown");
+    process.exit(1);
+  }, 5000);
 });
