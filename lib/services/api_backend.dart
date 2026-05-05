@@ -294,7 +294,7 @@ class SqliteBackend extends ChangeNotifier {
       'location': eventData['location']?.toString() ?? '',
       'category': eventData['category']?.toString() ?? '',
       'description': eventData['description']?.toString() ?? '',
-        'maxAttendees': eventData['maxAttendees'],
+      'maxAttendees': eventData['maxAttendees'],
       'visibility': eventData['visibility']?.toString() ?? 'Public',
       'organizerEmail': _currentUser!.email,
       'bannerImageBase64': eventData['bannerImageData'] is Uint8List
