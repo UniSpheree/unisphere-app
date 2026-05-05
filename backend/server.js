@@ -562,18 +562,22 @@ app.get("/tickets/:email", (req, res) => {
 function logPersistenceStatus() {
   try {
     const userCount = db.prepare("SELECT COUNT(*) as cnt FROM users").get().cnt;
-    const eventCount = db.prepare("SELECT COUNT(*) as cnt FROM events").get().cnt;
-    const ticketCount = db.prepare("SELECT COUNT(*) as cnt FROM tickets").get().cnt;
-    
-    console.log('\n════════════════════════════════════════════════════');
-    console.log('📊 DATA PERSISTENCE STATUS:');
+    const eventCount = db
+      .prepare("SELECT COUNT(*) as cnt FROM events")
+      .get().cnt;
+    const ticketCount = db
+      .prepare("SELECT COUNT(*) as cnt FROM tickets")
+      .get().cnt;
+
+    console.log("\n════════════════════════════════════════════════════");
+    console.log("📊 DATA PERSISTENCE STATUS:");
     console.log(`   Users:  ${userCount}`);
     console.log(`   Events: ${eventCount}`);
     console.log(`   Tickets: ${ticketCount}`);
-    console.log('   ✅ All data is persistent and will survive app restarts');
-    console.log('════════════════════════════════════════════════════\n');
+    console.log("   ✅ All data is persistent and will survive app restarts");
+    console.log("════════════════════════════════════════════════════\n");
   } catch (e) {
-    console.error('Error checking persistence:', e.message);
+    console.error("Error checking persistence:", e.message);
   }
 }
 
