@@ -622,24 +622,6 @@ class SqliteBackend extends ChangeNotifier {
       return false;
     }
   }
-
-  Future<void> clear() async {
-    try {
-      await _post('/debug/clear', {});
-      logout();
-      _cachedEvents.clear();
-      notifyListeners();
-    } catch (e) {
-      print('❌ Error clearing data: $e');
-    }
-  }
-
-  Future<String> getDiagnostics() async {
-    try {
-      final response = await _get('/debug/diagnostics');
-      return response.body;
-    } catch (e) {
-      return 'Error getting diagnostics: $e';
-    }
-  }
 }
+
+
