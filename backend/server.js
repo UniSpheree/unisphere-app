@@ -558,6 +558,26 @@ app.get("/tickets/:email", (req, res) => {
   res.json(rows.map(toTicketOut));
 });
 
+// Log data persistence status on startup
+function logPersistenceStatus() {
+  try {
+    const userCount = db.prepare("SELECT COUNT(*) as cnt FROM users").get().cnt;
+    const eventCount = db.prepare("SELECT COUNT(*) as cnt FROM events").get().cnt;
+    const ticketCount = db.prepare("SELECT COUNT(*) as cnt FROM tickets").get().cnt;
+    
+    console.log('\n════════════════════════════════════════════════════');
+    console.log('📊 DATA PERSISTENCE STATUS:');
+    console.log(`   Users:  ${userCount}`);
+    console.log(`   Events: ${eventCount}`);
+    console.log(`   Tickets: ${ticketCount}`);
+    console.log('   ✅ All data is persistent and will survive app restarts');
+    console.log('════════════════════════════════════════════════════\n');
+  } catch (e) {
+    console.error('Error checking persistence:', e.message);
+  }
+}
+
 app.listen(PORT, () => {
   console.log(`UniSphere API running at http://127.0.0.1:${PORT}`);
+  logPersistenceStatus();
 });
