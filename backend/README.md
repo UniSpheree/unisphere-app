@@ -1,3 +1,36 @@
+Important persistence notes
+- The server uses a SQLite file at `backend/unisphere.db` to persist all users, events, tickets, and metadata.
+- Uploaded banner images are stored in `backend/storage/uploads`.
+
+How persistence works (short):
+ On startup the server opens `backend/unisphere.db` (creates it if missing) and executes `CREATE TABLE IF NOT EXISTS` so tables persist across restarts.
+ Therefore, when you run `npm start` the server will keep any created accounts, events, and tickets in `backend/unisphere.db`.
+
+Sharing data between machines:
+- To have the same saved accounts/events/tickets after cloning on another machine, include `backend/unisphere.db` in the repo (or transfer it) and also include `backend/storage/uploads` if you want existing banner images.
+- This repo previously ignored `storage/uploads` — I added an exception so files inside `storage/uploads` can be committed. If you'd like, I can commit current uploads and the DB into the repo for you.
+
+Backup and restore helpers
+- Create a timestamped backup of the DB:
+
+   npm run backup-db
+
+- Restore a DB from a file (example):
+
+   npm run restore-db -- ./backups/unisphere-2024-01-01T12-00-00.000Z.db
+
+Quick clone/run steps
+
+   git clone <repo>
+   cd <repo>/backend
+   npm install
+   npm start
+
+Then from the repo root run the Flutter frontend:
+
+   flutter run -d chrome
+
+If you want me to commit the current `backend/unisphere.db` and `backend/storage/uploads` into git now, tell me and I'll add/commit them.
 # UniSphere API (Backend)
 
 The UniSphere Backend is a lightweight, persistent REST API built with **Express.js** and **SQLite**. It serves as the data layer for the UniSphere Flutter application, handling user authentication, event management, and ticket transactions.
