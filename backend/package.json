@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "verify": "node verify_persistence.js"
+    "verify": "node verify_persistence.js",
+    "backup-db": "node backup_db.js",
+    "restore-db": "node restore_db.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
