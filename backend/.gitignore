@@ -3,3 +3,4 @@ unisphere.db-shm
 unisphere.db-wal
 storage/uploads/*
 !storage/uploads/.gitkeep
+!storage/uploads/**
