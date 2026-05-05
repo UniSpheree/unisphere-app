@@ -314,8 +314,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                               ),
                                               _Pill(
                                                 label: _role,
-                                                color: Colors.white
-                                                    .withOpacity(0.18),
+                                                color: Colors.white.withOpacity(
+                                                  0.18,
+                                                ),
                                               ),
                                             ],
                                           ),
@@ -360,10 +361,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                                   'Edit profile',
                                                 ),
                                                 style: FilledButton.styleFrom(
-                                                  backgroundColor:
-                                                      Colors.white,
-                                                  foregroundColor:
-                                                      const Color(0xFF111827),
+                                                  backgroundColor: Colors.white,
+                                                  foregroundColor: const Color(
+                                                    0xFF111827,
+                                                  ),
                                                   padding:
                                                       const EdgeInsets.symmetric(
                                                         horizontal: 18,
@@ -395,8 +396,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                   'Browse events',
                                                 ),
                                                 style: OutlinedButton.styleFrom(
-                                                  foregroundColor:
-                                                      Colors.white,
+                                                  foregroundColor: Colors.white,
                                                   side: BorderSide(
                                                     color: Colors.white
                                                         .withOpacity(0.34),
