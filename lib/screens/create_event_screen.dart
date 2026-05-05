@@ -336,16 +336,10 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   Widget _buildBannerPreview() {
     final existingImageWidget = _existingBannerBytes != null
-        ? Image.memory(
-            _existingBannerBytes!,
-            fit: BoxFit.cover,
-          )
+        ? Image.memory(_existingBannerBytes!, fit: BoxFit.cover)
         : (_existingBannerUrl != null && _existingBannerUrl!.isNotEmpty)
-            ? Image.network(
-                _existingBannerUrl!,
-                fit: BoxFit.cover,
-              )
-            : null;
+        ? Image.network(_existingBannerUrl!, fit: BoxFit.cover)
+        : null;
 
     final canEditExisting = widget.existingEvent != null && _hasExistingBanner;
 
@@ -387,10 +381,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             const SizedBox(height: 4),
             Text(
               'Recommended size: 1200 × 630px (PNG, JPG)',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade500,
-              ),
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
             ),
           ],
         ),
@@ -399,14 +390,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
     final imageChild = _bannerImage != null
         ? (kIsWeb
-              ? Image.network(
-                  _bannerImage!.path,
-                  fit: BoxFit.cover,
-                )
-              : Image.file(
-                  File(_bannerImage!.path),
-                  fit: BoxFit.cover,
-                ))
+              ? Image.network(_bannerImage!.path, fit: BoxFit.cover)
+              : Image.file(File(_bannerImage!.path), fit: BoxFit.cover))
         : existingImageWidget;
 
     return Stack(
@@ -439,11 +424,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 child: IconButton(
                   padding: const EdgeInsets.all(8),
                   constraints: const BoxConstraints(),
-                  icon: const Icon(
-                    Icons.close,
-                    color: Colors.white,
-                    size: 20,
-                  ),
+                  icon: const Icon(Icons.close, color: Colors.white, size: 20),
                   onPressed: () {
                     setState(() {
                       _bannerImage = null;
@@ -464,11 +445,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 child: IconButton(
                   padding: const EdgeInsets.all(8),
                   constraints: const BoxConstraints(),
-                  icon: const Icon(
-                    Icons.edit,
-                    color: Colors.white,
-                    size: 20,
-                  ),
+                  icon: const Icon(Icons.edit, color: Colors.white, size: 20),
                   onPressed: _pickBannerImage,
                   tooltip: 'Change banner',
                 ),
