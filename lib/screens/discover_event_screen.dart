@@ -603,6 +603,7 @@ class _PaginatedDiscoverGridState extends State<_PaginatedDiscoverGrid> {
         final crossAxisCount = availableWidth > 800
             ? 3
             : (availableWidth > 400 ? 2 : 1);
+        final childAspectRatio = crossAxisCount == 1 ? 1.2 : 0.72;
         final itemsPerPage = eventsPerPageForWidth(availableWidth);
         final totalPages = totalPagesForLength(
           widget.events.length,
@@ -633,7 +634,7 @@ class _PaginatedDiscoverGridState extends State<_PaginatedDiscoverGrid> {
                 crossAxisCount: crossAxisCount,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
-                childAspectRatio: 0.72,
+                childAspectRatio: childAspectRatio,
               ),
               itemBuilder: (context, index) =>
                   _DiscoverEventCard(event: pageEvents[index]),

@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -35,6 +36,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   bool _isSubmitting = false;
   int _formResetVersion = 0;
   XFile? _bannerImage;
+  Uint8List? _existingBannerBytes;
+  String? _existingBannerUrl;
+  bool _removeBannerRequested = false;
   final ImagePicker _imagePicker = ImagePicker();
 
   DbUser? _resolvedUser(BuildContext context) {
@@ -54,6 +58,15 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       venueController.text = ev['location']?.toString() ?? '';
       maxAttendeesController.text = (ev['maxAttendees'] ?? '').toString();
       eventCategory = ev['category']?.toString();
+      final bannerBytes = ev['bannerImageData'];
+      if (bannerBytes is Uint8List) {
+        _existingBannerBytes = bannerBytes;
+      } else {
+        final bannerUrl = ev['bannerImageUrl']?.toString();
+        if (bannerUrl != null && bannerUrl.isNotEmpty) {
+          _existingBannerUrl = bannerUrl;
+        }
+      }
       final dateStr = ev['date']?.toString();
       if (dateStr != null && dateStr.isNotEmpty) {
         try {
@@ -85,6 +98,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       if (pickedFile != null) {
         setState(() {
           _bannerImage = pickedFile;
+          _removeBannerRequested = false;
         });
       }
     } catch (e) {
@@ -233,6 +247,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
       if (_bannerImage != null) {
         payload['bannerImageData'] = await _bannerImage!.readAsBytes();
+      } else if (widget.existingEvent != null && _removeBannerRequested) {
+        payload['removeBannerImage'] = true;
       }
 
       if (widget.existingEvent != null) {
@@ -307,8 +323,138 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       eventVisibility = 'Public';
       _dateError = null;
       _bannerImage = null;
+      _existingBannerBytes = null;
+      _existingBannerUrl = null;
+      _removeBannerRequested = false;
       _bannerHovered = false;
     });
+  }
+
+  bool get _hasExistingBanner =>
+      _existingBannerBytes != null ||
+      (_existingBannerUrl != null && _existingBannerUrl!.isNotEmpty);
+
+  Widget _buildBannerPreview() {
+    final existingImageWidget = _existingBannerBytes != null
+        ? Image.memory(_existingBannerBytes!, fit: BoxFit.cover)
+        : (_existingBannerUrl != null && _existingBannerUrl!.isNotEmpty)
+        ? Image.network(_existingBannerUrl!, fit: BoxFit.cover)
+        : null;
+
+    final canEditExisting = widget.existingEvent != null && _hasExistingBanner;
+
+    if (_bannerImage == null && !canEditExisting) {
+      return Container(
+        color: _bannerHovered
+            ? Colors.indigo.withOpacity(0.06)
+            : Colors.indigo.withOpacity(0.02),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: _bannerHovered
+                    ? Colors.indigo.withOpacity(0.12)
+                    : Colors.indigo.withOpacity(0.07),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.add_photo_alternate_outlined,
+                size: 36,
+                color: _bannerHovered
+                    ? Colors.indigo
+                    : Colors.indigo.withOpacity(0.6),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Upload Event Banner',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: _bannerHovered
+                    ? Colors.indigo
+                    : Colors.indigo.withOpacity(0.7),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Recommended size: 1200 × 630px (PNG, JPG)',
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final imageChild = _bannerImage != null
+        ? (kIsWeb
+              ? Image.network(_bannerImage!.path, fit: BoxFit.cover)
+              : Image.file(File(_bannerImage!.path), fit: BoxFit.cover))
+        : existingImageWidget;
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        imageChild ?? const SizedBox.shrink(),
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.black.withOpacity(0.3),
+                Colors.transparent,
+                Colors.transparent,
+              ],
+            ),
+          ),
+        ),
+        Positioned(
+          top: 8,
+          right: 8,
+          child: Row(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.black87,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: IconButton(
+                  padding: const EdgeInsets.all(8),
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                  onPressed: () {
+                    setState(() {
+                      _bannerImage = null;
+                      _existingBannerBytes = null;
+                      _existingBannerUrl = null;
+                      _removeBannerRequested = true;
+                    });
+                  },
+                  tooltip: 'Remove banner',
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.black87,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: IconButton(
+                  padding: const EdgeInsets.all(8),
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(Icons.edit, color: Colors.white, size: 20),
+                  onPressed: _pickBannerImage,
+                  tooltip: 'Change banner',
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildLockedPage(BuildContext context) {
@@ -604,205 +750,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                             child: ClipRRect(
                                               borderRadius:
                                                   BorderRadius.circular(12),
-                                              child: _bannerImage == null
-                                                  ? Container(
-                                                      color: _bannerHovered
-                                                          ? Colors.indigo
-                                                                .withOpacity(
-                                                                  0.06,
-                                                                )
-                                                          : Colors.indigo
-                                                                .withOpacity(
-                                                                  0.02,
-                                                                ),
-                                                      child: Column(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Container(
-                                                            padding:
-                                                                const EdgeInsets.all(
-                                                                  14,
-                                                                ),
-                                                            decoration: BoxDecoration(
-                                                              color:
-                                                                  _bannerHovered
-                                                                  ? Colors
-                                                                        .indigo
-                                                                        .withOpacity(
-                                                                          0.12,
-                                                                        )
-                                                                  : Colors
-                                                                        .indigo
-                                                                        .withOpacity(
-                                                                          0.07,
-                                                                        ),
-                                                              shape: BoxShape
-                                                                  .circle,
-                                                            ),
-                                                            child: Icon(
-                                                              Icons
-                                                                  .add_photo_alternate_outlined,
-                                                              size: 36,
-                                                              color:
-                                                                  _bannerHovered
-                                                                  ? Colors
-                                                                        .indigo
-                                                                  : Colors
-                                                                        .indigo
-                                                                        .withOpacity(
-                                                                          0.6,
-                                                                        ),
-                                                            ),
-                                                          ),
-                                                          const SizedBox(
-                                                            height: 12,
-                                                          ),
-                                                          Text(
-                                                            'Upload Event Banner',
-                                                            style: TextStyle(
-                                                              fontSize: 15,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                              color:
-                                                                  _bannerHovered
-                                                                  ? Colors
-                                                                        .indigo
-                                                                  : Colors
-                                                                        .indigo
-                                                                        .withOpacity(
-                                                                          0.7,
-                                                                        ),
-                                                            ),
-                                                          ),
-                                                          const SizedBox(
-                                                            height: 4,
-                                                          ),
-                                                          Text(
-                                                            'Recommended size: 1200 × 630px (PNG, JPG)',
-                                                            style: TextStyle(
-                                                              fontSize: 12,
-                                                              color: Colors
-                                                                  .grey
-                                                                  .shade500,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    )
-                                                  : Stack(
-                                                      fit: StackFit.expand,
-                                                      children: [
-                                                        kIsWeb
-                                                            ? Image.network(
-                                                                _bannerImage!
-                                                                    .path,
-                                                                fit: BoxFit
-                                                                    .cover,
-                                                              )
-                                                            : Image.file(
-                                                                File(
-                                                                  _bannerImage!
-                                                                      .path,
-                                                                ),
-                                                                fit: BoxFit
-                                                                    .cover,
-                                                              ),
-                                                        Container(
-                                                          decoration: BoxDecoration(
-                                                            gradient: LinearGradient(
-                                                              begin: Alignment
-                                                                  .topCenter,
-                                                              end: Alignment
-                                                                  .bottomCenter,
-                                                              colors: [
-                                                                Colors.black
-                                                                    .withOpacity(
-                                                                      0.3,
-                                                                    ),
-                                                                Colors
-                                                                    .transparent,
-                                                                Colors
-                                                                    .transparent,
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Positioned(
-                                                          top: 8,
-                                                          right: 8,
-                                                          child: Row(
-                                                            children: [
-                                                              Container(
-                                                                decoration: BoxDecoration(
-                                                                  color: Colors
-                                                                      .black87,
-                                                                  borderRadius:
-                                                                      BorderRadius.circular(
-                                                                        8,
-                                                                      ),
-                                                                ),
-                                                                child: IconButton(
-                                                                  padding:
-                                                                      const EdgeInsets.all(
-                                                                        8,
-                                                                      ),
-                                                                  constraints:
-                                                                      const BoxConstraints(),
-                                                                  icon: const Icon(
-                                                                    Icons.close,
-                                                                    color: Colors
-                                                                        .white,
-                                                                    size: 20,
-                                                                  ),
-                                                                  onPressed: () {
-                                                                    setState(() {
-                                                                      _bannerImage =
-                                                                          null;
-                                                                    });
-                                                                  },
-                                                                  tooltip:
-                                                                      'Remove banner',
-                                                                ),
-                                                              ),
-                                                              const SizedBox(
-                                                                width: 8,
-                                                              ),
-                                                              Container(
-                                                                decoration: BoxDecoration(
-                                                                  color: Colors
-                                                                      .black87,
-                                                                  borderRadius:
-                                                                      BorderRadius.circular(
-                                                                        8,
-                                                                      ),
-                                                                ),
-                                                                child: IconButton(
-                                                                  padding:
-                                                                      const EdgeInsets.all(
-                                                                        8,
-                                                                      ),
-                                                                  constraints:
-                                                                      const BoxConstraints(),
-                                                                  icon: const Icon(
-                                                                    Icons.edit,
-                                                                    color: Colors
-                                                                        .white,
-                                                                    size: 20,
-                                                                  ),
-                                                                  onPressed:
-                                                                      _pickBannerImage,
-                                                                  tooltip:
-                                                                      'Change banner',
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
+                                              child: _buildBannerPreview(),
                                             ),
                                           ),
                                         ),

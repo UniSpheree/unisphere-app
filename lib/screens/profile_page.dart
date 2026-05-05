@@ -293,132 +293,130 @@ class _ProfilePageState extends State<ProfilePage> {
                                             : null,
                                       );
 
-                                      final heroText = Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Wrap(
-                                              spacing: 10,
-                                              runSpacing: 10,
-                                              crossAxisAlignment:
-                                                  WrapCrossAlignment.center,
-                                              children: [
-                                                Text(
-                                                  _displayName,
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 30,
-                                                    fontWeight: FontWeight.w800,
-                                                    letterSpacing: -0.3,
-                                                  ),
+                                      final heroContent = Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Wrap(
+                                            spacing: 10,
+                                            runSpacing: 10,
+                                            crossAxisAlignment:
+                                                WrapCrossAlignment.center,
+                                            children: [
+                                              Text(
+                                                _displayName,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 30,
+                                                  fontWeight: FontWeight.w800,
+                                                  letterSpacing: -0.3,
                                                 ),
-                                                _Pill(
-                                                  label: _role,
-                                                  color: Colors.white
-                                                      .withOpacity(0.18),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 10),
-                                            Text(
-                                              _displayDescription,
-                                              style: TextStyle(
-                                                color: Colors.white.withOpacity(
-                                                  0.88,
-                                                ),
-                                                fontSize: 15,
-                                                height: 1.55,
                                               ),
+                                              _Pill(
+                                                label: _role,
+                                                color: Colors.white.withOpacity(
+                                                  0.18,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 10),
+                                          Text(
+                                            _displayDescription,
+                                            style: TextStyle(
+                                              color: Colors.white.withOpacity(
+                                                0.88,
+                                              ),
+                                              fontSize: 15,
+                                              height: 1.55,
                                             ),
-                                            const SizedBox(height: 16),
-                                            Wrap(
-                                              spacing: 10,
-                                              runSpacing: 10,
-                                              children: [
-                                                _MetaChip(
-                                                  icon: Icons.email_outlined,
-                                                  label: _email,
+                                          ),
+                                          const SizedBox(height: 16),
+                                          Wrap(
+                                            spacing: 10,
+                                            runSpacing: 10,
+                                            children: [
+                                              _MetaChip(
+                                                icon: Icons.email_outlined,
+                                                label: _email,
+                                              ),
+                                              _MetaChip(
+                                                icon: Icons.school_outlined,
+                                                label: _university,
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 18),
+                                          Wrap(
+                                            spacing: 12,
+                                            runSpacing: 12,
+                                            children: [
+                                              FilledButton.icon(
+                                                onPressed: _openEditDialog,
+                                                icon: const Icon(
+                                                  Icons.edit_outlined,
+                                                  size: 18,
                                                 ),
-                                                _MetaChip(
-                                                  icon: Icons.school_outlined,
-                                                  label: _university,
+                                                label: const Text(
+                                                  'Edit profile',
                                                 ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 18),
-                                            Wrap(
-                                              spacing: 12,
-                                              runSpacing: 12,
-                                              children: [
-                                                FilledButton.icon(
-                                                  onPressed: _openEditDialog,
-                                                  icon: const Icon(
-                                                    Icons.edit_outlined,
-                                                    size: 18,
+                                                style: FilledButton.styleFrom(
+                                                  backgroundColor: Colors.white,
+                                                  foregroundColor: const Color(
+                                                    0xFF111827,
                                                   ),
-                                                  label: const Text(
-                                                    'Edit profile',
-                                                  ),
-                                                  style: FilledButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.white,
-                                                    foregroundColor:
-                                                        const Color(0xFF111827),
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 18,
-                                                          vertical: 14,
-                                                        ),
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            16,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                OutlinedButton.icon(
-                                                  onPressed: () {
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            const DiscoverEventScreen(),
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 18,
+                                                        vertical: 14,
                                                       ),
-                                                    );
-                                                  },
-                                                  icon: const Icon(
-                                                    Icons.explore_outlined,
-                                                    size: 18,
-                                                  ),
-                                                  label: const Text(
-                                                    'Browse events',
-                                                  ),
-                                                  style: OutlinedButton.styleFrom(
-                                                    foregroundColor:
-                                                        Colors.white,
-                                                    side: BorderSide(
-                                                      color: Colors.white
-                                                          .withOpacity(0.34),
-                                                    ),
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 18,
-                                                          vertical: 14,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          16,
                                                         ),
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            16,
-                                                          ),
-                                                    ),
                                                   ),
                                                 ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
+                                              ),
+                                              OutlinedButton.icon(
+                                                onPressed: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          const DiscoverEventScreen(),
+                                                    ),
+                                                  );
+                                                },
+                                                icon: const Icon(
+                                                  Icons.explore_outlined,
+                                                  size: 18,
+                                                ),
+                                                label: const Text(
+                                                  'Browse events',
+                                                ),
+                                                style: OutlinedButton.styleFrom(
+                                                  foregroundColor: Colors.white,
+                                                  side: BorderSide(
+                                                    color: Colors.white
+                                                        .withOpacity(0.34),
+                                                  ),
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 18,
+                                                        vertical: 14,
+                                                      ),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          16,
+                                                        ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
                                       );
 
                                       if (stacked) {
@@ -428,7 +426,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                           children: [
                                             avatar,
                                             const SizedBox(height: 18),
-                                            heroText,
+                                            heroContent,
                                           ],
                                         );
                                       }
@@ -439,7 +437,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                         children: [
                                           avatar,
                                           const SizedBox(width: 22),
-                                          heroText,
+                                          Expanded(child: heroContent),
                                         ],
                                       );
                                     },

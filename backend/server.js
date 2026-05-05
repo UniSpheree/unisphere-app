@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS events (
   category TEXT NOT NULL,
   description TEXT NOT NULL,
   organizer_email TEXT NOT NULL,
+  max_attendees INTEGER,
   banner_image_path TEXT,
   visibility TEXT NOT NULL DEFAULT 'Public',
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -71,6 +72,18 @@ try {
 } catch (err) {
   if (!err.message.includes("duplicate column name")) {
     console.log("Note: visibility column already exists or migration skipped");
+  }
+}
+
+// Migration: Add max_attendees column if it doesn't exist
+try {
+  db.prepare("ALTER TABLE events ADD COLUMN max_attendees INTEGER").run();
+  console.log("✓ Added max_attendees column to events table");
+} catch (err) {
+  if (!err.message.includes("duplicate column name")) {
+    console.log(
+      "Note: max_attendees column already exists or migration skipped"
+    );
   }
 }
 
@@ -117,6 +130,25 @@ function eventBannerUrl(req, bannerPath) {
   return `${baseUrl(req)}/uploads/${path.basename(bannerPath)}`;
 }
 
+function ticketsSoldForEvent(row) {
+  if (!row) return 0;
+  return db
+    .prepare(
+      `
+        SELECT COUNT(*) AS cnt
+        FROM tickets
+        WHERE event_id = ?
+          OR (
+            event_id IS NULL
+            AND title = ?
+            AND date = ?
+            AND location = ?
+          )
+      `
+    )
+    .get(row.id, row.title, row.date, row.location).cnt;
+}
+
 function toEventOut(req, row) {
   return {
     id: row.id,
@@ -127,6 +159,9 @@ function toEventOut(req, row) {
     category: row.category,
     description: row.description,
     organizerEmail: row.organizer_email,
+    maxAttendees: row.max_attendees,
+    capacity: row.max_attendees,
+    ticketsSold: ticketsSoldForEvent(row),
     bannerImageUrl: eventBannerUrl(req, row.banner_image_path),
     visibility: row.visibility || "Public",
     createdAt: row.created_at,
@@ -301,8 +336,8 @@ app.post("/events", (req, res) => {
   }
 
   const stmt = db.prepare(`
-    INSERT INTO events (title, date, end_date, location, category, description, organizer_email, visibility)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO events (title, date, end_date, location, category, description, organizer_email, max_attendees, visibility)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   const info = stmt.run(
     String(body.title || "").trim(),
@@ -312,6 +347,9 @@ app.post("/events", (req, res) => {
     String(body.category || "").trim(),
     String(body.description || "").trim(),
     organizerEmail,
+    body.maxAttendees !== undefined && body.maxAttendees !== null
+      ? Number(body.maxAttendees)
+      : null,
     String(body.visibility || "Public").trim()
   );
 
@@ -365,13 +403,19 @@ app.put("/events/:id", (req, res) => {
       body.organizerEmail !== undefined
         ? normalizeEmail(body.organizerEmail)
         : row.organizer_email,
+    max_attendees:
+      body.maxAttendees !== undefined
+        ? body.maxAttendees === null || body.maxAttendees === ""
+          ? null
+          : Number(body.maxAttendees)
+        : row.max_attendees,
     updated_at: new Date().toISOString(),
   };
 
   db.prepare(
     `
     UPDATE events
-    SET title = ?, date = ?, end_date = ?, location = ?, category = ?, visibility = ?, description = ?, organizer_email = ?, updated_at = ?
+    SET title = ?, date = ?, end_date = ?, location = ?, category = ?, visibility = ?, description = ?, organizer_email = ?, max_attendees = ?, updated_at = ?
     WHERE id = ?
   `
   ).run(
@@ -383,6 +427,7 @@ app.put("/events/:id", (req, res) => {
     next.visibility,
     next.description,
     next.organizer_email,
+    next.max_attendees,
     next.updated_at,
     id
   );
@@ -558,6 +603,60 @@ app.get("/tickets/:email", (req, res) => {
   res.json(rows.map(toTicketOut));
 });
 
-app.listen(PORT, () => {
+// Log data persistence status on startup
+function logPersistenceStatus() {
+  try {
+    const userCount = db.prepare("SELECT COUNT(*) as cnt FROM users").get().cnt;
+    const eventCount = db
+      .prepare("SELECT COUNT(*) as cnt FROM events")
+      .get().cnt;
+    const ticketCount = db
+      .prepare("SELECT COUNT(*) as cnt FROM tickets")
+      .get().cnt;
+
+    console.log("\n════════════════════════════════════════════════════");
+    console.log(" DATA PERSISTENCE STATUS:");
+    console.log(`   Users:  ${userCount}`);
+    console.log(`   Events: ${eventCount}`);
+    console.log(`   Tickets: ${ticketCount}`);
+    console.log("    All data is persistent and will survive app restarts");
+    console.log("════════════════════════════════════════════════════\n");
+  } catch (e) {
+    console.error("Error checking persistence:", e.message);
+  }
+}
+
+const server = app.listen(PORT, () => {
   console.log(`UniSphere API running at http://127.0.0.1:${PORT}`);
+  logPersistenceStatus();
+});
+
+// Graceful shutdown on Ctrl+C or terminal close
+process.on("SIGINT", () => {
+  console.log("\n\nShutting down gracefully...");
+  server.close(() => {
+    console.log("Server closed");
+    db.close();
+    console.log("Database closed");
+    process.exit(0);
+  });
+  // Force exit after 5 seconds if server doesn't close
+  setTimeout(() => {
+    console.error("Forced shutdown");
+    process.exit(1);
+  }, 5000);
+});
+
+process.on("SIGTERM", () => {
+  console.log("\n\nReceived SIGTERM - shutting down gracefully...");
+  server.close(() => {
+    console.log("Server closed");
+    db.close();
+    console.log("Database closed");
+    process.exit(0);
+  });
+  setTimeout(() => {
+    console.error("Forced shutdown");
+    process.exit(1);
+  }, 5000);
 });

@@ -11,10 +11,46 @@ class CalendarPage extends StatefulWidget {
 }
 
 class _CalendarPageState extends State<CalendarPage> {
-  DateTime _currentWeekStart = _getStartOfWeek(DateTime(2026, 5, 17));
+  static const List<Color> _eventColors = [
+    Color(0xFFEEF2FF), // Indigo light
+    Color(0xFFECE2F0), // Purple light
+    Color(0xFFF3E8FF), // Violet light
+    Color(0xFFFCE7F3), // Pink light
+    Color(0xFFFEF3C7), // Amber light
+    Color(0xFFDFEE93), // Lime light
+    Color(0xFFCCFBF1), // Teal light
+  ];
+
+  static const List<Color> _eventBorderColors = [
+    Color(0xFF818CF8), // Indigo
+    Color(0xFFD8B4FE), // Purple
+    Color(0xFFE9D5FF), // Violet
+    Color(0xFFFBBCE3), // Pink
+    Color(0xFFFCD34D), // Amber
+    Color(0xFFBEF264), // Lime
+    Color(0xFF7DD3C0), // Teal
+  ];
+
+  static const List<Color> _eventTextColors = [
+    Color(0xFF3730A3), // Indigo dark
+    Color(0xFF6B21A8), // Purple dark
+    Color(0xFF5B21B6), // Violet dark
+    Color(0xBE831843), // Pink dark
+    Color(0xFF78350F), // Amber dark
+    Color(0xFF3F6212), // Lime dark
+    Color(0xFF134E4A), // Teal dark
+  ];
 
   static DateTime _getStartOfWeek(DateTime date) {
     return date.subtract(Duration(days: date.weekday % 7));
+  }
+
+  late DateTime _currentWeekStart;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentWeekStart = _getStartOfWeek(DateTime.now());
   }
 
   void _goToPreviousWeek() {
@@ -167,6 +203,7 @@ class _CalendarPageState extends State<CalendarPage> {
     );
     final hours = List.generate(24, (i) => i);
     final isMobile = constraints.maxWidth < 800;
+    final today = DateTime.now();
 
     final email = SqliteBackend().currentUser?.email;
     final userEvents = SqliteBackend().events
@@ -301,9 +338,10 @@ class _CalendarPageState extends State<CalendarPage> {
                       child: Row(
                         children: List.generate(7, (i) {
                           // Check if "today" is in this week for highlight
-                          final isToday =
-                              weekDates[i].day == 20 &&
-                              weekDates[i].month == 5; // Hardcoded mock today
+                          final isToday = DateUtils.isSameDay(
+                            weekDates[i],
+                            today,
+                          );
                           return Expanded(
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -433,15 +471,28 @@ class _CalendarPageState extends State<CalendarPage> {
                                           ),
                                         ),
                                       ),
-                                      child: Stack(
-                                        children: matchingEvents.map((ev) {
-                                          return _buildEventBlock(
-                                            ev,
-                                            hour,
-                                            dayDate,
-                                          );
-                                        }).toList(),
-                                      ),
+                                      child: matchingEvents.isEmpty
+                                          ? const SizedBox.expand()
+                                          : (matchingEvents.length == 1
+                                                ? _buildEventBlock(
+                                                    matchingEvents[0],
+                                                    hour,
+                                                    dayDate,
+                                                    0,
+                                                  )
+                                                : Column(
+                                                    children: List.generate(
+                                                      matchingEvents.length,
+                                                      (eventIdx) => Expanded(
+                                                        child: _buildEventBlock(
+                                                          matchingEvents[eventIdx],
+                                                          hour,
+                                                          dayDate,
+                                                          eventIdx,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  )),
                                     ),
                                   );
                                 }),
@@ -465,16 +516,21 @@ class _CalendarPageState extends State<CalendarPage> {
     Map<String, dynamic> event,
     int currentHour,
     DateTime currentDay,
+    int eventIndex,
   ) {
-    // Precise positioning would require calculating offset if it starts mid-hour
-    // For now, we'll just show it in the slots it overlaps
+    // Get color based on event index (cycling through palette)
+    final colorIndex = eventIndex % _eventColors.length;
+    final bgColor = _eventColors[colorIndex];
+    final borderColor = _eventBorderColors[colorIndex];
+    final textColor = _eventTextColors[colorIndex];
+
     return Padding(
       padding: const EdgeInsets.all(2.0),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          color: const Color(0xFFEEF2FF).withOpacity(0.9),
-          border: Border.all(color: const Color(0xFF818CF8)),
+          color: bgColor.withOpacity(0.9),
+          border: Border.all(color: borderColor),
           borderRadius: BorderRadius.circular(8),
         ),
         padding: const EdgeInsets.all(6),
@@ -485,10 +541,10 @@ class _CalendarPageState extends State<CalendarPage> {
               event['title']?.toString() ?? 'Event',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF3730A3),
+                color: textColor,
               ),
             ),
             if (event['location'] != null)
@@ -496,7 +552,10 @@ class _CalendarPageState extends State<CalendarPage> {
                 event['location'].toString(),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 10, color: Color(0xFF4F46E5)),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: textColor.withOpacity(0.8),
+                ),
               ),
           ],
         ),

@@ -347,6 +347,14 @@ class _MyEventsPageState extends State<MyEventsPage> {
     final String title = event['title']?.toString() ?? 'Untitled Event';
     final String location = event['location']?.toString() ?? '';
     final String category = event['category']?.toString() ?? 'Other';
+    final maxAttendees = int.tryParse(
+      event['maxAttendees']?.toString() ?? event['capacity']?.toString() ?? '',
+    );
+    final ticketsSold =
+        int.tryParse(event['ticketsSold']?.toString() ?? '') ?? 0;
+    final attendanceText = maxAttendees != null
+        ? '$ticketsSold/$maxAttendees booked'
+        : '$ticketsSold tickets sold';
     final bannerData = event['bannerImageData'];
     final Uint8List? bannerBytes = bannerData is Uint8List ? bannerData : null;
 
@@ -431,6 +439,25 @@ class _MyEventsPageState extends State<MyEventsPage> {
                             ),
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F4FF),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          attendanceText,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF4F46E5),
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Text(

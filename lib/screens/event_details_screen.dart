@@ -116,7 +116,14 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
 
     final organizer =
         event['organizer'] as String? ?? 'Organizer not specified';
-    final capacity = event['capacity'] != null ? '${event['capacity']}' : null;
+    final maxAttendees = int.tryParse(
+      event['maxAttendees']?.toString() ?? event['capacity']?.toString() ?? '',
+    );
+    final ticketsSold =
+        int.tryParse(event['ticketsSold']?.toString() ?? '') ?? 0;
+    final attendanceText = maxAttendees != null
+        ? '$ticketsSold/$maxAttendees booked'
+        : '$ticketsSold tickets sold';
     final tags = (event['tags'] as List<dynamic>?)?.cast<String>() ?? [];
     final price = (event['price'] as String?)?.trim();
 
@@ -376,7 +383,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                                               ),
                                             ],
                                           ),
-                                          if (capacity != null) ...[
+                                          if (attendanceText.isNotEmpty) ...[
                                             const SizedBox(width: 40),
                                             Icon(
                                               Icons.people_outline,
@@ -385,7 +392,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                                             ),
                                             const SizedBox(width: 8),
                                             Text(
-                                              'Capacity: $capacity',
+                                              'Tickets: $attendanceText',
                                               style: TextStyle(
                                                 color: Colors.grey[700],
                                                 fontSize: 15,
@@ -483,7 +490,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                                             ],
                                           ),
                                         FilledButton(
-                                          onPressed: () {
+                                          onPressed: () async {
                                             if (SqliteBackend().currentUser ==
                                                 null) {
                                               final pending = DbPurchasedTicket(
@@ -517,26 +524,52 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                                               return;
                                             }
 
-                                            SqliteBackend().purchaseTicket(
-                                              DbPurchasedTicket(
-                                                userEmail:
-                                                    SqliteBackend()
-                                                        .currentUser
-                                                        ?.email ??
-                                                    '',
-                                                title: event['title'] as String,
-                                                date: event['date'] as String,
-                                                location:
-                                                    event['location'] as String,
-                                                category:
-                                                    event['category'] as String,
-                                                price: price ?? '',
-                                                purchasedAt: DateTime.now(),
-                                                eventId: int.tryParse(
-                                                  event['id']?.toString() ?? '',
+                                            final purchased =
+                                                await SqliteBackend()
+                                                    .purchaseTicket(
+                                                      DbPurchasedTicket(
+                                                        userEmail:
+                                                            SqliteBackend()
+                                                                .currentUser
+                                                                ?.email ??
+                                                            '',
+                                                        title:
+                                                            event['title']
+                                                                as String,
+                                                        date:
+                                                            event['date']
+                                                                as String,
+                                                        location:
+                                                            event['location']
+                                                                as String,
+                                                        category:
+                                                            event['category']
+                                                                as String,
+                                                        price: price ?? '',
+                                                        purchasedAt:
+                                                            DateTime.now(),
+                                                        eventId: int.tryParse(
+                                                          event['id']
+                                                                  ?.toString() ??
+                                                              '',
+                                                        ),
+                                                      ),
+                                                    );
+                                            if (!mounted) return;
+                                            if (!purchased) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                    'Could not complete ticket purchase. Please try again.',
+                                                  ),
+                                                  behavior:
+                                                      SnackBarBehavior.floating,
                                                 ),
-                                              ),
-                                            );
+                                              );
+                                              return;
+                                            }
                                             ScaffoldMessenger.of(
                                               context,
                                             ).showSnackBar(
