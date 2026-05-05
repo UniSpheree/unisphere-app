@@ -350,7 +350,8 @@ class _MyEventsPageState extends State<MyEventsPage> {
     final maxAttendees = int.tryParse(
       event['maxAttendees']?.toString() ?? event['capacity']?.toString() ?? '',
     );
-    final ticketsSold = int.tryParse(event['ticketsSold']?.toString() ?? '') ?? 0;
+    final ticketsSold =
+        int.tryParse(event['ticketsSold']?.toString() ?? '') ?? 0;
     final attendanceText = maxAttendees != null
         ? '$ticketsSold/$maxAttendees booked'
         : '$ticketsSold tickets sold';
