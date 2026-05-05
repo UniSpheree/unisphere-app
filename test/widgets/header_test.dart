@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:unisphere_app/widgets/header.dart';
+import 'package:unisphere_app/services/sqlite_backend.dart';
 
 /// Pumps the widget inside a [MaterialApp] with the given [initialRoute].
 /// A [navigatorKey] is provided so we can inspect navigation after taps.
@@ -14,6 +15,8 @@ Future<void> pumpHeader(
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
+
+  SqliteBackend().injectMockState(user: null, mockEvents: []);
 
   await tester.pumpWidget(
     MaterialApp(
@@ -68,7 +71,7 @@ void main() {
       await pumpHeader(tester);
       expect(find.text('Find Events'), findsOneWidget);
       expect(find.text('Create Events'), findsOneWidget);
-      expect(find.text('My Tickets'), findsOneWidget);
+      expect(find.text('Dashboard'), findsOneWidget);
       expect(find.text('About us'), findsOneWidget);
     });
 
@@ -96,13 +99,13 @@ void main() {
       expect(find.text('Page: /create'), findsOneWidget);
     });
 
-    testWidgets('tapping My Tickets nav item navigates to /tickets', (
+    testWidgets('tapping Dashboard nav item navigates to /register when logged out', (
       tester,
     ) async {
       await pumpHeader(tester);
-      await tester.tap(find.text('My Tickets'));
+      await tester.tap(find.text('Dashboard'));
       await tester.pumpAndSettle();
-      expect(find.text('Page: /tickets'), findsOneWidget);
+      expect(find.text('Page: /register'), findsOneWidget);
     });
 
     testWidgets('tapping About us nav item navigates to /about', (
@@ -149,8 +152,7 @@ void main() {
 
     testWidgets('no CircleAvatar on mobile', (tester) async {
       await pumpHeader(tester, screenWidth: 390);
-      // AppHeader keeps the brand CircleAvatar visible even on mobile.
-      expect(find.byType(CircleAvatar), findsOneWidget);
+      expect(find.byType(CircleAvatar), findsNothing);
     });
 
     testWidgets('hamburger menu lists all nav items and My Profile', (
@@ -162,10 +164,11 @@ void main() {
 
       expect(find.text('Find Events'), findsOneWidget);
       expect(find.text('Create Events'), findsOneWidget);
-      expect(find.text('My Tickets'), findsOneWidget);
+      expect(find.text('Dashboard'), findsOneWidget);
       expect(find.text('About us'), findsOneWidget);
       expect(find.text('Sign In'), findsOneWidget);
-      expect(find.text('Host an Event'), findsOneWidget);
+      expect(find.text('Register'), findsOneWidget);
+      expect(find.text('My Profile'), findsOneWidget);
     });
 
     testWidgets('selecting Find Events from menu navigates to /events', (
@@ -190,15 +193,15 @@ void main() {
       expect(find.text('Page: /create'), findsOneWidget);
     });
 
-    testWidgets('selecting My Tickets from menu navigates to /tickets', (
+    testWidgets('selecting Dashboard from menu navigates to /register when logged out', (
       tester,
     ) async {
       await pumpHeader(tester, screenWidth: 390);
       await tester.tap(find.byIcon(Icons.menu_rounded));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('My Tickets'));
+      await tester.tap(find.text('Dashboard'));
       await tester.pumpAndSettle();
-      expect(find.text('Page: /tickets'), findsOneWidget);
+      expect(find.text('Page: /register'), findsOneWidget);
     });
 
     testWidgets('selecting About us from menu navigates to /about', (

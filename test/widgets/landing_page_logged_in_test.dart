@@ -6,6 +6,11 @@ void main() {
   testWidgets('PersonalizedLandingPage builds and shows welcome', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(1800, 1200);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     await tester.pumpWidget(const MaterialApp(home: PersonalizedLandingPage()));
 
     // Allow any frames to settle

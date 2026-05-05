@@ -28,6 +28,7 @@ void main() {
 
     // Hero text and Host button
     expect(find.text('Host an Event'), findsOneWidget);
+    expect(find.text('Map preview'), findsOneWidget);
 
     // Some hero/stat content
     expect(find.textContaining('Discover local events'), findsOneWidget);
