@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS events (
   category TEXT NOT NULL,
   description TEXT NOT NULL,
   organizer_email TEXT NOT NULL,
+  max_attendees INTEGER,
   banner_image_path TEXT,
   visibility TEXT NOT NULL DEFAULT 'Public',
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -71,6 +72,16 @@ try {
 } catch (err) {
   if (!err.message.includes("duplicate column name")) {
     console.log("Note: visibility column already exists or migration skipped");
+  }
+}
+
+// Migration: Add max_attendees column if it doesn't exist
+try {
+  db.prepare("ALTER TABLE events ADD COLUMN max_attendees INTEGER").run();
+  console.log("✓ Added max_attendees column to events table");
+} catch (err) {
+  if (!err.message.includes("duplicate column name")) {
+    console.log("Note: max_attendees column already exists or migration skipped");
   }
 }
 
@@ -117,6 +128,25 @@ function eventBannerUrl(req, bannerPath) {
   return `${baseUrl(req)}/uploads/${path.basename(bannerPath)}`;
 }
 
+function ticketsSoldForEvent(row) {
+  if (!row) return 0;
+  return db
+    .prepare(
+      `
+        SELECT COUNT(*) AS cnt
+        FROM tickets
+        WHERE event_id = ?
+          OR (
+            event_id IS NULL
+            AND title = ?
+            AND date = ?
+            AND location = ?
+          )
+      `
+    )
+    .get(row.id, row.title, row.date, row.location).cnt;
+}
+
 function toEventOut(req, row) {
   return {
     id: row.id,
@@ -127,6 +157,9 @@ function toEventOut(req, row) {
     category: row.category,
     description: row.description,
     organizerEmail: row.organizer_email,
+    maxAttendees: row.max_attendees,
+    capacity: row.max_attendees,
+    ticketsSold: ticketsSoldForEvent(row),
     bannerImageUrl: eventBannerUrl(req, row.banner_image_path),
     visibility: row.visibility || "Public",
     createdAt: row.created_at,
@@ -301,8 +334,8 @@ app.post("/events", (req, res) => {
   }
 
   const stmt = db.prepare(`
-    INSERT INTO events (title, date, end_date, location, category, description, organizer_email, visibility)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO events (title, date, end_date, location, category, description, organizer_email, max_attendees, visibility)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   const info = stmt.run(
     String(body.title || "").trim(),
@@ -312,6 +345,9 @@ app.post("/events", (req, res) => {
     String(body.category || "").trim(),
     String(body.description || "").trim(),
     organizerEmail,
+    body.maxAttendees !== undefined && body.maxAttendees !== null
+      ? Number(body.maxAttendees)
+      : null,
     String(body.visibility || "Public").trim()
   );
 
@@ -365,13 +401,19 @@ app.put("/events/:id", (req, res) => {
       body.organizerEmail !== undefined
         ? normalizeEmail(body.organizerEmail)
         : row.organizer_email,
+    max_attendees:
+      body.maxAttendees !== undefined
+        ? body.maxAttendees === null || body.maxAttendees === ""
+          ? null
+          : Number(body.maxAttendees)
+        : row.max_attendees,
     updated_at: new Date().toISOString(),
   };
 
   db.prepare(
     `
     UPDATE events
-    SET title = ?, date = ?, end_date = ?, location = ?, category = ?, visibility = ?, description = ?, organizer_email = ?, updated_at = ?
+    SET title = ?, date = ?, end_date = ?, location = ?, category = ?, visibility = ?, description = ?, organizer_email = ?, max_attendees = ?, updated_at = ?
     WHERE id = ?
   `
   ).run(
@@ -383,6 +425,7 @@ app.put("/events/:id", (req, res) => {
     next.visibility,
     next.description,
     next.organizer_email,
+    next.max_attendees,
     next.updated_at,
     id
   );
