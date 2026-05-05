@@ -10,6 +10,21 @@ The UniSphere Backend is a lightweight, persistent REST API built with **Express
 - **Media Storage**: Handling binary image uploads for event banners (stored in `backend/storage/uploads`).
 - **Data Persistence**: A robust SQLite database (`unisphere.db`) ensures all data remains available across sessions.
 
+## � Data Persistence Guarantee
+
+✅ **All data is permanently saved** to the SQLite database (`backend/unisphere.db`):
+- User accounts and profiles are saved automatically on registration/update
+- Events created by organisers are persisted permanently
+- Purchased tickets are stored with full transaction history
+- Banner images are stored on disk
+- **Data survives app restarts** — when you reload the application, all users, events, and tickets are automatically restored
+- **No automatic data loss** — data only gets deleted when users explicitly delete their account or an event
+
+To verify your data is saved:
+```bash
+npm run verify
+```
+
 ## 🛠️ Requirements
 
 - **Node.js 22+**
@@ -33,6 +48,8 @@ The UniSphere Backend is a lightweight, persistent REST API built with **Express
    ```
 
 The API will be available at: `http://127.0.0.1:8000`
+
+On startup, the server will display a data persistence status showing the number of saved users, events, and tickets.
 
 ## 📡 API Endpoints Summary
 
