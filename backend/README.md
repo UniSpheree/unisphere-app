@@ -13,6 +13,7 @@ The UniSphere Backend is a lightweight, persistent REST API built with **Express
 ## � Data Persistence Guarantee
 
 ✅ **All data is permanently saved** to the SQLite database (`backend/unisphere.db`):
+
 - User accounts and profiles are saved automatically on registration/update
 - Events created by organisers are persisted permanently
 - Purchased tickets are stored with full transaction history
@@ -21,6 +22,7 @@ The UniSphere Backend is a lightweight, persistent REST API built with **Express
 - **No automatic data loss** — data only gets deleted when users explicitly delete their account or an event
 
 To verify your data is saved:
+
 ```bash
 npm run verify
 ```
@@ -33,11 +35,13 @@ npm run verify
 ## ⚙️ Installation & Setup
 
 1. **Navigate to the backend directory**:
+
    ```bash
    cd backend
    ```
 
 2. **Install dependencies**:
+
    ```bash
    npm install
    ```
@@ -53,17 +57,17 @@ On startup, the server will display a data persistence status showing the number
 
 ## 📡 API Endpoints Summary
 
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/health` | Check API status |
-| `POST` | `/register` | Create a new user account |
-| `POST` | `/login` | Authenticate user and retrieve profile |
-| `GET` | `/events` | Retrieve all public events |
-| `POST` | `/events` | Create a new event (Organizer only) |
-| `PUT` | `/events/:id` | Update an existing event |
-| `DELETE` | `/events/:id` | Delete an event and its associated media |
-| `POST` | `/tickets` | Purchase a ticket for an event |
-| `GET` | `/tickets/:email` | Retrieve all tickets for a specific user |
+| Method   | Endpoint          | Description                              |
+| :------- | :---------------- | :--------------------------------------- |
+| `GET`    | `/health`         | Check API status                         |
+| `POST`   | `/register`       | Create a new user account                |
+| `POST`   | `/login`          | Authenticate user and retrieve profile   |
+| `GET`    | `/events`         | Retrieve all public events               |
+| `POST`   | `/events`         | Create a new event (Organizer only)      |
+| `PUT`    | `/events/:id`     | Update an existing event                 |
+| `DELETE` | `/events/:id`     | Delete an event and its associated media |
+| `POST`   | `/tickets`        | Purchase a ticket for an event           |
+| `GET`    | `/tickets/:email` | Retrieve all tickets for a specific user |
 
 ## 📱 Connecting with Flutter
 
@@ -73,10 +77,12 @@ When running the Flutter application, ensure the backend is running first. Use t
 flutter run -d chrome
 ```
 
-*Note: If you need to specify a different API URL, use the `--dart-define` flag:*
+_Note: If you need to specify a different API URL, use the `--dart-define` flag:_
+
 ```bash
 flutter run -d chrome --dart-define=API_BASE_URL=http://your-api-url:8000
 ```
 
 ---
-*UniSphere Backend v1.1.0 - Optimized for Coursework Submission*
+
+_UniSphere Backend v1.1.0 - Optimized for Coursework Submission_
