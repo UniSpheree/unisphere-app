@@ -119,10 +119,11 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     final maxAttendees = int.tryParse(
       event['maxAttendees']?.toString() ?? event['capacity']?.toString() ?? '',
     );
-    final ticketsSold = int.tryParse(event['ticketsSold']?.toString() ?? '') ?? 0;
+    final ticketsSold =
+        int.tryParse(event['ticketsSold']?.toString() ?? '') ?? 0;
     final attendanceText = maxAttendees != null
-      ? '$ticketsSold/$maxAttendees booked'
-      : '$ticketsSold tickets sold';
+        ? '$ticketsSold/$maxAttendees booked'
+        : '$ticketsSold tickets sold';
     final tags = (event['tags'] as List<dynamic>?)?.cast<String>() ?? [];
     final price = (event['price'] as String?)?.trim();
 
@@ -523,27 +524,37 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                                               return;
                                             }
 
-                                            final purchased = await SqliteBackend()
-                                                .purchaseTicket(
-                                              DbPurchasedTicket(
-                                                userEmail:
-                                                    SqliteBackend()
-                                                        .currentUser
-                                                        ?.email ??
-                                                    '',
-                                                title: event['title'] as String,
-                                                date: event['date'] as String,
-                                                location:
-                                                    event['location'] as String,
-                                                category:
-                                                    event['category'] as String,
-                                                price: price ?? '',
-                                                purchasedAt: DateTime.now(),
-                                                eventId: int.tryParse(
-                                                  event['id']?.toString() ?? '',
-                                                ),
-                                              ),
-                                            );
+                                            final purchased =
+                                                await SqliteBackend()
+                                                    .purchaseTicket(
+                                                      DbPurchasedTicket(
+                                                        userEmail:
+                                                            SqliteBackend()
+                                                                .currentUser
+                                                                ?.email ??
+                                                            '',
+                                                        title:
+                                                            event['title']
+                                                                as String,
+                                                        date:
+                                                            event['date']
+                                                                as String,
+                                                        location:
+                                                            event['location']
+                                                                as String,
+                                                        category:
+                                                            event['category']
+                                                                as String,
+                                                        price: price ?? '',
+                                                        purchasedAt:
+                                                            DateTime.now(),
+                                                        eventId: int.tryParse(
+                                                          event['id']
+                                                                  ?.toString() ??
+                                                              '',
+                                                        ),
+                                                      ),
+                                                    );
                                             if (!mounted) return;
                                             if (!purchased) {
                                               ScaffoldMessenger.of(
