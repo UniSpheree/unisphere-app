@@ -81,7 +81,9 @@ try {
   console.log("✓ Added max_attendees column to events table");
 } catch (err) {
   if (!err.message.includes("duplicate column name")) {
-    console.log("Note: max_attendees column already exists or migration skipped");
+    console.log(
+      "Note: max_attendees column already exists or migration skipped"
+    );
   }
 }
 
