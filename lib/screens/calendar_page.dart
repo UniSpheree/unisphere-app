@@ -50,7 +50,7 @@ class _CalendarPageState extends State<CalendarPage> {
   @override
   void initState() {
     super.initState();
-    _currentWeekStart = _getStartOfWeek(DateTime(2026, 5, 17));
+    _currentWeekStart = _getStartOfWeek(DateTime.now());
   }
 
   void _goToPreviousWeek() {
@@ -203,6 +203,7 @@ class _CalendarPageState extends State<CalendarPage> {
     );
     final hours = List.generate(24, (i) => i);
     final isMobile = constraints.maxWidth < 800;
+    final today = DateTime.now();
 
     final email = SqliteBackend().currentUser?.email;
     final userEvents = SqliteBackend().events
@@ -337,9 +338,10 @@ class _CalendarPageState extends State<CalendarPage> {
                       child: Row(
                         children: List.generate(7, (i) {
                           // Check if "today" is in this week for highlight
-                          final isToday =
-                              weekDates[i].day == 20 &&
-                              weekDates[i].month == 5; // Hardcoded mock today
+                          final isToday = DateUtils.isSameDay(
+                            weekDates[i],
+                            today,
+                          );
                           return Expanded(
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -472,28 +474,25 @@ class _CalendarPageState extends State<CalendarPage> {
                                       child: matchingEvents.isEmpty
                                           ? const SizedBox.expand()
                                           : (matchingEvents.length == 1
-                                              ? _buildEventBlock(
-                                                  matchingEvents[0],
-                                                  hour,
-                                                  dayDate,
-                                                  0,
-                                                )
-                                              : Column(
-                                                  children: List.generate(
-                                                    matchingEvents.length,
-                                                    (eventIdx) =>
-                                                        Expanded(
-                                                          child:
-                                                              _buildEventBlock(
-                                                            matchingEvents[
-                                                                eventIdx],
-                                                            hour,
-                                                            dayDate,
-                                                            eventIdx,
-                                                          ),
+                                                ? _buildEventBlock(
+                                                    matchingEvents[0],
+                                                    hour,
+                                                    dayDate,
+                                                    0,
+                                                  )
+                                                : Column(
+                                                    children: List.generate(
+                                                      matchingEvents.length,
+                                                      (eventIdx) => Expanded(
+                                                        child: _buildEventBlock(
+                                                          matchingEvents[eventIdx],
+                                                          hour,
+                                                          dayDate,
+                                                          eventIdx,
                                                         ),
-                                                  ),
-                                                )),
+                                                      ),
+                                                    ),
+                                                  )),
                                     ),
                                   );
                                 }),
@@ -553,7 +552,10 @@ class _CalendarPageState extends State<CalendarPage> {
                 event['location'].toString(),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 10, color: textColor.withOpacity(0.8)),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: textColor.withOpacity(0.8),
+                ),
               ),
           ],
         ),
