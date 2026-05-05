@@ -119,12 +119,6 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
 
-      final visibilityIcons = find.byIcon(Icons.visibility_outlined);
-      await tester.tap(visibilityIcons.at(0));
-      await tester.pump();
-      await tester.tap(visibilityIcons.at(1));
-      await tester.pump();
-
       final fields = find.byType(TextFormField);
       await tester.enterText(fields.at(0), 'Password123!');
       await tester.enterText(fields.at(1), 'Password123!');
