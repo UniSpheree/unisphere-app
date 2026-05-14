@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:unisphere_app/screens/create_event_screen.dart';
 import 'package:unisphere_app/services/sqlite_backend.dart';
 
-class AppHeader extends StatelessWidget {
+/// A reusable application header that also implements [PreferredSizeWidget]
+/// so it can be used directly as `Scaffold.appBar`.
+class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onFindEventsTap;
   final VoidCallback? onCreateEventsTap;
   final VoidCallback? onMyTicketsTap;
@@ -27,296 +29,274 @@ class AppHeader extends StatelessWidget {
   });
 
   @override
+  Size get preferredSize => const Size.fromHeight(72);
+
+  @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final isMobile = width < 850;
 
-    return Container(
-      width: double.infinity,
-      color: Colors.white.withOpacity(0.96),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: _HeaderSpacing.maxWidth),
-          child: isMobile
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (showBackButton) ...[
-                          IconButton(
-                            onPressed: () => Navigator.maybePop(context),
-                            icon: const Icon(
-                              Icons.arrow_back_rounded,
-                              color: _HeaderColors.text,
-                            ),
-                            tooltip: 'Back',
-                          ),
-                        ],
-                        const _Brand(),
-                      ],
-                    ),
-                    PopupMenuButton<String>(
-                      icon: const Icon(
-                        Icons.menu_rounded,
-                        color: _HeaderColors.text,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      onSelected: (value) {
-                        switch (value) {
-                          case 'find':
-                            if (onFindEventsTap != null) {
-                              onFindEventsTap!.call();
-                            } else {
-                              Future.microtask(() {
-                                if (context.mounted)
-                                  Navigator.pushNamed(context, '/discover');
-                              });
-                            }
-                            break;
-                          case 'create':
-                            if (onCreateEventsTap != null) {
-                              onCreateEventsTap!.call();
-                            } else {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const CreateEventScreen(),
-                                ),
-                              );
-                            }
-                            break;
-                          case 'dashboard':
-                            final user = SqliteBackend().currentUser;
-                            if (user != null) {
-                              Navigator.pushNamed(context, '/logged-in');
-                            } else {
-                              Navigator.pushNamed(context, '/register');
-                            }
-                            break;
-                          case 'about':
-                            if (onAboutTap != null) {
-                              onAboutTap!.call();
-                            } else {
-                              Future.microtask(() {
-                                if (context.mounted)
-                                  Navigator.pushNamed(context, '/about');
-                              });
-                            }
-                            break;
-                          case 'signin':
-                            onSignInTap?.call();
-                            break;
-                          case 'host':
-                            // If a specific register callback is provided use it,
-                            // otherwise fall back to host callback or default to '/register'.
-                            if (onRegisterTap != null) {
-                              onRegisterTap!.call();
-                            } else if (onHostEventTap != null) {
-                              onHostEventTap!.call();
-                            } else {
-                              Navigator.pushNamed(context, '/register');
-                            }
-                            break;
-                          case 'profile':
-                            if (SqliteBackend().currentUser != null) {
-                              Navigator.pushNamed(context, '/profile');
-                            } else {
-                              Navigator.pushNamed(context, '/register');
-                            }
-                            break;
-                        }
-                      },
-                      itemBuilder: (context) {
-                        final isLoggedIn = SqliteBackend().currentUser != null;
-                        final items = <PopupMenuEntry<String>>[
-                          const PopupMenuItem(
-                            value: 'find',
-                            child: Text('Find Events'),
-                          ),
-                          const PopupMenuItem(
-                            value: 'create',
-                            child: Text('Create Events'),
-                          ),
-                          const PopupMenuItem(
-                            value: 'dashboard',
-                            child: Text('Dashboard'),
-                          ),
-                          const PopupMenuItem(
-                            value: 'about',
-                            child: Text('About us'),
-                          ),
-                          const PopupMenuDivider(),
-                          // Only show Sign In and Register if not logged in
-                          if (!isLoggedIn) ...[
-                            const PopupMenuItem(
-                              value: 'signin',
-                              child: Text('Sign In'),
-                            ),
-                            const PopupMenuItem(
-                              value: 'host',
-                              child: Text('Register'),
-                            ),
-                          ],
-                        ];
+    final user = SqliteBackend().currentUser;
 
-                        if (showProfile) {
-                          items.add(const PopupMenuDivider());
-                          items.add(
-                            const PopupMenuItem(
-                              value: 'profile',
-                              child: Text('My Profile'),
-                            ),
-                          );
-                        }
+    Widget rightActions() {
+      return Row(
+        children: [
+          if (!isMobile && user == null)
+            OutlinedButton(
+              onPressed: onSignInTap,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: _HeaderColors.primary,
+                side: const BorderSide(color: _HeaderColors.border),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 16,
+                ),
+              ),
+              child: const Text('Sign In'),
+            ),
+          const SizedBox(width: 12),
+          if (!isMobile && user == null)
+            FilledButton(
+              onPressed:
+                  onRegisterTap ??
+                  onHostEventTap ??
+                  () => Navigator.pushNamed(context, '/register'),
+              style: FilledButton.styleFrom(
+                backgroundColor: _HeaderColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 16,
+                ),
+              ),
+              child: const Text('Register'),
+            ),
+          const SizedBox(width: 12),
+          if (showProfile)
+            IconButton(
+              tooltip: user != null ? 'Profile' : 'Register',
+              onPressed: () {
+                if (user != null)
+                  Navigator.pushNamed(context, '/profile');
+                else
+                  Navigator.pushNamed(context, '/register');
+              },
+              icon: CircleAvatar(
+                radius: 16,
+                backgroundColor: Colors.indigo.withOpacity(0.12),
+                child: const Icon(
+                  Icons.person_outline,
+                  size: 20,
+                  color: Colors.indigo,
+                ),
+              ),
+            ),
+        ],
+      );
+    }
 
-                        return items;
-                      },
-                    ),
-                  ],
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (showBackButton) ...[
-                          IconButton(
-                            onPressed: () => Navigator.maybePop(context),
-                            icon: const Icon(
-                              Icons.arrow_back_rounded,
-                              color: _HeaderColors.text,
+    return SafeArea(
+      top: true,
+      child: Container(
+        width: double.infinity,
+        color: Colors.white.withOpacity(0.96),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: _HeaderSpacing.maxWidth,
+            ),
+            child: isMobile
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (showBackButton)
+                            IconButton(
+                              onPressed: () => Navigator.maybePop(context),
+                              icon: const Icon(
+                                Icons.arrow_back_rounded,
+                                color: _HeaderColors.text,
+                              ),
+                              tooltip: 'Back',
                             ),
-                            tooltip: 'Back',
-                          ),
+                          const _Brand(),
                         ],
-                        const _Brand(),
-                      ],
-                    ),
-                    Flexible(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                        _NavItem(
-                          label: 'Find Events',
-                          onTap:
-                              onFindEventsTap ??
-                              () {
-                                Navigator.pushNamed(context, '/discover');
-                              },
+                      ),
+                      PopupMenuButton<String>(
+                        icon: const Icon(
+                          Icons.menu_rounded,
+                          color: _HeaderColors.text,
                         ),
-                        _NavItem(
-                          label: 'Create Events',
-                          onTap:
-                              onCreateEventsTap ??
-                              () {
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        onSelected: (value) {
+                          switch (value) {
+                            case 'find':
+                              onFindEventsTap?.call();
+                              break;
+                            case 'create':
+                              if (onCreateEventsTap != null)
+                                onCreateEventsTap!();
+                              else
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        const CreateEventScreen(),
+                                    builder: (_) => const CreateEventScreen(),
                                   ),
                                 );
-                              },
-                        ),
-                        _NavItem(
-                          label: 'Dashboard',
-                          onTap: () {
-                            final user = SqliteBackend().currentUser;
-                            if (user != null) {
-                              Navigator.pushNamed(context, '/logged-in');
-                            } else {
-                              Navigator.pushNamed(context, '/register');
-                            }
-                          },
-                        ),
-                        _NavItem(
-                          label: 'About us',
-                          onTap:
-                              onAboutTap ??
-                              () {
-                                Navigator.pushNamed(context, '/about');
-                              },
-                        ),
-                        const SizedBox(width: 12),
-                        // Only show Sign In button if not logged in
-                        if (SqliteBackend().currentUser == null)
-                          OutlinedButton(
-                            onPressed: onSignInTap,
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: _HeaderColors.primary,
-                              side: const BorderSide(
-                                color: _HeaderColors.border,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 18,
-                                vertical: 16,
-                              ),
-                            ),
-                            child: const Text('Sign In'),
-                          ),
-                        const SizedBox(width: 12),
-                        // Only show Register button if not logged in
-                        if (SqliteBackend().currentUser == null)
-                          FilledButton(
-                            onPressed:
-                                onRegisterTap ??
-                                onHostEventTap ??
-                                () {
-                                  Navigator.pushNamed(context, '/register');
-                                },
-                            style: FilledButton.styleFrom(
-                              backgroundColor: _HeaderColors.primary,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 18,
-                                vertical: 16,
-                              ),
-                            ),
-                            child: const Text('Register'),
-                          ),
-                        const SizedBox(width: 12),
-                        if (showProfile)
-                          IconButton(
-                            tooltip: SqliteBackend().currentUser != null
-                                ? 'Profile'
-                                : 'Register',
-                            onPressed: () {
-                              if (SqliteBackend().currentUser != null) {
-                                Navigator.pushNamed(context, '/profile');
-                              } else {
+                              break;
+                            case 'dashboard':
+                              if (user != null)
+                                Navigator.pushNamed(context, '/logged-in');
+                              else
                                 Navigator.pushNamed(context, '/register');
-                              }
-                            },
-                            icon: CircleAvatar(
-                              radius: 16,
-                              backgroundColor: Colors.indigo.withOpacity(0.12),
-                              child: const Icon(
-                                Icons.person_outline,
-                                size: 20,
-                                color: Colors.indigo,
-                              ),
+                              break;
+                            case 'about':
+                              onAboutTap?.call();
+                              break;
+                            case 'signin':
+                              onSignInTap?.call();
+                              break;
+                            case 'host':
+                              if (onRegisterTap != null)
+                                onRegisterTap!();
+                              else if (onHostEventTap != null)
+                                onHostEventTap!();
+                              else
+                                Navigator.pushNamed(context, '/register');
+                              break;
+                            case 'profile':
+                              if (user != null)
+                                Navigator.pushNamed(context, '/profile');
+                              else
+                                Navigator.pushNamed(context, '/register');
+                              break;
+                          }
+                        },
+                        itemBuilder: (context) {
+                          final isLoggedIn = user != null;
+                          final items = <PopupMenuEntry<String>>[
+                            const PopupMenuItem(
+                              value: 'find',
+                              child: Text('Find Events'),
                             ),
+                            const PopupMenuItem(
+                              value: 'create',
+                              child: Text('Create Events'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'dashboard',
+                              child: Text('Dashboard'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'about',
+                              child: Text('About us'),
+                            ),
+                            const PopupMenuDivider(),
+                            if (!isLoggedIn) ...[
+                              const PopupMenuItem(
+                                value: 'signin',
+                                child: Text('Sign In'),
+                              ),
+                              const PopupMenuItem(
+                                value: 'host',
+                                child: Text('Register'),
+                              ),
+                            ],
+                          ];
+                          if (showProfile) {
+                            items.add(const PopupMenuDivider());
+                            items.add(
+                              const PopupMenuItem(
+                                value: 'profile',
+                                child: Text('My Profile'),
+                              ),
+                            );
+                          }
+                          return items;
+                        },
+                      ),
+                    ],
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (showBackButton)
+                            IconButton(
+                              onPressed: () => Navigator.maybePop(context),
+                              icon: const Icon(
+                                Icons.arrow_back_rounded,
+                                color: _HeaderColors.text,
+                              ),
+                              tooltip: 'Back',
+                            ),
+                          const _Brand(),
+                        ],
+                      ),
+                      Flexible(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _NavItem(
+                                label: 'Find Events',
+                                onTap:
+                                    onFindEventsTap ??
+                                    () => Navigator.pushNamed(
+                                      context,
+                                      '/discover',
+                                    ),
+                              ),
+                              _NavItem(
+                                label: 'Create Events',
+                                onTap:
+                                    onCreateEventsTap ??
+                                    () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            const CreateEventScreen(),
+                                      ),
+                                    ),
+                              ),
+                              _NavItem(
+                                label: 'Dashboard',
+                                onTap: () {
+                                  if (user != null)
+                                    Navigator.pushNamed(context, '/logged-in');
+                                  else
+                                    Navigator.pushNamed(context, '/register');
+                                },
+                              ),
+                              _NavItem(
+                                label: 'About us',
+                                onTap:
+                                    onAboutTap ??
+                                    () =>
+                                        Navigator.pushNamed(context, '/about'),
+                              ),
+                              const SizedBox(width: 12),
+                              rightActions(),
+                            ],
                           ),
-                      ],
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+          ),
         ),
       ),
     );
@@ -342,26 +322,19 @@ class _Brand extends StatelessWidget {
       onTap: () {
         final user = SqliteBackend().currentUser;
         Future.microtask(() {
-          if (context.mounted) {
+          if (context.mounted)
             Navigator.pushNamedAndRemoveUntil(
               context,
               user != null ? '/logged-in' : '/',
               (route) => false,
             );
-          }
         });
       },
       child: Row(
         children: [
-          // Use the bundled asset but visually scale the image so it appears larger
-          // without increasing the header's layout height: keep the container fixed
-          // and scale the image inside it.
           SizedBox(
             width: 48,
             height: 48,
-            // Allow the image to render larger than the boxed layout without
-            // clipping by using an OverflowBox. We intentionally avoid ClipRRect
-            // here so the scaled image isn't cropped by the container bounds.
             child: DecoratedBox(
               decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
               child: Center(
