@@ -619,7 +619,6 @@ function logPersistenceStatus() {
     console.log(`   Users:  ${userCount}`);
     console.log(`   Events: ${eventCount}`);
     console.log(`   Tickets: ${ticketCount}`);
-    console.log("    All data is persistent and will survive app restarts");
     console.log("════════════════════════════════════════════════════\n");
   } catch (e) {
     console.error("Error checking persistence:", e.message);
